@@ -5,6 +5,7 @@ import com.swp391.edrive.entity.Vehicle;
 import com.swp391.edrive.service.VehicleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,27 +26,8 @@ public class VehicleController {
 
     @Operation(summary = "Lấy danh sách tất cả xe")
     @GetMapping
-    public List<VehicleResponse> getAllVehicles() {
-        List<Vehicle> vehicles = vehicleService.getAllVehicles();
-        return vehicles.stream()
-                .map(v -> new VehicleResponse(
-                        v.getVehicleId(),
-                        v.getModelName(),
-                        v.getVersion(),
-                        v.getColor(),
-                        v.getBatteryCapacityKwh(),
-                        v.getRangeKm(),
-                        v.getMaxSpeedKmh(),
-                        v.getChargingTimeHours(),
-                        v.getSeatingCapacity(),
-                        v.getMotorPowerKw(),
-                        v.getWeightKg(),
-                        v.getLengthMm(),
-                        v.getWidthMm(),
-                        v.getHeightMm(),
-                        v.getPriceRetail(),
-                        v.getStatus().name()
-                ))
-                .collect(Collectors.toList());
+    public ResponseEntity<ResponseObject> getAllVehicles() {
+        List<VehicleResponse> vehicles = vehicleService.getAllVehicles();
+        return ResponseEntity.ok(new ResponseObject(200, "Vehicle list retrieved successfully", vehicles));
     }
 }

@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from  -->
 	</parent>
 	<groupId>com.swp391</groupId>
-	<artifactId>edriver</artifactId>
+	<artifactId>EDrive</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Edriver</name>
-	<description>Edriver</description>
+	<name>EDrive</name>
+	<description>EDrive</description>
 	<url/>
 	<licenses>
 		<license/>
