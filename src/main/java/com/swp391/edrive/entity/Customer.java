@@ -1,37 +1,42 @@
-package com.swp391.edrive.entity;
+    package com.swp391.edrive.entity;
 
-import jakarta.persistence.*;
-import java.time.LocalDate;
-import java.util.List;
+    import jakarta.persistence.*;
+    import lombok.Getter;
+    import lombok.Setter;
 
-@Entity
-@Table(name = "customers")
-public class Customer {
+    import java.time.LocalDate;
+    import java.util.List;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long customerId;
+    @Entity
+    @Table(name = "customers")
+    @Getter
+    @Setter
+    public class Customer {
 
-    private String fullName;
-    private LocalDate dob;
-    private String gender;
-    private String email;
-    private String phone;
-    private String address;
-    private String idCardNo;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long customerId;
 
-    @OneToMany(mappedBy = "customer")
-    private List<TestDrive> testDrives;
+        private String fullName;
+        private LocalDate dob;
+        private String gender;
+        private String email;
+        private String phone;
+        private String address;
+        private String idCardNo;
 
-    @OneToMany(mappedBy = "customer")
-    private List<Feedback> feedbacks;
+        @OneToMany(mappedBy = "customer")
+        private List<TestDrive> testDrives;
 
-    @OneToMany(mappedBy = "customer")
-    private List<Quotation> quotations;
+        @OneToMany(mappedBy = "customer")
+        private List<Feedback> feedbacks;
 
-    @OneToMany(mappedBy = "customer")
-    private List<Order> orders;
+        @OneToMany(mappedBy = "customer")
+        private List<Quotation> quotations;
 
-    @OneToMany(mappedBy = "customer")
-    private List<CustomerDebt> customerDebts;
-}
+        @OneToMany(mappedBy = "customer")
+        private List<Order> orders;
+
+        @OneToMany(mappedBy = "customer")
+        private List<CustomerDebt> customerDebts;
+    }
