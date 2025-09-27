@@ -31,6 +31,7 @@ public class AuthService {
     private final RefreshTokenService refreshTokenService;
     private final UserDetailsService userDetailsService;
 
+    /** Đăng nhập: trả access token + refresh token (để Controller set cookie) */
     public LoginResult login(LoginRequest request) {
         try {
             Authentication authentication = authenticationManager.authenticate(
@@ -67,6 +68,7 @@ public class AuthService {
         return ResponseEntity.ok(new ResponseObject(200, "Token refreshed", Map.of("token", newAccess)));
     }
 
+    /** Kết quả login để Controller quyết định set-cookie và response body */
     public record LoginResult(boolean ok, String accessToken, String refreshToken, String errorMessage) {
         public static LoginResult success(String access, String refresh) {
             return new LoginResult(true, access, refresh, null);
