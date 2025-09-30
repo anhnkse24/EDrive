@@ -1,33 +1,22 @@
 package com.swp391.edrive.controller;
 
-import com.swp391.edrive.config.JwtTokenProvider;
 import com.swp391.edrive.dto.request.LoginRequest;
 import com.swp391.edrive.dto.response.ResponseObject;
-import com.swp391.edrive.entity.RefreshToken;
-import com.swp391.edrive.entity.User;
-import com.swp391.edrive.repository.RefreshTokenRepository;
-import com.swp391.edrive.repository.UserRepository;
-import com.swp391.edrive.service.AuthService;
-import com.swp391.edrive.service.RefreshTokenService;
+import com.swp391.edrive.service.serviceimpl.AuthServiceImpl;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
-    private final AuthService authService;
+    private final AuthServiceImpl authService;
 
     @PostMapping("/login")
     public ResponseEntity<ResponseObject> login(@RequestBody LoginRequest request,
