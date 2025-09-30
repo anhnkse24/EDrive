@@ -29,11 +29,16 @@ public class UserService {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new Exception("Email đã được sử dụng");
         }
+        // Check username trùng
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new Exception("Username đã được sử dụng");
+        }
 
         // Check phone trùng
         if (userRepository.findByPhone(request.getPhone()).isPresent()) {
             throw new Exception("Số điện thoại đã được sử dụng");
         }
+
 
         // Encode password
         String encodedPassword = passwordEncoder.encode(request.getPassword());

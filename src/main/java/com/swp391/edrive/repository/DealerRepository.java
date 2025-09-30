@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface DealerRepository extends JpaRepository<Dealer, Long> {
     Optional<Dealer> findByDealerName(String dealerName);
+    boolean existsByDealerName(String dealerName);
 }
