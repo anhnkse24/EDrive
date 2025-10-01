@@ -1,5 +1,6 @@
 package com.swp391.edrive.service;
 
+import com.swp391.edrive.dto.response.UserResponse;
 import com.swp391.edrive.entity.Dealer;
 import com.swp391.edrive.dto.request.RegisterRequest;
 import com.swp391.edrive.entity.User;
@@ -20,7 +21,7 @@ public class UserService {
     @Autowired
     private DealerRepository dealerRepository;
 
-    public User createUser(RegisterRequest request)throws Exception  {
+    public UserResponse createUser(RegisterRequest request)throws Exception  {
         // Check confirmPassword
         if (!request.getPassword().equals(request.getConfirmPassword())) {
             throw new Exception("Mật khẩu xác nhận không khớp");
@@ -41,8 +42,6 @@ public class UserService {
 
         // Encode password
         String encodedPassword = passwordEncoder.encode(request.getPassword());
-
-
 
         // Kiểm tra dealerName trùng
         dealerRepository.findByDealerName(request.getDealerName())
@@ -69,7 +68,18 @@ public class UserService {
         user.setRole(UserRole.DEALER_STAFF);
         user.setDealer(dealer);
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+
+        // Trả về DTO
+        return new UserResponse(
+                savedUser.getUserId(),
+                savedUser.getUsername(),
+                savedUser.getFullName(),
+                savedUser.getEmail(),
+                savedUser.getPhone(),
+                savedUser.getRole(),
+                savedUser.getDealer().getDealerName()
+        );
     }
 
 }

@@ -2,6 +2,7 @@ package com.swp391.edrive.controller;
 
 import com.swp391.edrive.dto.response.ResponseObject;
 import com.swp391.edrive.dto.request.RegisterRequest;
+import com.swp391.edrive.dto.response.UserResponse;
 import com.swp391.edrive.entity.User;
 import com.swp391.edrive.service.UserService;
 import jakarta.validation.Valid;
@@ -21,14 +22,15 @@ public class RegisterController {
     UserService userService;
 
     @PostMapping
-    public ResponseEntity<ResponseObject<User>> registerUser(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<ResponseObject<UserResponse>> registerUser(@Valid @RequestBody RegisterRequest request) {
 
         try {
-            User savedUser = userService.createUser(request);
+            UserResponse response = userService.createUser(request);
+
             return ResponseEntity.ok(
                     new ResponseObject<>(201,
                             "User registered successfully",
-                            savedUser)
+                            response)
             );
 
         }catch (Exception exception) {
