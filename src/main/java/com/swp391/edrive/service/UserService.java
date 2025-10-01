@@ -39,10 +39,24 @@ public class UserService {
             throw new Exception("Số điện thoại đã được sử dụng");
         }
 
-
         // Encode password
         String encodedPassword = passwordEncoder.encode(request.getPassword());
 
+
+
+        // Kiểm tra dealerName trùng
+        dealerRepository.findByDealerName(request.getDealerName())
+                .ifPresent(d -> {
+                    throw new RuntimeException("Dealer name đã được sử dụng");
+                });
+
+
+        Dealer dealer = new Dealer();
+        dealer.setDealerName(request.getDealerName());
+        dealer.setAddress(request.getAddress());
+        dealer.setContactPerson(request.getFullName());
+        dealer.setPhone(request.getPhone());
+        dealerRepository.save(dealer);
         // Map request -> entity User
         User user = new User();
         user.setUsername(request.getUsername());
@@ -51,13 +65,7 @@ public class UserService {
         user.setPassword(encodedPassword);
         // Gán role mặc định (ví dụ CUSTOMER)
         user.setRole(UserRole.DEALER_STAFF);
-
-        // Nếu request có dealerName thì tìm Dealer theo tên
-        if (request.getDealerName() != null && !request.getDealerName().isEmpty()) {
-            Dealer dealer = dealerRepository.findByDealerName(request.getDealerName())
-                    .orElseThrow(() -> new Exception("Dealer không tồn tại với tên: " + request.getDealerName()));
-            user.setDealer(dealer);
-        }
+        user.setDealer(dealer);
 
         return userRepository.save(user);
     }

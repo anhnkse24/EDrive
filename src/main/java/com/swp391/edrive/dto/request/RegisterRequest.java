@@ -1,7 +1,6 @@
 package com.swp391.edrive.dto.request;
 
 import com.swp391.edrive.validation.PasswordMatches;
-import com.swp391.edrive.validation.ValidDealerName;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -32,8 +31,12 @@ public class RegisterRequest {
     private String phone;
 
     @NotBlank(message = "Dealer name is required")
-    @ValidDealerName
+    @Size(min = 4, max = 40, message = "Dealername must be between 4–40 characters")
     private String dealerName;
+
+    @NotBlank(message = "Address is required")
+    @Size(min = 5, max = 100, message = "Address must be between 5–100 characters")
+    private String address;
 
     @NotBlank(message = "Username is required")
     @Size(min = 4, max = 20, message = "Username must be between 4–20 characters")
