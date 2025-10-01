@@ -6,7 +6,9 @@ import com.swp391.edrive.entity.User;
 import com.swp391.edrive.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,11 +22,9 @@ public class RegisterController {
 
     @PostMapping
     public ResponseEntity<ResponseObject<User>> registerUser(@Valid @RequestBody RegisterRequest request) {
-        ResponseEntity<String> response = null;
 
-        User savedUser = null;
         try {
-            savedUser = userService.createUser(request);
+            User savedUser = userService.createUser(request);
             return ResponseEntity.ok(
                     new ResponseObject<>(201,
                             "User registered successfully",
@@ -39,6 +39,13 @@ public class RegisterController {
             );
         }
     }
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ResponseObject<String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        String errorMessage = ex.getBindingResult().getAllErrors().get(0).getDefaultMessage();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ResponseObject<>(400, errorMessage, null));
+    }
+
 
     @Autowired
     public void setUserService(UserService userService) {

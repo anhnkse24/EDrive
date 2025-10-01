@@ -59,14 +59,17 @@ public class UserService {
         dealerRepository.save(dealer);
         // Map request -> entity User
         User user = new User();
+        user.setFullName(request.getFullName());
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
         user.setPassword(encodedPassword);
+
         // Gán role mặc định (ví dụ CUSTOMER)
         user.setRole(UserRole.DEALER_STAFF);
         user.setDealer(dealer);
 
         return userRepository.save(user);
     }
+
 }

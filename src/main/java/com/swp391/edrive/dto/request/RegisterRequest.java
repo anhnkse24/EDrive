@@ -1,7 +1,6 @@
 package com.swp391.edrive.dto.request;
 
 import com.swp391.edrive.validation.PasswordMatches;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -23,7 +22,7 @@ public class RegisterRequest {
     private String fullName;
 
     @NotBlank(message = "Email is required")
-    @Email(message = "Invalid email format")
+    @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@gmail\\.com$", message = "Email must be a valid Gmail address")
     private String email;
 
     @NotBlank(message = "Phone number is required")
