@@ -2,7 +2,6 @@ package com.swp391.edrive.controller;
 
 import com.swp391.edrive.dto.response.ResponseObject;
 import com.swp391.edrive.dto.response.VehicleResponse;
-import com.swp391.edrive.entity.Vehicle;
 import com.swp391.edrive.enums.VehicleStatus;
 import com.swp391.edrive.service.VehicleService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,14 +11,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/vehicles")
 @Tag(name = "Vehicles", description = "API quản lý danh sách xe")
 public class VehicleController {
 
-    private final VehicleService vehicleService;
+    private final VehicleService vehicleService; // <-- dùng interface
 
     public VehicleController(VehicleService vehicleService) {
         this.vehicleService = vehicleService;

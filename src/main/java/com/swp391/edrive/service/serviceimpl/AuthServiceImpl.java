@@ -7,7 +7,6 @@ import com.swp391.edrive.entity.RefreshToken;
 import com.swp391.edrive.entity.User;
 import com.swp391.edrive.repository.UserRepository;
 import com.swp391.edrive.service.AuthService;
-import com.swp391.edrive.service.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,7 +25,7 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
     private final UserRepository userRepository;
-    private final RefreshTokenService refreshTokenService;
+    private final RefreshTokenServiceImpl refreshTokenServiceImpl;
     private final UserDetailsService userDetailsService;
 
     @Override
@@ -38,7 +37,7 @@ public class AuthServiceImpl implements AuthService {
             String accessToken = tokenProvider.generateToken(authentication);
 
             User u = userRepository.findByUsername(request.getUsername()).orElseThrow();
-            RefreshToken refreshToken = refreshTokenService.createRefreshToken(u);
+            RefreshToken refreshToken = refreshTokenServiceImpl.createRefreshToken(u);
 
             return LoginResult.success(accessToken, refreshToken.getToken());
         } catch (BadCredentialsException e) {
@@ -48,13 +47,13 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ResponseEntity<ResponseObject> refresh(String refreshTokenStr) {
-        var tokenEntity = refreshTokenService.findByToken(refreshTokenStr).orElse(null);
+        var tokenEntity = refreshTokenServiceImpl.findByToken(refreshTokenStr).orElse(null);
         if (tokenEntity == null) {
             return ResponseEntity.status(401)
                     .body(new ResponseObject(401, "Invalid refresh token", null));
         }
-        if (refreshTokenService.isExpired(tokenEntity)) {
-            refreshTokenService.delete(tokenEntity);
+        if (refreshTokenServiceImpl.isExpired(tokenEntity)) {
+            refreshTokenServiceImpl.delete(tokenEntity);
             return ResponseEntity.status(401)
                     .body(new ResponseObject(401, "Refresh token expired", null));
         }
