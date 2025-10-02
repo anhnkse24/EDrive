@@ -2,10 +2,10 @@ package com.swp391.edrive.controller;
 
 import com.swp391.edrive.dto.response.ResponseObject;
 import com.swp391.edrive.dto.response.VehicleResponse;
- refactor/service-impl
+
 import com.swp391.edrive.enums.VehicleStatus;
 
- feature/register
+
 import com.swp391.edrive.service.VehicleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,7 +33,6 @@ public class VehicleController {
             @RequestParam(defaultValue = "10") int size) {
 
         List<VehicleResponse> vehicles = vehicleService.getAllVehicles(page, size);
- refactor/service-impl
         return ResponseEntity.ok(new ResponseObject(200, "Vehicle list retrieved successfully", vehicles));
     }
 
@@ -87,8 +86,5 @@ public class VehicleController {
         return ResponseEntity.ok(new ResponseObject(200, "Vehicles by color retrieved", vehicles));
     }
 
-        return ResponseEntity.ok(
-                new ResponseObject<>(200, "Vehicle list retrieved successfully", vehicles)
-        );}
- feature/register
+
 }
