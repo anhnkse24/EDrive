@@ -1,5 +1,6 @@
 package com.swp391.edrive.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.swp391.edrive.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -19,6 +20,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
 
+    @Column(unique = true, nullable = false)
     private String username;
     private String password;
     private String fullName;
@@ -30,5 +32,6 @@ public class User {
 
     @ManyToOne
     @JoinColumn(name = "dealer_id")
+    @JsonBackReference
     private Dealer dealer;
 }

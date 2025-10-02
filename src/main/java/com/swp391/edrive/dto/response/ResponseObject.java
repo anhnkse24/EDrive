@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResponseObject {
+public class ResponseObject<U> {
     @JsonProperty("statusCode")
     private int statusCode;   // HTTP status code (200, 400, 403...)
 
