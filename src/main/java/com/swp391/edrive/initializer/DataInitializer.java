@@ -1,18 +1,19 @@
 package com.swp391.edrive.initializer;
 
-import com.swp391.edrive.entity.Dealer;
-import com.swp391.edrive.entity.User;
-import com.swp391.edrive.entity.Vehicle;
+import com.swp391.edrive.entity.*;
+import com.swp391.edrive.enums.TestDriveStatus;
 import com.swp391.edrive.enums.UserRole;
 import com.swp391.edrive.enums.VehicleStatus;
-import com.swp391.edrive.repository.DealerRepository;
-import com.swp391.edrive.repository.UserRepository;
-import com.swp391.edrive.repository.VehicleRepository;
+import com.swp391.edrive.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Component
 @RequiredArgsConstructor
@@ -22,7 +23,8 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final VehicleRepository vehicleRepository;
     private final PasswordEncoder passwordEncoder;
-
+    private final CustomerRepository customerRepository;
+    private final TestDriveRepository testDriveRepository;
 
     @Override
     @Transactional
@@ -93,7 +95,69 @@ public class DataInitializer implements CommandLineRunner {
         v2.setStatus(VehicleStatus.AVAILABLE);
         vehicleRepository.save(v2);
 
-        System.out.println("Data initialization completed!");
+        // =======================
+        // Customers
+        // =======================
+        Customer c1 = new Customer();
+        c1.setFullName("Nguyễn Minh Hòa");
+        c1.setDob(LocalDate.of(1998, 5, 12));
+        c1.setGender("Nam");
+        c1.setEmail("hoa.nguyen@example.com");
+        c1.setPhone("0909123456"); // 10 số bắt đầu 0
+        c1.setAddress("12 Lê Lợi, Q1, TP.HCM");
+        c1.setIdCardNo("079123456789"); // 9–12 số
+        customerRepository.save(c1);
+
+        Customer c2 = new Customer();
+        c2.setFullName("Trần Thu Hà");
+        c2.setDob(LocalDate.of(1996, 11, 3));
+        c2.setGender("Nữ");
+        c2.setEmail("ha.tran@example.com");
+        c2.setPhone("0911222333");
+        c2.setAddress("45 Hai Bà Trưng, Q1, TP.HCM");
+        c2.setIdCardNo("031234567");
+        customerRepository.save(c2);
+
+        Customer c3 = new Customer();
+        c3.setFullName("Phạm Quang Khải");
+        c3.setDob(LocalDate.of(1993, 2, 20));
+        c3.setGender("Khác");
+        c3.setEmail("khai.pham@example.com");
+        c3.setPhone("0933666777");
+        c3.setAddress("99 Phạm Văn Đồng, Thủ Đức, TP.HCM");
+        c3.setIdCardNo("123456789012");
+        customerRepository.save(c3);
+
+        // =======================
+        // TestDrives (seed để test available/book)
+        // =======================
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
+
+        TestDrive td1 = new TestDrive();
+        td1.setCustomer(c1);
+        td1.setDealer(dealer1);
+        td1.setVehicle(v1);
+        td1.setScheduleDatetime(LocalDateTime.of(tomorrow, LocalTime.of(9, 0)));
+        td1.setStatus(TestDriveStatus.PENDING);
+        testDriveRepository.save(td1);
+
+        TestDrive td2 = new TestDrive();
+        td2.setCustomer(c2);
+        td2.setDealer(dealer1);
+        td2.setVehicle(v2);
+        td2.setScheduleDatetime(LocalDateTime.of(tomorrow, LocalTime.of(9, 30)));
+        td2.setStatus(TestDriveStatus.PENDING);
+        testDriveRepository.save(td2);
+
+        TestDrive td3 = new TestDrive();
+        td3.setCustomer(c3);
+        td3.setDealer(dealer1);
+        td3.setVehicle(v1);
+        td3.setScheduleDatetime(LocalDateTime.of(tomorrow, LocalTime.of(14, 30)));
+        td3.setStatus(TestDriveStatus.PENDING);
+        testDriveRepository.save(td3);
+
+        System.out.println("Data initialization completed! (dealers, users, vehicles, customers, test drives)");
     }
 }
 

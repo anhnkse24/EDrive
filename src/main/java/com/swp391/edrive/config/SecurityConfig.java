@@ -3,6 +3,7 @@ package com.swp391.edrive.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -39,7 +40,9 @@ public class SecurityConfig {
                         // Auth endpoints public
                         .requestMatchers("/api/auth/**").permitAll()
                         // Tạm thời cho GET public với vehicle nếu bạn muốn (tuỳ)
-                        //.requestMatchers(HttpMethod.GET, "/api/vehicles/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/vehicles/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/test-drive/available").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/test-drive/book").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable()) // Không dùng form login HTML cho API

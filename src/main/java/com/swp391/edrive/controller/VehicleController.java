@@ -20,7 +20,7 @@ public class VehicleController {
     private final VehicleService vehicleService; // <-- dùng interface
 
     public VehicleController(VehicleService vehicleService) {
-        this.vehicleService = vehicleService;
+        this.vehicleService = vehicleService;   
     }
 
     @Operation(summary = "Lấy danh sách tất cả xe")
