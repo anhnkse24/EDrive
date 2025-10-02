@@ -9,28 +9,24 @@ import com.swp391.edrive.repository.DealerRepository;
 import com.swp391.edrive.repository.UserRepository;
 import com.swp391.edrive.repository.VehicleRepository;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
     private final DealerRepository dealerRepository;
     private final UserRepository userRepository;
     private final VehicleRepository vehicleRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public DataInitializer(DealerRepository dealerRepository, UserRepository userRepository, VehicleRepository vehicleRepository) {
-        this.dealerRepository = dealerRepository;
-        this.userRepository = userRepository;
-        this.vehicleRepository = vehicleRepository;
-    }
 
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-// =======================
-        // Tạo Dealer
-        // =======================
         Dealer dealer1 = new Dealer();
         dealer1.setDealerName("Edriver Center");
         dealer1.setAddress("123 Nguyen Van Troi, HCMC");
@@ -38,12 +34,9 @@ public class DataInitializer implements CommandLineRunner {
         dealer1.setPhone("0909123456");
         dealerRepository.save(dealer1);
 
-        // =======================
-        // Tạo User
-        // =======================
         User admin = new User();
         admin.setUsername("admin");
-        admin.setPassword("{noop}admin123"); // dùng {noop} nếu chưa encode mật khẩu
+        admin.setPassword(passwordEncoder.encode("admin123")); // mã hoá
         admin.setFullName("Admin User");
         admin.setEmail("admin@edriver.com");
         admin.setPhone("0909000001");
@@ -53,7 +46,7 @@ public class DataInitializer implements CommandLineRunner {
 
         User staff = new User();
         staff.setUsername("staff1");
-        staff.setPassword("staff123");
+        staff.setPassword(passwordEncoder.encode("staff123")); // mã hoá
         staff.setFullName("Staff One");
         staff.setEmail("staff1@edriver.com");
         staff.setPhone("0909000002");
