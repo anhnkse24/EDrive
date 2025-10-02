@@ -1,5 +1,6 @@
 package com.swp391.edrive.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,26 +28,34 @@ public class Dealer {
     private Integer contractId;
 
     @OneToMany(mappedBy = "dealer")
+    @JsonIgnore
     private List<User> users;
 
     @OneToMany(mappedBy = "dealer")
+    @JsonIgnore
     private List<Inventory> inventories;
 
     @OneToMany(mappedBy = "dealer")
+    @JsonIgnore
     private List<PricingPolicy> pricingPolicies;
 
     @OneToMany(mappedBy = "dealer")
+    @JsonIgnore
     private List<TestDrive> testDrives;
 
     @OneToMany(mappedBy = "dealer")
+    @JsonIgnore
     private List<Quotation> quotations;
 
     @OneToMany(mappedBy = "dealer")
+    @JsonIgnore
     private List<Order> orders;
 
     @OneToMany(mappedBy = "dealer")
+    @JsonIgnore
     private List<Contract> contracts;
 
     @OneToMany(mappedBy = "dealer")
+    @JsonIgnore
     private List<DealerDebt> dealerDebts;
 }
