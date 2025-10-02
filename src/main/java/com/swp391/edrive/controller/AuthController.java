@@ -1,12 +1,19 @@
 package com.swp391.edrive.controller;
 
 import com.swp391.edrive.dto.request.LoginRequest;
+import com.swp391.edrive.dto.request.RegisterRequest;
 import com.swp391.edrive.dto.response.ResponseObject;
+import com.swp391.edrive.dto.response.UserResponse;
+import com.swp391.edrive.service.UserService;
 import com.swp391.edrive.service.serviceimpl.AuthServiceImpl;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
@@ -17,6 +24,40 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthServiceImpl authService;
+
+    @PostMapping("/register")
+    public ResponseEntity<ResponseObject<UserResponse>> registerUser(
+            @Valid @RequestBody RegisterRequest request) {
+        try {
+            UserResponse response = authService.register(request);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+                    new ResponseObject<>(201,
+                            "User registered successfully",
+                            response)
+            );
+
+        } catch (Exception exception) {
+            return ResponseEntity.badRequest().body(
+                    new ResponseObject<>(400,
+                            "User registration failed: " + exception.getMessage(),
+                            null)
+            );
+        }
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ResponseObject<String>> handleValidationExceptions(
+            MethodArgumentNotValidException ex) {
+        String errorMessage = ex.getBindingResult()
+                .getAllErrors()
+                .get(0)
+                .getDefaultMessage();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ResponseObject<>(400, errorMessage, null));
+    }
+
+
 
     @PostMapping("/login")
     public ResponseEntity<ResponseObject> login(@RequestBody LoginRequest request,
