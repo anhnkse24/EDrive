@@ -16,4 +16,10 @@ public interface VehicleService {
     List<VehicleResponse> findVehicleByStatus(VehicleStatus status, int page, int size);
 
     List<VehicleResponse> findVehicleByColor(String color, int page, int size);
+
+    List<VehicleResponse> findVehicleByManufactureYear(Integer year, int page, int size);
+
+    List<VehicleResponse> findVehicleByManufactureYearRange(Integer fromYear, Integer toYear, int page, int size);
+
+    List<VehicleResponse> findVehicleByPrice(Double minPrice, Double maxPrice, int page, int size);
 }

@@ -2,9 +2,11 @@ package com.swp391.edrive.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 
 @Data
 @AllArgsConstructor
+@Getter
 public class VehicleResponse {
     private Long vehicleId;
     private String modelName;
@@ -22,4 +24,5 @@ public class VehicleResponse {
     private Integer heightMm;
     private Double priceRetail;
     private String status;
+    private Integer manufactureYear;
 }

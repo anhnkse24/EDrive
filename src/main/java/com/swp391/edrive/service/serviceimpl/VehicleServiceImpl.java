@@ -53,6 +53,49 @@ public class VehicleServiceImpl implements VehicleService {
         return result.stream().map(this::convertToVehicleResponse).toList();
     }
 
+    @Override
+    public List<VehicleResponse> findVehicleByManufactureYear(Integer year, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Vehicle> result = vehicleRepository.findByManufactureYear(year, pageable);
+        return result.stream().map(this::convertToVehicleResponse).toList();
+    }
+
+    @Override
+    public List<VehicleResponse> findVehicleByManufactureYearRange(Integer fromYear, Integer toYear, int page, int size) {
+        if (fromYear == null || toYear == null) {
+            throw new IllegalArgumentException("fromYear and toYear are required");
+        }
+        if (fromYear > toYear) {
+            throw new IllegalArgumentException("fromYear must be <= toYear");
+        }
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Vehicle> result = vehicleRepository.findByManufactureYearBetween(fromYear, toYear, pageable);
+        return result.stream().map(this::convertToVehicleResponse).toList();
+    }
+
+    @Override
+    public List<VehicleResponse> findVehicleByPrice(Double minPrice, Double maxPrice, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        if (minPrice == null && maxPrice == null) {
+            throw new IllegalArgumentException("At least one of minPrice or maxPrice must be provided");
+        }
+
+        Page<Vehicle> result;
+        if (minPrice != null && maxPrice != null) {
+            if (minPrice > maxPrice) {
+                throw new IllegalArgumentException("minPrice must be <= maxPrice");
+            }
+            result = vehicleRepository.findByPriceRetailBetween(minPrice, maxPrice, pageable);
+        } else if (minPrice != null) {
+            result = vehicleRepository.findByPriceRetailGreaterThanEqual(minPrice, pageable);
+        } else {
+            result = vehicleRepository.findByPriceRetailLessThanEqual(maxPrice, pageable);
+        }
+
+        return result.stream().map(this::convertToVehicleResponse).toList();
+    }
+
     private VehicleResponse convertToVehicleResponse(Vehicle v) {
         return new VehicleResponse(
                 v.getVehicleId(),
@@ -70,7 +113,8 @@ public class VehicleServiceImpl implements VehicleService {
                 v.getWidthMm(),
                 v.getHeightMm(),
                 v.getPriceRetail(),
-                v.getStatus() != null ? v.getStatus().name() : null
+                v.getStatus() != null ? v.getStatus().name() : null,
+                v.getManufactureYear()
         );
     }
 }
