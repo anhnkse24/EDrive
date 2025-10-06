@@ -1,6 +1,7 @@
 package com.swp391.edrive.service.serviceimpl;
 
 import com.swp391.edrive.config.JwtTokenProvider;
+import com.swp391.edrive.dto.request.ChangePasswordRequest;
 import com.swp391.edrive.dto.request.LoginRequest;
 import com.swp391.edrive.dto.request.RegisterRequest;
 import com.swp391.edrive.dto.response.ResponseObject;
@@ -10,6 +11,7 @@ import com.swp391.edrive.entity.RefreshToken;
 import com.swp391.edrive.entity.User;
 import com.swp391.edrive.enums.UserRole;
 import com.swp391.edrive.repository.DealerRepository;
+import com.swp391.edrive.repository.TokenRepository;
 import com.swp391.edrive.repository.UserRepository;
 import com.swp391.edrive.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 
@@ -35,6 +38,7 @@ public class AuthServiceImpl implements AuthService {
     private final RefreshTokenServiceImpl refreshTokenServiceImpl;
     private final UserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
+    private final TokenRepository tokenRepository;
 
     @Override
     public UserResponse register(RegisterRequest request) {
@@ -129,5 +133,61 @@ public class AuthServiceImpl implements AuthService {
         String newAccess = tokenProvider.generateToken(auth);
 
         return ResponseEntity.ok(new ResponseObject(200, "Token refreshed", Map.of("token", newAccess)));
+    }
+
+    @Transactional
+    @Override
+    public ResponseEntity<ResponseObject> changePassword(String username, ChangePasswordRequest request) {
+        try {
+            // 1️⃣ Tìm user trong DB
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            // 2️⃣ Kiểm tra mật khẩu cũ
+            if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+                return ResponseEntity.badRequest()
+                        .body(new ResponseObject(400, "Old password is incorrect", null));
+            }
+
+            // 3️⃣ Kiểm tra trùng mật khẩu cũ
+            if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+                return ResponseEntity.badRequest()
+                        .body(new ResponseObject(400, "New password cannot be the same as old password", null));
+            }
+
+            // 4️⃣ Kiểm tra confirm password
+            if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+                return ResponseEntity.badRequest()
+                        .body(new ResponseObject(400, "Confirm password does not match new password", null));
+            }
+
+            // 5️⃣ Mã hóa và cập nhật mật khẩu
+            String encodedNewPassword = passwordEncoder.encode(request.getNewPassword());
+            user.setPassword(encodedNewPassword);
+            userRepository.saveAndFlush(user); // flush để chắc chắn update DB ngay
+
+            // 6️⃣ Thu hồi token cũ (nếu bạn đã có TokenRepository)
+            revokeAllUserTokens(user);
+
+            // 7️⃣ Trả về kết quả
+            return ResponseEntity.ok(
+                    new ResponseObject(200, "Password changed successfully, please login again", null)
+            );
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(new ResponseObject(500, "Error changing password: " + e.getMessage(), null));
+        }
+    }
+
+    private void revokeAllUserTokens(User user) {
+        var validTokens = tokenRepository.findAllByUser_UserIdAndExpiredFalseAndRevokedFalse(user.getUserId());
+        if (validTokens == null || validTokens.isEmpty()) return;
+
+        validTokens.forEach(token -> {
+            token.setExpired(true);
+            token.setRevoked(true);
+        });
+        tokenRepository.saveAll(validTokens);
     }
 }

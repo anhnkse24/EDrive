@@ -44,7 +44,7 @@ public class SecurityConfig {
                                 "/api-docs/**"
                         ).permitAll()
                         // Cho phép các API auth public
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/refresh").permitAll()
                         // Cho phép tất cả request OPTIONS (CORS pre-flight)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Các request khác phải có token
