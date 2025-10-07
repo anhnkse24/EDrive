@@ -30,7 +30,7 @@ public class GlobalExceptionHandler {
                 .body(new ResponseObject(HttpStatus.BAD_REQUEST.value(), message, null));
     }
 
-    // Sai định dạng khi parse @RequestParam (ví dụ GET ?date=03/10/2025)
+    // Sai định dạng khi parse @RequestParam
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ResponseObject> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
         if (ex.getRequiredType() == LocalDate.class && "date".equals(ex.getName())) {

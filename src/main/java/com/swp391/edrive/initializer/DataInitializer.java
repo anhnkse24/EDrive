@@ -29,13 +29,47 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
+        // =======================
+        // Tạo Đại Lý
+        // =======================
         Dealer dealer1 = new Dealer();
         dealer1.setDealerName("Edriver Center");
-        dealer1.setAddress("123 Nguyen Van Troi, HCMC");
+        dealer1.setAddress("123 Nguyen Van Troi, Phu Nhuan, TP. HCM");
         dealer1.setContactPerson("Nguyen Van A");
         dealer1.setPhone("0909123456");
         dealerRepository.save(dealer1);
 
+        Dealer dealer2 = new Dealer();
+        dealer2.setDealerName("Edrive Hanoi Showroom");
+        dealer2.setAddress("25 Tran Duy Hung, Cau Giay, Ha Noi");
+        dealer2.setContactPerson("Tran Thi B");
+        dealer2.setPhone("0912345678");
+        dealerRepository.save(dealer2);
+
+        Dealer dealer3 = new Dealer();
+        dealer3.setDealerName("Edrive Danang Center");
+        dealer3.setAddress("78 Nguyen Van Linh, Hai Chau, Da Nang");
+        dealer3.setContactPerson("Le Van C");
+        dealer3.setPhone("0938765432");
+        dealerRepository.save(dealer3);
+
+        Dealer dealer4 = new Dealer();
+        dealer4.setDealerName("Edrive Can Tho Auto Mall");
+        dealer4.setAddress("45 Cach Mang Thang 8, Ninh Kieu, Can Tho");
+        dealer4.setContactPerson("Pham Thi D");
+        dealer4.setPhone("0978123456");
+        dealerRepository.save(dealer4);
+
+        Dealer dealer5 = new Dealer();
+        dealer5.setDealerName("Edrive Hai Phong Premium Showroom");
+        dealer5.setAddress("12 Le Hong Phong, Ngo Quyen, Hai Phong");
+        dealer5.setContactPerson("Do Van E");
+        dealer5.setPhone("0989988776");
+        dealerRepository.save(dealer5);
+
+        // =======================
+        // Tạo User
+        // =======================
         User admin = new User();
         admin.setUsername("admin");
         admin.setPassword(passwordEncoder.encode("admin123")); // mã hoá

@@ -13,6 +13,9 @@ import com.swp391.edrive.repository.TestDriveRepository;
 import com.swp391.edrive.repository.VehicleRepository;
 import com.swp391.edrive.service.TestDriveService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -82,11 +85,9 @@ public class TestDriveServiceImpl implements TestDriveService {
                     c.setFullName(request.getFullName());
                     c.setPhone(request.getPhone());
                     c.setEmail(request.getEmail());
-                    // Các trường tối thiểu để không fail validate (tuỳ entity của bạn)
                     c.setAddress("N/A");
                     c.setGender("Khác");
-                    // Nếu bạn bắt buộc CMND/CCCD ở entity, hãy thêm field vào request và set tại đây:
-                    // c.setIdCardNo(request.getIdCardNo());
+                    c.setIdCardNo(request.getIdCardNo());
                     return customerRepository.save(c);
                 });
 
@@ -148,15 +149,6 @@ public class TestDriveServiceImpl implements TestDriveService {
         return toResponse(saved);
     }
 
-    // ====== NEW: Xem trạng thái ======
-    @Override
-    @Transactional(readOnly = true)
-    public TestDriveStatus getStatus(Long testdriveId) {
-        TestDrive td = testDriveRepository.findById(testdriveId)
-                .orElseThrow(() -> new IllegalArgumentException("Lịch lái thử không tồn tại."));
-        return td.getStatus();
-    }
-
     // ====== NEW: Xem chi tiết ======
     @Override
     @Transactional(readOnly = true)
@@ -182,6 +174,58 @@ public class TestDriveServiceImpl implements TestDriveService {
             list.add(t);
         }
         return list;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TestDriveResponse> list(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<TestDrive> p = testDriveRepository.findAll(pageable);
+        return p.stream().map(this::toResponse).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TestDriveResponse> listByDealer(Long dealerId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<TestDrive> p = testDriveRepository.findByDealer_DealerId(dealerId, pageable);
+        return p.stream().map(this::toResponse).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TestDriveResponse> listByDealerAndDate(Long dealerId, LocalDate date, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        var start = date.atStartOfDay();
+        var end = date.plusDays(1).atStartOfDay(); // [00:00, 24:00) của ngày đó
+        Page<TestDrive> p = testDriveRepository
+                .findByDealer_DealerIdAndScheduleDatetimeBetween(dealerId, start, end, pageable);
+        return p.stream().map(this::toResponse).toList();
+    }
+
+    @Override
+    @Transactional
+    public TestDriveResponse complete(Long testdriveId) {
+        TestDrive td = testDriveRepository.findById(testdriveId)
+                .orElseThrow(() -> new IllegalArgumentException("Lịch lái thử không tồn tại."));
+
+        if (td.getStatus() == TestDriveStatus.CANCELLED) {
+            throw new IllegalStateException("Lịch đã bị hủy, không thể hoàn thành.");
+        }
+        if (td.getStatus() == TestDriveStatus.COMPLETED) {
+            throw new IllegalStateException("Lịch đã được đánh dấu hoàn thành trước đó.");
+        }
+
+        // Optional: chỉ cho phép hoàn thành sau thời gian hẹn
+        if (LocalDateTime.now().isBefore(td.getScheduleDatetime())) {
+            throw new IllegalStateException("Không thể hoàn thành trước thời gian hẹn.");
+        }
+
+        td.setStatus(TestDriveStatus.COMPLETED);
+        td.setCompletedAt(LocalDateTime.now());
+        TestDrive saved = testDriveRepository.save(td);
+
+        return toResponse(saved);
     }
 
     private TestDriveResponse toResponse(TestDrive td) {

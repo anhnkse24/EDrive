@@ -29,6 +29,9 @@ public class TestDrive {
     @JoinColumn(name = "dealer_id")
     private Dealer dealer;
 
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
+
     @Column(length = 500)
     private String cancelReason;
 
