@@ -3,6 +3,7 @@ package com.swp391.edrive.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -13,12 +14,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.http.HttpMethod;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -31,11 +26,10 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // tắt CSRF
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // bật CORS
+                .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Cho phép Swagger public
+                        // Cho Swagger public
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
@@ -43,14 +37,15 @@ public class SecurityConfig {
                                 "/v3/api-docs",
                                 "/api-docs/**"
                         ).permitAll()
-                        // Cho phép các API auth public
+                        // Auth endpoints public
                         .requestMatchers("/api/auth/**").permitAll()
-                        // Cho phép tất cả request OPTIONS (CORS pre-flight)
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // Các request khác phải có token
+                        // Tạm thời cho GET public với vehicle nếu bạn muốn (tuỳ)
+                        .requestMatchers(HttpMethod.GET, "/api/vehicles/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/test-drive/available").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/test-drive/book").permitAll()
                         .anyRequest().authenticated()
                 )
-                .formLogin(form -> form.disable()) // không dùng form login HTML
+                .formLogin(form -> form.disable()) // Không dùng form login HTML cho API
                 .httpBasic(basic -> basic.disable())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -65,19 +60,7 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // dùng BCrypt để mã hoá password
+        return new BCryptPasswordEncoder(); // mã hoá mạnh
     }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("*"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
-    }
 }

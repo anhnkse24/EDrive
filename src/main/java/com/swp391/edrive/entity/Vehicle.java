@@ -36,6 +36,9 @@ public class Vehicle {
     private Integer heightMm;
     private Double priceRetail;
 
+    @Column(name = "manufacture_year")
+    private Integer manufactureYear;
+
     @Enumerated(EnumType.STRING)
     private VehicleStatus status;
 

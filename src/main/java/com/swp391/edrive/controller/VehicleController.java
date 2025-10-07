@@ -2,10 +2,7 @@ package com.swp391.edrive.controller;
 
 import com.swp391.edrive.dto.response.ResponseObject;
 import com.swp391.edrive.dto.response.VehicleResponse;
-
 import com.swp391.edrive.enums.VehicleStatus;
-
-
 import com.swp391.edrive.service.VehicleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,12 +20,12 @@ public class VehicleController {
     private final VehicleService vehicleService; // <-- dùng interface
 
     public VehicleController(VehicleService vehicleService) {
-        this.vehicleService = vehicleService;
+        this.vehicleService = vehicleService;   
     }
 
     @Operation(summary = "Lấy danh sách tất cả xe")
     @GetMapping
-    public ResponseEntity<ResponseObject<List<VehicleResponse>>> getAllVehicles(
+    public ResponseEntity<ResponseObject> getAllVehicles(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
@@ -36,7 +33,6 @@ public class VehicleController {
         return ResponseEntity.ok(new ResponseObject(200, "Vehicle list retrieved successfully", vehicles));
     }
 
-    /** === 1) findVehicleById === */
     @Operation(summary = "Tìm xe theo ID")
     @GetMapping("/{id}")
     public ResponseEntity<ResponseObject> findById(@PathVariable Long id) {
@@ -49,7 +45,6 @@ public class VehicleController {
         }
     }
 
-    /** === 2) findVehicleByStatus === */
     @Operation(summary = "Tìm xe theo trạng thái")
     @GetMapping("/search/status")
     public ResponseEntity<ResponseObject> findByStatus(
@@ -69,7 +64,6 @@ public class VehicleController {
         return ResponseEntity.ok(new ResponseObject(200, "Vehicles by status retrieved", vehicles));
     }
 
-    /** === 3) findVehicleByColor === */
     @Operation(summary = "Tìm xe theo màu")
     @GetMapping("/search/color")
     public ResponseEntity<ResponseObject> findByColor(
@@ -86,5 +80,48 @@ public class VehicleController {
         return ResponseEntity.ok(new ResponseObject(200, "Vehicles by color retrieved", vehicles));
     }
 
+    @Operation(summary = "Tìm xe theo năm sản xuất (exact hoặc range)")
+    @GetMapping("/search/year")
+    public ResponseEntity<ResponseObject> findByYear(
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer fromYear,
+            @RequestParam(required = false) Integer toYear,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
 
+        try {
+            List<VehicleResponse> vehicles;
+
+            if (year != null) {
+                vehicles = vehicleService.findVehicleByManufactureYear(year, page, size);
+            } else if (fromYear != null && toYear != null) {
+                vehicles = vehicleService.findVehicleByManufactureYearRange(fromYear, toYear, page, size);
+            } else {
+                return ResponseEntity.badRequest()
+                        .body(new ResponseObject(400, "Provide either 'year' or both 'fromYear' & 'toYear'", null));
+            }
+
+            return ResponseEntity.ok(new ResponseObject(200, "Vehicles by year retrieved", vehicles));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ResponseObject(400, ex.getMessage(), null));
+        }
+    }
+
+    @Operation(summary = "Tìm xe theo giá (min/max hoặc khoảng)")
+    @GetMapping("/search/price")
+    public ResponseEntity<ResponseObject> findByPrice(
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        try {
+            List<VehicleResponse> vehicles = vehicleService.findVehicleByPrice(minPrice, maxPrice, page, size);
+            return ResponseEntity.ok(new ResponseObject(200, "Vehicles by price retrieved", vehicles));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ResponseObject(400, ex.getMessage(), null));
+        }
+    }
 }

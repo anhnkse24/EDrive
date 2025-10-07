@@ -2,10 +2,15 @@ package com.swp391.edrive.entity;
 
 import com.swp391.edrive.enums.TestDriveStatus;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "test_drives")
+@Getter
+@Setter
 public class TestDrive {
 
     @Id
@@ -23,6 +28,9 @@ public class TestDrive {
     @ManyToOne
     @JoinColumn(name = "dealer_id")
     private Dealer dealer;
+
+    @Column(length = 500)
+    private String cancelReason;
 
     private LocalDateTime scheduleDatetime;
 
