@@ -32,11 +32,19 @@ public class TestDriveBookingRequest {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate date;
 
-    @NotNull @Min(0) @Max(23) private Integer hour;
+    @NotNull
+    @Min(0)
+    @Max(23)
+    private Integer hour;
 
     // CHỈ CHO PHÉP 0 hoặc 30 cho slot 30'
-    @NotNull @Min(0) @Max(59) private Integer minute;
+    @NotNull
+    @Min(0)
+    @Max(59)
+    private Integer minute;
 
-    @Size(max = 500) private String note;
+    @Size(max = 500)
+    private String note;
+
     @AssertTrue private Boolean agreePolicy;
 }
