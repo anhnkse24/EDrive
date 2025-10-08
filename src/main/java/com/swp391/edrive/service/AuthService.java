@@ -1,10 +1,14 @@
 package com.swp391.edrive.service;
 
+import com.swp391.edrive.dto.request.ChangePasswordRequest;
 import com.swp391.edrive.dto.request.LoginRequest;
+import com.swp391.edrive.dto.request.RegisterRequest;
 import com.swp391.edrive.dto.response.ResponseObject;
+import com.swp391.edrive.dto.response.UserResponse;
 import org.springframework.http.ResponseEntity;
 
 public interface AuthService {
+    UserResponse register(RegisterRequest request);
     /** Đăng nhập: trả access + refresh (string) để Controller set cookie */
     LoginResult login(LoginRequest request);
 
@@ -20,4 +24,5 @@ public interface AuthService {
             return new LoginResult(false, null, null, msg);
         }
     }
+    ResponseEntity<ResponseObject> changePassword(String username, ChangePasswordRequest request);
 }
