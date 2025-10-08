@@ -2,11 +2,14 @@ package com.swp391.edrive.entity;
 
 import com.swp391.edrive.enums.VehicleStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
@@ -16,7 +19,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Vehicle {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long vehicleId;
@@ -24,6 +26,7 @@ public class Vehicle {
     private String modelName;
     private String version;
     private String color;
+
     private Integer batteryCapacityKwh;
     private Integer rangeKm;
     private Integer maxSpeedKmh;
@@ -34,7 +37,14 @@ public class Vehicle {
     private Integer lengthMm;
     private Integer widthMm;
     private Integer heightMm;
-    private Double priceRetail;
+
+    @NotNull
+    @Digits(integer = 12, fraction = 2)
+    @Column(precision = 12, scale = 2)
+    private BigDecimal priceRetail;
+
+    @Column(name = "manufacture_year")
+    private Integer manufactureYear;
 
     @Enumerated(EnumType.STRING)
     private VehicleStatus status;

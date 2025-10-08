@@ -2,10 +2,19 @@ package com.swp391.edrive.entity;
 
 import com.swp391.edrive.enums.TestDriveStatus;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "test_drives")
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class TestDrive {
 
     @Id
@@ -24,8 +33,22 @@ public class TestDrive {
     @JoinColumn(name = "dealer_id")
     private Dealer dealer;
 
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
+
+    @Column(length = 500)
+    private String cancelReason;
+
     private LocalDateTime scheduleDatetime;
 
     @Enumerated(EnumType.STRING)
     private TestDriveStatus status;
+
+    public TestDrive(Customer customer, Dealer dealer, Vehicle vehicle, LocalDateTime scheduleDatetime, TestDriveStatus status) {
+        this.customer = customer;
+        this.dealer = dealer;
+        this.vehicle = vehicle;
+        this.scheduleDatetime = scheduleDatetime;
+        this.status = status;
+    }
 }
