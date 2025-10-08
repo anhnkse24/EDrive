@@ -1,5 +1,6 @@
 package com.swp391.edrive.service;
 
+import com.swp391.edrive.dto.request.VehicleUpsertRequest;
 import com.swp391.edrive.dto.response.VehicleResponse;
 import com.swp391.edrive.entity.Vehicle;
 import com.swp391.edrive.enums.VehicleStatus;
@@ -7,7 +8,6 @@ import com.swp391.edrive.enums.VehicleStatus;
 import java.util.List;
 
 public interface VehicleService {
-    List<Vehicle> getAllVehicles();
 
     List<VehicleResponse> getAllVehicles(int page, int size);
 
@@ -22,4 +22,10 @@ public interface VehicleService {
     List<VehicleResponse> findVehicleByManufactureYearRange(Integer fromYear, Integer toYear, int page, int size);
 
     List<VehicleResponse> findVehicleByPrice(Double minPrice, Double maxPrice, int page, int size);
+
+    VehicleResponse createVehicle(VehicleUpsertRequest req);
+
+    VehicleResponse updateVehicle(Long id, VehicleUpsertRequest req);
+
+    void deleteVehicle(Long id);
 }

@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 
+import java.math.BigDecimal;
+
 @Data
 @AllArgsConstructor
 @Getter
@@ -22,7 +24,7 @@ public class VehicleResponse {
     private Integer lengthMm;
     private Integer widthMm;
     private Integer heightMm;
-    private Double priceRetail;
+    private BigDecimal priceRetail;
     private String status;
     private Integer manufactureYear;
 }

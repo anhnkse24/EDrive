@@ -1,11 +1,13 @@
 package com.swp391.edrive.controller;
 
+import com.swp391.edrive.dto.request.VehicleUpsertRequest;
 import com.swp391.edrive.dto.response.ResponseObject;
 import com.swp391.edrive.dto.response.VehicleResponse;
 import com.swp391.edrive.enums.VehicleStatus;
 import com.swp391.edrive.service.VehicleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +19,7 @@ import java.util.List;
 @Tag(name = "Vehicles", description = "API quản lý danh sách xe")
 public class VehicleController {
 
-    private final VehicleService vehicleService; // <-- dùng interface
+    private final VehicleService vehicleService;
 
     public VehicleController(VehicleService vehicleService) {
         this.vehicleService = vehicleService;   
@@ -123,5 +125,38 @@ public class VehicleController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ResponseObject(400, ex.getMessage(), null));
         }
+    }
+
+    @Operation(summary = "Cập nhật thông tin xe")
+    @PutMapping("/{id}")
+    public ResponseEntity<ResponseObject> update(@PathVariable Long id, @Valid @RequestBody VehicleUpsertRequest req) {
+        try {
+            VehicleResponse updated = vehicleService.updateVehicle(id, req);
+            return ResponseEntity.ok(new ResponseObject(200, "Vehicle updated", updated));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseObject(404, ex.getMessage(), null));
+        }
+    }
+
+    // ====== DELETE ======
+    @Operation(summary = "Xoá xe")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ResponseObject> delete(@PathVariable Long id) {
+        try {
+            vehicleService.deleteVehicle(id);
+            return ResponseEntity.ok(new ResponseObject(200, "Vehicle deleted", null));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseObject(404, ex.getMessage(), null));
+        }
+    }
+
+    @Operation(summary = "Thêm xe")
+    @PostMapping
+    public ResponseEntity<ResponseObject> create(@Valid @RequestBody VehicleUpsertRequest req) {
+        VehicleResponse created = vehicleService.createVehicle(req);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new ResponseObject(201, "Vehicle created", created));
     }
 }
