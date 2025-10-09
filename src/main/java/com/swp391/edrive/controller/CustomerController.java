@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Tag(name = "Customer", description = "API quản lý danh sách khách hàng")
 public class CustomerController {
-    private final CustomerService customerService; // <-- inject interface
+    private final CustomerService customerService;
 
     @Operation(summary = "Thêm khách hàng mới")
     @PostMapping
