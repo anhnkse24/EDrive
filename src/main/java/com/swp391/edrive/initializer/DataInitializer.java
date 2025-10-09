@@ -71,27 +71,41 @@ public class DataInitializer implements CommandLineRunner {
         dealerRepository.save(dealer5);
 
         // =======================
-        // Tạo User
+        // Tạo User (Hãng + mỗi đại lý)
         // =======================
-        User admin = new User();
-        admin.setUsername("admin");
-        admin.setPassword(passwordEncoder.encode("admin123"));
-        admin.setFullName("Admin User");
-        admin.setEmail("admin@edriver.com");
-        admin.setPhone("0909000001");
-        admin.setRole(UserRole.ADMIN);
-        admin.setDealer(dealer1);
-        userRepository.save(admin);
+        createUserIfAbsent("admin", "admin123", "Admin User",
+                "admin@edriver.com", "0909000001", UserRole.ADMIN, null);
+        createUserIfAbsent("evm1", "evm123", "EVM Staff 1",
+                "evm1@edriver.com", "0909000003", UserRole.EVM_STAFF, null);
 
-        User staff = new User();
-        staff.setUsername("staff1");
-        staff.setPassword(passwordEncoder.encode("staff123"));
-        staff.setFullName("Staff One");
-        staff.setEmail("staff1@edriver.com");
-        staff.setPhone("0909000002");
-        staff.setRole(UserRole.DEALER_STAFF);
-        staff.setDealer(dealer1);
-        userRepository.save(staff);
+        createUserIfAbsent("manager_hcm", "manager123", "Dealer Manager HCM",
+                "manager_hcm@edriver.com", "0909111222", UserRole.DEALER_MANAGER, dealer1);
+        createUserIfAbsent("staff_hcm1", "staff123", "Dealer Staff HCM 1",
+                "staff_hcm1@edriver.com", "0909555666", UserRole.DEALER_STAFF, dealer1);
+        createUserIfAbsent("staff_hcm2", "staff123", "Dealer Staff HCM 2",
+                "staff_hcm2@edriver.com", "0909555777", UserRole.DEALER_STAFF, dealer1);
+
+        createUserIfAbsent("manager_hn", "manager123", "Dealer Manager HN",
+                "manager_hn@edriver.com", "0909222333", UserRole.DEALER_MANAGER, dealer2);
+        createUserIfAbsent("staff_hn1", "staff123", "Dealer Staff HN 1",
+                "staff_hn1@edriver.com", "0909777888", UserRole.DEALER_STAFF, dealer2);
+        createUserIfAbsent("staff_hn2", "staff123", "Dealer Staff HN 2",
+                "staff_hn2@edriver.com", "0909777999", UserRole.DEALER_STAFF, dealer2);
+
+        createUserIfAbsent("manager_dn", "manager123", "Dealer Manager DN",
+                "manager_dn@edriver.com", "0909333444", UserRole.DEALER_MANAGER, dealer3);
+        createUserIfAbsent("staff_dn1", "staff123", "Dealer Staff DN 1",
+                "staff_dn1@edriver.com", "0909666111", UserRole.DEALER_STAFF, dealer3);
+
+        createUserIfAbsent("manager_ct", "manager123", "Dealer Manager CT",
+                "manager_ct@edriver.com", "0909444555", UserRole.DEALER_MANAGER, dealer4);
+        createUserIfAbsent("staff_ct1", "staff123", "Dealer Staff CT 1",
+                "staff_ct1@edriver.com", "0909666222", UserRole.DEALER_STAFF, dealer4);
+
+        createUserIfAbsent("manager_hp", "manager123", "Dealer Manager HP",
+                "manager_hp@edriver.com", "0909555660", UserRole.DEALER_MANAGER, dealer5);
+        createUserIfAbsent("staff_hp1", "staff123", "Dealer Staff HP 1",
+                "staff_hp1@edriver.com", "0909666333", UserRole.DEALER_STAFF, dealer5);
 
         // =======================
         // Tạo Vehicles (rút gọn)
@@ -411,5 +425,19 @@ public class DataInitializer implements CommandLineRunner {
         testDriveRepository.save(tdPast4);
 
         System.out.println("✅ Data initialization completed!");
+    }
+    private void createUserIfAbsent(String username, String rawPass, String fullName,
+                                    String email, String phone, UserRole role, Dealer dealer) {
+        if (userRepository.findByUsername(username).isPresent()) return;
+
+        User u = new User();
+        u.setUsername(username);
+        u.setPassword(passwordEncoder.encode(rawPass));
+        u.setFullName(fullName);
+        u.setEmail(email);
+        u.setPhone(phone);
+        u.setRole(role);
+        u.setDealer(dealer); // null cho ADMIN/EVM_STAFF; != null cho DEALER_*
+        userRepository.save(u);
     }
 }

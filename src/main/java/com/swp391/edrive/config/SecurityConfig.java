@@ -29,7 +29,6 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Cho Swagger public
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
@@ -38,7 +37,7 @@ public class SecurityConfig {
                         ).permitAll()
                         // Auth endpoints public
                         .requestMatchers("/api/auth/**").permitAll()
-                        // Tạm thời cho GET public với vehicle nếu bạn muốn (tuỳ)
+                        // Tạm thời cho GET public với vehicle
                         .requestMatchers(HttpMethod.GET, "/api/vehicles/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/test-drive/available").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/test-drive/book").permitAll()
