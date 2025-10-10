@@ -1,5 +1,6 @@
 package com.swp391.edrive.config;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,18 +32,40 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // tắt CSRF
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // bật CORS
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/**").permitAll() // Cho phép tất cả
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
+                                "/v3/api-docs",
+                                "/api-docs/**"
+                        ).permitAll()
+                        .requestMatchers(
+                                "/api/auth/forgot-password",
+                                "/api/auth/reset-password",
+                                "/api/auth/login",
+                                "/api/auth/register",
+                                "/api/auth/refresh"
+
+                        ).permitAll()
+                        .requestMatchers("/api/auth/change-password").authenticated()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .anyRequest().authenticated()
                 )
-                .formLogin(form -> form.disable()) // không dùng form login HTML
+                .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(
+                        (request, response, authException) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED)
+                ));
+
 
         return http.build();
     }
+
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration)

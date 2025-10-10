@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -101,17 +102,9 @@ public class AuthController {
 
     @Operation(summary = "Đổi mật khẩu người dùng hiện tại")
     @PostMapping("/change-password")
-    public ResponseEntity<ResponseObject> changePassword(
-            @Valid @RequestBody ChangePasswordRequest request,
-            Authentication authentication
-    ) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(401)
-                    .body(new ResponseObject(401, "Unauthorized", null));
-        }
-
-        String username = authentication.getName(); // Spring lấy từ token
-        return authService.changePassword(username, request);
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ResponseObject> changePassword(@RequestBody ChangePasswordRequest request) {
+        return authService.changePassword(request);
     }
     @Operation(summary = "Gửi email reset mật khẩu khi quên mật khẩu")
     @PostMapping("/forgot-password")

@@ -6,9 +6,7 @@ import com.swp391.edrive.dto.request.LoginRequest;
 import com.swp391.edrive.dto.request.RegisterRequest;
 import com.swp391.edrive.dto.response.ResponseObject;
 import com.swp391.edrive.dto.response.UserResponse;
-import com.swp391.edrive.entity.Dealer;
-import com.swp391.edrive.entity.RefreshToken;
-import com.swp391.edrive.entity.User;
+import com.swp391.edrive.entity.*;
 import com.swp391.edrive.enums.UserRole;
 import com.swp391.edrive.repository.DealerRepository;
 import com.swp391.edrive.repository.TokenRepository;
@@ -20,12 +18,12 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.swp391.edrive.entity.PasswordResetToken;
 import com.swp391.edrive.repository.PasswordResetTokenRepository;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.SimpleMailMessage;
@@ -113,10 +111,28 @@ public class AuthServiceImpl implements AuthService {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
             );
+
+            User user = userRepository.findByUsername(request.getUsername())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            userRepository.saveAndFlush(user);
+
+            // 🔹 Thu hồi tất cả token cũ trước khi cấp mới
+            revokeAllUserTokens(user);
+
+            // 🔹 Sinh access token
             String accessToken = tokenProvider.generateToken(authentication);
 
-            User u = userRepository.findByUsername(request.getUsername()).orElseThrow();
-            RefreshToken refreshToken = refreshTokenServiceImpl.createRefreshToken(u);
+            // 🔹 Lưu access token vào DB
+            Token savedToken = new Token();
+            savedToken.setToken(accessToken);
+            savedToken.setUser(user);
+            savedToken.setExpired(false);
+            savedToken.setRevoked(false);
+            tokenRepository.save(savedToken);
+
+            // 🔹 Sinh refresh token như cũ
+            RefreshToken refreshToken = refreshTokenServiceImpl.createRefreshToken(user);
 
             return LoginResult.success(accessToken, refreshToken.getToken());
         } catch (BadCredentialsException e) {
@@ -146,42 +162,56 @@ public class AuthServiceImpl implements AuthService {
 
     @Transactional
     @Override
-    public ResponseEntity<ResponseObject> changePassword(String username, ChangePasswordRequest request) {
+    public ResponseEntity<ResponseObject> changePassword(ChangePasswordRequest request) {
         try {
+            // 🔐 Lấy username từ SecurityContext (JWT)
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || authentication.getName() == null) {
+                return ResponseEntity.status(401)
+                        .body(new ResponseObject(401, "Unauthorized", null));
+            }
+
+            String username = authentication.getName();
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
+            // ✅ Kiểm tra mật khẩu cũ
             if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
                 return ResponseEntity.badRequest()
                         .body(new ResponseObject(400, "Old password is incorrect", null));
             }
 
+            // ✅ Không cho trùng mật khẩu
             if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
                 return ResponseEntity.badRequest()
                         .body(new ResponseObject(400, "New password cannot be the same as old password", null));
             }
 
+            // ✅ Kiểm tra xác nhận mật khẩu
             if (!request.getNewPassword().equals(request.getConfirmPassword())) {
                 return ResponseEntity.badRequest()
                         .body(new ResponseObject(400, "Confirm password does not match new password", null));
             }
 
-            String encodedNewPassword = passwordEncoder.encode(request.getNewPassword());
-            user.setPassword(encodedNewPassword);
-            userRepository.saveAndFlush(user); // flush để chắc chắn update DB ngay
+            // ✅ Mã hoá và lưu
+            user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+            userRepository.saveAndFlush(user);
 
+            // ✅ Thu hồi token cũ
             revokeAllUserTokens(user);
 
             return ResponseEntity.ok(
-                    new ResponseObject(200, "Password changed successfully, please login again", null)
+                    new ResponseObject(200,
+                            "Password changed successfully. Please login again with your new password.",
+                            Map.of("needReLogin", true))
             );
 
         } catch (Exception e) {
+            e.printStackTrace(); // in log cho dễ theo dõi
             return ResponseEntity.internalServerError()
                     .body(new ResponseObject(500, "Error changing password: " + e.getMessage(), null));
         }
     }
-
     private void revokeAllUserTokens(User user) {
         var validTokens = tokenRepository.findAllByUser_UserIdAndExpiredFalseAndRevokedFalse(user.getUserId());
         if (validTokens == null || validTokens.isEmpty()) return;
@@ -238,7 +268,7 @@ public class AuthServiceImpl implements AuthService {
                     new ResponseObject(
                             200,
                             "Đã xử lý yêu cầu reset password cho " + email,
-                            token
+                            resetLink
                     )
             );
 

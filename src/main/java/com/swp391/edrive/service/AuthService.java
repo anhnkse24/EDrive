@@ -24,7 +24,7 @@ public interface AuthService {
             return new LoginResult(false, null, null, msg);
         }
     }
-    ResponseEntity<ResponseObject> changePassword(String username, ChangePasswordRequest request);
+    ResponseEntity<ResponseObject> changePassword(ChangePasswordRequest request);
     ResponseEntity<ResponseObject> requestPasswordReset(String email);
     ResponseEntity<ResponseObject> resetPassword(String token, String newPassword);
 }
