@@ -25,4 +25,6 @@ public interface AuthService {
         }
     }
     ResponseEntity<ResponseObject> changePassword(String username, ChangePasswordRequest request);
+    ResponseEntity<ResponseObject> requestPasswordReset(String email);
+    ResponseEntity<ResponseObject> resetPassword(String token, String newPassword);
 }

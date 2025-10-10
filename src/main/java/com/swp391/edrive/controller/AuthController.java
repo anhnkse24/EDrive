@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +24,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @Tag(name = "Auth", description = "API quản lý người dùng")
 public class AuthController {
     private final AuthServiceImpl authService;
@@ -112,5 +112,19 @@ public class AuthController {
 
         String username = authentication.getName(); // Spring lấy từ token
         return authService.changePassword(username, request);
+    }
+    @Operation(summary = "Gửi email reset mật khẩu khi quên mật khẩu")
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ResponseObject> requestPasswordReset(@RequestParam String email) {
+        return authService.requestPasswordReset(email);
+    }
+
+    @Operation(summary = "Đặt lại mật khẩu qua token reset")
+    @PostMapping("/reset-password")
+    public ResponseEntity<ResponseObject> resetPassword(
+            @RequestParam String token,
+            @RequestParam String newPassword
+    ) {
+        return authService.resetPassword(token, newPassword);
     }
 }

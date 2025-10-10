@@ -22,15 +22,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain chain)
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
         String path = request.getServletPath();
-        if (path.contains("/api/auth/login") ||
-                path.contains("/api/auth/register") ||
-                path.contains("/api/auth/refresh")) {
+
+        if (path.startsWith("/api/auth/")) {
             chain.doFilter(request, response);
             return;
         }
@@ -56,4 +53,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         chain.doFilter(request, response);
     }
+
 }

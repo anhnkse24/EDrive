@@ -25,6 +25,12 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.swp391.edrive.entity.PasswordResetToken;
+import com.swp391.edrive.repository.PasswordResetTokenRepository;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.SimpleMailMessage;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 import java.util.Map;
 
@@ -39,6 +45,9 @@ public class AuthServiceImpl implements AuthService {
     private final UserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
     private final TokenRepository tokenRepository;
+
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final JavaMailSender mailSender;
 
     @Override
     public UserResponse register(RegisterRequest request) {
@@ -139,37 +148,30 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public ResponseEntity<ResponseObject> changePassword(String username, ChangePasswordRequest request) {
         try {
-            // 1️⃣ Tìm user trong DB
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            // 2️⃣ Kiểm tra mật khẩu cũ
             if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
                 return ResponseEntity.badRequest()
                         .body(new ResponseObject(400, "Old password is incorrect", null));
             }
 
-            // 3️⃣ Kiểm tra trùng mật khẩu cũ
             if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
                 return ResponseEntity.badRequest()
                         .body(new ResponseObject(400, "New password cannot be the same as old password", null));
             }
 
-            // 4️⃣ Kiểm tra confirm password
             if (!request.getNewPassword().equals(request.getConfirmPassword())) {
                 return ResponseEntity.badRequest()
                         .body(new ResponseObject(400, "Confirm password does not match new password", null));
             }
 
-            // 5️⃣ Mã hóa và cập nhật mật khẩu
             String encodedNewPassword = passwordEncoder.encode(request.getNewPassword());
             user.setPassword(encodedNewPassword);
             userRepository.saveAndFlush(user); // flush để chắc chắn update DB ngay
 
-            // 6️⃣ Thu hồi token cũ (nếu bạn đã có TokenRepository)
             revokeAllUserTokens(user);
 
-            // 7️⃣ Trả về kết quả
             return ResponseEntity.ok(
                     new ResponseObject(200, "Password changed successfully, please login again", null)
             );
@@ -190,4 +192,87 @@ public class AuthServiceImpl implements AuthService {
         });
         tokenRepository.saveAll(validTokens);
     }
+    @Override
+    public ResponseEntity<ResponseObject> requestPasswordReset(String email) {
+        try {
+            // 🔍 1. Tìm user theo email
+            var userOpt = userRepository.findByEmail(email);
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(new ResponseObject(400, "Email không tồn tại trong hệ thống", null));
+            }
+
+            User user = userOpt.get();
+
+            // 🔑 2. Tạo token reset (hết hạn sau 15 phút)
+            String token = UUID.randomUUID().toString();
+            LocalDateTime expiry = LocalDateTime.now().plusMinutes(15);
+
+            PasswordResetToken resetToken = PasswordResetToken.builder()
+                    .token(token)
+                    .user(user)
+                    .expiryDate(expiry)
+                    .build();
+            passwordResetTokenRepository.save(resetToken);
+
+            // 🔗 3. Tạo link reset mật khẩu
+            String resetLink = "http://localhost:8080/api/auth/reset-password?token=" + token;
+
+            // 📧 4. Soạn và gửi email
+            try {
+                SimpleMailMessage mail = new SimpleMailMessage();
+                mail.setTo(user.getEmail());
+                mail.setSubject("Password Reset Request");
+                mail.setText("Nhấp vào liên kết sau để đặt lại mật khẩu: " + resetLink
+                        + "\nLưu ý: Link sẽ hết hạn sau 15 phút.");
+                mailSender.send(mail);
+
+                System.out.println("✅ Đã gửi email reset đến: " + user.getEmail());
+            } catch (Exception e) {
+                // ⚠️ Nếu không gửi được mail thật, chỉ log lỗi (để test vẫn hoạt động)
+                System.err.println("⚠️ Gửi email thất bại: " + e.getMessage());
+            }
+
+            // ✅ 5. Trả về token hoặc link reset trong data (để frontend test dễ)
+            return ResponseEntity.ok(
+                    new ResponseObject(
+                            200,
+                            "Đã xử lý yêu cầu reset password cho " + email,
+                            token
+                    )
+            );
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError()
+                    .body(new ResponseObject(500, "Lỗi khi xử lý yêu cầu reset password", null));
+        }
+    }
+    @Override
+    public ResponseEntity<ResponseObject> resetPassword(String token, String newPassword) {
+        var tokenOpt = passwordResetTokenRepository.findByToken(token);
+        if (tokenOpt.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(new ResponseObject<>(400, "Token không hợp lệ", null));
+        }
+
+        PasswordResetToken resetToken = tokenOpt.get();
+
+        if (resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            return ResponseEntity.badRequest()
+                    .body(new ResponseObject<>(400, "Token đã hết hạn", null));
+        }
+
+        User user = resetToken.getUser();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        passwordResetTokenRepository.delete(resetToken);
+        revokeAllUserTokens(user);
+
+        return ResponseEntity.ok(
+                new ResponseObject<>(200, "Đặt lại mật khẩu thành công. Vui lòng đăng nhập lại.", null)
+        );
+    }
+
 }
