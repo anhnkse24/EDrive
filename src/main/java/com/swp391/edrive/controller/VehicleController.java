@@ -157,6 +157,6 @@ public class VehicleController {
     public ResponseEntity<ResponseObject> create(@Valid @RequestBody VehicleUpsertRequest req) {
         VehicleResponse created = vehicleService.createVehicle(req);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new ResponseObject(201, "Vehicle created", created));
+                .body(new ResponseObject(200, "Vehicle created", created));
     }
 }
