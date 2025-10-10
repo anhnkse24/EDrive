@@ -437,7 +437,7 @@ public class DataInitializer implements CommandLineRunner {
         u.setEmail(email);
         u.setPhone(phone);
         u.setRole(role);
-        u.setDealer(dealer); // null cho ADMIN/EVM_STAFF; != null cho DEALER_*
+        u.setDealer(dealer);
         userRepository.save(u);
     }
 }
