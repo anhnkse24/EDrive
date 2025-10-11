@@ -64,7 +64,6 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/api-docs/**").permitAll()
                         // Auth endpoints public
                         .requestMatchers("/api/auth/**").permitAll()
-                        // Public GET mẫu của bạn
                         .requestMatchers(HttpMethod.GET, "/api/vehicles/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/test-drive/available").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/test-drive/book").permitAll()
