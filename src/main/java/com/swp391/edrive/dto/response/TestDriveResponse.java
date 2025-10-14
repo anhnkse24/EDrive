@@ -16,7 +16,8 @@ public class TestDriveResponse {
     private Long id;
     private Long customerId;
     private Long dealerId;
-    private Long vehicleId;
-    private LocalDateTime scheduleDatetime;
+    private Long versionId;
+    private Long versionColorId; 
+    private LocalDateTime scheduledAt;
     private TestDriveStatus status;
 }

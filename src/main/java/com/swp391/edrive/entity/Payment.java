@@ -33,6 +33,13 @@ public class Payment {
     @Column(name = "method", length = 20, nullable = false)
     private PaymentMethod method = PaymentMethod.CASH;
 
+    @ManyToOne @JoinColumn(name = "dealer_debt_id")
+    private DealerDebt dealerDebt;
+
+    // nếu có dùng nợ khách
+    @ManyToOne @JoinColumn(name = "customer_debt_id")
+    private CustomerDebt customerDebt;
+
     @Column(length = 255)
     private String note;
 }

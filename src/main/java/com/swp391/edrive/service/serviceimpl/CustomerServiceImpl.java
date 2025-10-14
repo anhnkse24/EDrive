@@ -22,7 +22,7 @@ public class CustomerServiceImpl implements CustomerService {
         Customer c = new Customer();
         c.setFullName(req.getFullName());
         c.setDob(req.getDob());
-        c.setGender(req.getGender());
+        c.setGender(req.getGender());     // enum
         c.setEmail(req.getEmail());
         c.setPhone(req.getPhone());
         c.setAddress(req.getAddress());
@@ -38,7 +38,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         c.setFullName(req.getFullName());
         c.setDob(req.getDob());
-        c.setGender(req.getGender());
+        c.setGender(req.getGender());     // enum
         c.setEmail(req.getEmail());
         c.setPhone(req.getPhone());
         c.setAddress(req.getAddress());
@@ -46,6 +46,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         return toResponse(customerRepository.save(c));
     }
+
     @Override
     @Transactional
     public void deleteCustomer(Long customerId) {
@@ -76,7 +77,7 @@ public class CustomerServiceImpl implements CustomerService {
                 .customerId(c.getCustomerId())
                 .fullName(c.getFullName())
                 .dob(c.getDob())
-                .gender(c.getGender())
+                .gender(c.getGender())     // enum
                 .email(c.getEmail())
                 .phone(c.getPhone())
                 .address(c.getAddress())

@@ -10,41 +10,16 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class TestDriveBookingRequest {
-    @NotBlank
-    @Size(max = 100) private String fullName;
+    private Long dealerId;
+    private Long versionId;
+    private Long versionColorId;
 
-    @NotBlank
-    @Pattern(regexp = "^(0[0-9]{9})$") private String phone;
-
-    @NotBlank
-    @Email
-    @Size(max = 100) private String email;
-
-    @NotBlank
-    @Pattern(regexp = "^[0-9]{9,12}$")
-    private String idCardNo;
-
-    @NotNull private Long dealerId;
-    @NotNull private Long vehicleId;
-
-    // ÉP ĐỊNH DẠNG yyyy-MM-dd
-    @NotNull
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate date;
+    private int hour;
+    private int minute;
 
-    @NotNull
-    @Min(0)
-    @Max(23)
-    private Integer hour;
-
-    // CHỈ CHO PHÉP 0 hoặc 30 cho slot 30'
-    @NotNull
-    @Min(0)
-    @Max(59)
-    private Integer minute;
-
-    @Size(max = 500)
-    private String note;
-
-    @AssertTrue private Boolean agreePolicy;
+    private String fullName;
+    private String phone;
+    private String email;
+    private String idCardNo;
 }

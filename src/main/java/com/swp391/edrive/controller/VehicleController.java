@@ -37,7 +37,7 @@ public class VehicleController {
     }
 
     @Operation(summary = "Tìm xe theo ID")
-    @GetMapping("/{id}")
+    @GetMapping("/search/status")
     public ResponseEntity<ResponseObject> findById(@PathVariable Long id) {
         try {
             VehicleVersionResponse vehicle = vehicleService.findVehicleById(id);
@@ -68,7 +68,7 @@ public class VehicleController {
     }
 
     @Operation(summary = "Tìm xe theo màu")
-    @GetMapping
+    @GetMapping("/search/color")
     public ResponseEntity<ResponseObject> findByColor(
             @RequestParam String color,
             @RequestParam(defaultValue = "0") int page,
@@ -84,7 +84,7 @@ public class VehicleController {
     }
 
     @Operation(summary = "Tìm xe theo năm sản xuất (exact hoặc range)")
-    @GetMapping
+    @GetMapping("/search/year")
     public ResponseEntity<ResponseObject> findByYear(
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) Integer fromYear,
@@ -112,7 +112,7 @@ public class VehicleController {
     }
 
     @Operation(summary = "Tìm xe theo giá (min/max hoặc khoảng)")
-    @GetMapping
+    @GetMapping("/search/price")
     public ResponseEntity<ResponseObject> findByPrice(
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
