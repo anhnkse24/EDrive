@@ -9,22 +9,24 @@ import java.math.BigDecimal;
 @Data
 @AllArgsConstructor
 @Getter
-public class VehicleResponse {
-    private Long vehicleId;
+public class VehicleVersionResponse {
+    private Long versionId;
+    private Long modelId;
     private String modelName;
-    private String version;
-    private String color;
+    private String versionName;
+
     private Integer batteryCapacityKwh;
     private Integer rangeKm;
     private Integer maxSpeedKmh;
-    private Float chargingTimeHours;
+    private Float   chargingTimeHours;
     private Integer seatingCapacity;
     private Integer motorPowerKw;
     private Integer weightKg;
     private Integer lengthMm;
     private Integer widthMm;
     private Integer heightMm;
-    private BigDecimal priceRetail;
+
+    private BigDecimal basePrice;
     private String status;
     private Integer manufactureYear;
 }

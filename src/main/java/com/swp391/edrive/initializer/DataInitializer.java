@@ -1,6 +1,7 @@
 package com.swp391.edrive.initializer;
 
 import com.swp391.edrive.entity.*;
+import com.swp391.edrive.enums.Gender;
 import com.swp391.edrive.enums.TestDriveStatus;
 import com.swp391.edrive.enums.UserRole;
 import com.swp391.edrive.enums.VehicleStatus;
@@ -24,7 +25,7 @@ public class DataInitializer implements CommandLineRunner {
 
     private final DealerRepository dealerRepository;
     private final UserRepository userRepository;
-    private final VehicleRepository vehicleRepository;
+    private final VehicleModelRepository vehicleModelRepository;
     private final PasswordEncoder passwordEncoder;
     private final CustomerRepository customerRepository;
     private final TestDriveRepository testDriveRepository;
@@ -33,7 +34,7 @@ public class DataInitializer implements CommandLineRunner {
     @Transactional
     public void run(String... args) throws Exception {
         // =======================
-        // Tạo Đại Lý
+        // Dealers
         // =======================
         Dealer dealer1 = new Dealer();
         dealer1.setDealerName("Edriver Center");
@@ -71,7 +72,7 @@ public class DataInitializer implements CommandLineRunner {
         dealerRepository.save(dealer5);
 
         // =======================
-        // Tạo User (Hãng + mỗi đại lý)
+        // Users (EVM + Dealers)
         // =======================
         createUserIfAbsent("admin", "admin123", "Admin User",
                 "admin@edriver.com", "0909000001", UserRole.ADMIN, null);
@@ -108,243 +109,155 @@ public class DataInitializer implements CommandLineRunner {
                 "staff_hp1@edriver.com", "0909666333", UserRole.DEALER_STAFF, dealer5);
 
         // =======================
-        // Tạo Vehicles (rút gọn)
+        // Vehicle Models / Versions / Colors
         // =======================
-        Vehicle v1 = new Vehicle();
-        v1.setModelName("E-Car A");
-        v1.setVersion("Standard");
-        v1.setColor("Red");
-        v1.setBatteryCapacityKwh(70);
-        v1.setRangeKm(380);
-        v1.setMaxSpeedKmh(145);
-        v1.setChargingTimeHours(1.5f);
-        v1.setSeatingCapacity(5);
-        v1.setMotorPowerKw(140);
-        v1.setWeightKg(1750);
-        v1.setLengthMm(4450);
-        v1.setWidthMm(1800);
-        v1.setHeightMm(1580);
-        v1.setPriceRetail(BigDecimal.valueOf(1_150_000_000.00));
-        v1.setStatus(VehicleStatus.DISCONTINUED);
-        v1.setManufactureYear(2022);
-        vehicleRepository.save(v1);
 
-        Vehicle v2 = new Vehicle();
-        v2.setModelName("E-Car A");
-        v2.setVersion("Premium");
-        v2.setColor("Blue");
-        v2.setBatteryCapacityKwh(85);
-        v2.setRangeKm(450);
-        v2.setMaxSpeedKmh(160);
-        v2.setChargingTimeHours(1.8f);
-        v2.setSeatingCapacity(5);
-        v2.setMotorPowerKw(160);
-        v2.setWeightKg(1850);
-        v2.setLengthMm(4500);
-        v2.setWidthMm(1820);
-        v2.setHeightMm(1600);
-        v2.setPriceRetail(BigDecimal.valueOf(1_350_000_000.00));
-        v2.setStatus(VehicleStatus.DISCONTINUED);
-        v2.setManufactureYear(2023);
-        vehicleRepository.save(v2);
+        // ---- E-Car A
+        VehicleModel mA = new VehicleModel();
+        mA.setModelName("E-Car A");
+        mA.setDescription("Dòng xe A");
+        mA.setImageUrl(null);
+        mA.setVersions(new java.util.ArrayList<>());
 
-        Vehicle v3 = new Vehicle();
-        v3.setModelName("E-Car B");
-        v3.setVersion("Sport");
-        v3.setColor("White");
-        v3.setBatteryCapacityKwh(90);
-        v3.setRangeKm(480);
-        v3.setMaxSpeedKmh(175);
-        v3.setChargingTimeHours(2.0f);
-        v3.setSeatingCapacity(5);
-        v3.setMotorPowerKw(190);
-        v3.setWeightKg(1900);
-        v3.setLengthMm(4600);
-        v3.setWidthMm(1850);
-        v3.setHeightMm(1620);
-        v3.setPriceRetail(BigDecimal.valueOf(1_500_000_000.00));
-        v3.setStatus(VehicleStatus.AVAILABLE);
-        v3.setManufactureYear(2024);
-        vehicleRepository.save(v3);
+        VehicleVersion aStd = newVersion(mA, "Standard",
+                new BigDecimal("1150000000"),
+                70, 380, 145, 1.5f, 5, 140,
+                1750, 4450, 1800, 1580,
+                2022, VehicleStatus.DISCONTINUED);
+        addColor(aStd, "Red", "RED", null, null, null);
+        addColor(aStd, "White", "WHT", new BigDecimal("10000000"), null, null);
 
-        Vehicle v4 = new Vehicle();
-        v4.setModelName("E-Car B");
-        v4.setVersion("Luxury");
-        v4.setColor("Black");
-        v4.setBatteryCapacityKwh(100);
-        v4.setRangeKm(520);
-        v4.setMaxSpeedKmh(180);
-        v4.setChargingTimeHours(2.2f);
-        v4.setSeatingCapacity(5);
-        v4.setMotorPowerKw(210);
-        v4.setWeightKg(1950);
-        v4.setLengthMm(4650);
-        v4.setWidthMm(1870);
-        v4.setHeightMm(1650);
-        v4.setPriceRetail(BigDecimal.valueOf(1_650_000_000.00));
-        v4.setStatus(VehicleStatus.AVAILABLE);
-        v4.setManufactureYear(2025);
-        vehicleRepository.save(v4);
+        VehicleVersion aPre = newVersion(mA, "Premium",
+                new BigDecimal("1350000000"),
+                85, 450, 160, 1.8f, 5, 160,
+                1850, 4500, 1820, 1600,
+                2023, VehicleStatus.DISCONTINUED);
+        addColor(aPre, "Blue", "BLU", null, null, null);
+        addColor(aPre, "Pearl White", "WHT-P", null, new BigDecimal("1370000000"), null);
 
-        Vehicle v5 = new Vehicle();
-        v5.setModelName("E-Car C");
-        v5.setVersion("Standard");
-        v5.setColor("Silver");
-        v5.setBatteryCapacityKwh(60);
-        v5.setRangeKm(340);
-        v5.setMaxSpeedKmh(135);
-        v5.setChargingTimeHours(1.0f);
-        v5.setSeatingCapacity(5);
-        v5.setMotorPowerKw(120);
-        v5.setWeightKg(1650);
-        v5.setLengthMm(4300);
-        v5.setWidthMm(1760);
-        v5.setHeightMm(1550);
-        v5.setPriceRetail(BigDecimal.valueOf(950_000_000.00));
-        v5.setStatus(VehicleStatus.AVAILABLE);
-        v5.setManufactureYear(2023);
-        vehicleRepository.save(v5);
+        vehicleModelRepository.save(mA); // cascade
 
-        Vehicle v6 = new Vehicle();
-        v6.setModelName("E-Car C");
-        v6.setVersion("Plus");
-        v6.setColor("Green");
-        v6.setBatteryCapacityKwh(75);
-        v6.setRangeKm(400);
-        v6.setMaxSpeedKmh(150);
-        v6.setChargingTimeHours(1.5f);
-        v6.setSeatingCapacity(5);
-        v6.setMotorPowerKw(150);
-        v6.setWeightKg(1750);
-        v6.setLengthMm(4400);
-        v6.setWidthMm(1780);
-        v6.setHeightMm(1580);
-        v6.setPriceRetail(BigDecimal.valueOf(1_100_000_000.00));
-        v6.setStatus(VehicleStatus.AVAILABLE);
-        v6.setManufactureYear(2024);
-        vehicleRepository.save(v6);
+        // ---- E-Car B
+        VehicleModel mB = new VehicleModel();
+        mB.setModelName("E-Car B");
+        mB.setDescription("Dòng xe B");
+        mB.setVersions(new java.util.ArrayList<>());
 
-        Vehicle v7 = new Vehicle();
-        v7.setModelName("E-Car D");
-        v7.setVersion("Standard");
-        v7.setColor("Gray");
-        v7.setBatteryCapacityKwh(85);
-        v7.setRangeKm(460);
-        v7.setMaxSpeedKmh(160);
-        v7.setChargingTimeHours(1.8f);
-        v7.setSeatingCapacity(7);
-        v7.setMotorPowerKw(180);
-        v7.setWeightKg(2000);
-        v7.setLengthMm(4700);
-        v7.setWidthMm(1880);
-        v7.setHeightMm(1680);
-        v7.setPriceRetail(BigDecimal.valueOf(1_400_000_000.00));
-        v7.setStatus(VehicleStatus.AVAILABLE);
-        v7.setManufactureYear(2022);
-        vehicleRepository.save(v7);
+        VehicleVersion bSport = newVersion(mB, "Sport",
+                new BigDecimal("1500000000"),
+                90, 480, 175, 2.0f, 5, 190,
+                1900, 4600, 1850, 1620,
+                2024, VehicleStatus.AVAILABLE);
+        addColor(bSport, "White", "WHT", null, null, null);
 
-        Vehicle v8 = new Vehicle();
-        v8.setModelName("E-Car D");
-        v8.setVersion("Limited Edition");
-        v8.setColor("Yellow");
-        v8.setBatteryCapacityKwh(100);
-        v8.setRangeKm(550);
-        v8.setMaxSpeedKmh(185);
-        v8.setChargingTimeHours(2.5f);
-        v8.setSeatingCapacity(7);
-        v8.setMotorPowerKw(220);
-        v8.setWeightKg(2100);
-        v8.setLengthMm(4800);
-        v8.setWidthMm(1900);
-        v8.setHeightMm(1700);
-        v8.setPriceRetail(BigDecimal.valueOf(1_750_000_000.00));
-        v8.setStatus(VehicleStatus.AVAILABLE);
-        v8.setManufactureYear(2025);
-        vehicleRepository.save(v8);
+        VehicleVersion bLux = newVersion(mB, "Luxury",
+                new BigDecimal("1650000000"),
+                100, 520, 180, 2.2f, 5, 210,
+                1950, 4650, 1870, 1650,
+                2025, VehicleStatus.AVAILABLE);
+        addColor(bLux, "Black", "BLK", null, null, null);
+        addColor(bLux, "Yellow", "YEL", new BigDecimal("20000000"), null, null);
 
-        Vehicle v9 = new Vehicle();
-        v9.setModelName("E-Car E");
-        v9.setVersion("Standard");
-        v9.setColor("Orange");
-        v9.setBatteryCapacityKwh(50);
-        v9.setRangeKm(280);
-        v9.setMaxSpeedKmh(130);
-        v9.setChargingTimeHours(0.9f);
-        v9.setSeatingCapacity(4);
-        v9.setMotorPowerKw(100);
-        v9.setWeightKg(1500);
-        v9.setLengthMm(4100);
-        v9.setWidthMm(1720);
-        v9.setHeightMm(1500);
-        v9.setPriceRetail(BigDecimal.valueOf(780_000_000.00));
-        v9.setStatus(VehicleStatus.AVAILABLE);
-        v9.setManufactureYear(2023);
-        vehicleRepository.save(v9);
+        vehicleModelRepository.save(mB);
 
-        Vehicle v10 = new Vehicle();
-        v10.setModelName("E-Car E");
-        v10.setVersion("Premium");
-        v10.setColor("White");
-        v10.setBatteryCapacityKwh(65);
-        v10.setRangeKm(350);
-        v10.setMaxSpeedKmh(145);
-        v10.setChargingTimeHours(1.3f);
-        v10.setSeatingCapacity(4);
-        v10.setMotorPowerKw(130);
-        v10.setWeightKg(1600);
-        v10.setLengthMm(4200);
-        v10.setWidthMm(1740);
-        v10.setHeightMm(1530);
-        v10.setPriceRetail(BigDecimal.valueOf(920_000_000.00));
-        v10.setStatus(VehicleStatus.AVAILABLE);
-        v10.setManufactureYear(2024);
-        vehicleRepository.save(v10);
+        // ---- E-Car C
+        VehicleModel mC = new VehicleModel();
+        mC.setModelName("E-Car C");
+        mC.setVersions(new java.util.ArrayList<>());
 
-        Vehicle v11 = new Vehicle();
-        v11.setModelName("E-Car F");
-        v11.setVersion("Plus");
-        v11.setColor("Blue");
-        v11.setBatteryCapacityKwh(110);
-        v11.setRangeKm(580);
-        v11.setMaxSpeedKmh(190);
-        v11.setChargingTimeHours(2.8f);
-        v11.setSeatingCapacity(6);
-        v11.setMotorPowerKw(230);
-        v11.setWeightKg(2050);
-        v11.setLengthMm(4800);
-        v11.setWidthMm(1900);
-        v11.setHeightMm(1680);
-        v11.setPriceRetail(BigDecimal.valueOf(1_750_000_000.00));
-        v11.setStatus(VehicleStatus.DISCONTINUED);
-        v11.setManufactureYear(2025);
-        vehicleRepository.save(v11);
+        VehicleVersion cStd = newVersion(mC, "Standard",
+                new BigDecimal("950000000"),
+                60, 340, 135, 1.0f, 5, 120,
+                1650, 4300, 1760, 1550,
+                2023, VehicleStatus.AVAILABLE);
+        addColor(cStd, "Silver", "SLV", null, null, null);
 
-        Vehicle v12 = new Vehicle();
-        v12.setModelName("E-Car G");
-        v12.setVersion("Luxury");
-        v12.setColor("Gray");
-        v12.setBatteryCapacityKwh(120);
-        v12.setRangeKm(620);
-        v12.setMaxSpeedKmh(200);
-        v12.setChargingTimeHours(3.0f);
-        v12.setSeatingCapacity(7);
-        v12.setMotorPowerKw(250);
-        v12.setWeightKg(2200);
-        v12.setLengthMm(4900);
-        v12.setWidthMm(1950);
-        v12.setHeightMm(1750);
-        v12.setPriceRetail(BigDecimal.valueOf(1_900_000_000.00));
-        v12.setStatus(VehicleStatus.AVAILABLE);
-        v12.setManufactureYear(2025);
-        vehicleRepository.save(v12);
+        VehicleVersion cPlus = newVersion(mC, "Plus",
+                new BigDecimal("1100000000"),
+                75, 400, 150, 1.5f, 5, 150,
+                1750, 4400, 1780, 1580,
+                2024, VehicleStatus.AVAILABLE);
+        addColor(cPlus, "Green", "GRN", null, null, null);
+
+        vehicleModelRepository.save(mC);
+
+        // ---- E-Car D
+        VehicleModel mD = new VehicleModel();
+        mD.setModelName("E-Car D");
+        mD.setVersions(new java.util.ArrayList<>());
+
+        VehicleVersion dStd = newVersion(mD, "Standard",
+                new BigDecimal("1400000000"),
+                85, 460, 160, 1.8f, 7, 180,
+                2000, 4700, 1880, 1680,
+                2022, VehicleStatus.AVAILABLE);
+        addColor(dStd, "Gray", "GRY", null, null, null);
+
+        VehicleVersion dLE = newVersion(mD, "Limited Edition",
+                new BigDecimal("1750000000"),
+                100, 550, 185, 2.5f, 7, 220,
+                2100, 4800, 1900, 1700,
+                2025, VehicleStatus.AVAILABLE);
+        addColor(dLE, "Yellow", "YEL", null, null, null);
+
+        vehicleModelRepository.save(mD);
+
+        // ---- E-Car E
+        VehicleModel mE = new VehicleModel();
+        mE.setModelName("E-Car E");
+        mE.setVersions(new java.util.ArrayList<>());
+
+        VehicleVersion eStd = newVersion(mE, "Standard",
+                new BigDecimal("780000000"),
+                50, 280, 130, 0.9f, 4, 100,
+                1500, 4100, 1720, 1500,
+                2023, VehicleStatus.AVAILABLE);
+        addColor(eStd, "Orange", "ORG", null, null, null);
+
+        VehicleVersion ePre = newVersion(mE, "Premium",
+                new BigDecimal("920000000"),
+                65, 350, 145, 1.3f, 4, 130,
+                1600, 4200, 1740, 1530,
+                2024, VehicleStatus.AVAILABLE);
+        addColor(ePre, "White", "WHT", null, null, null);
+
+        vehicleModelRepository.save(mE);
+
+        // ---- E-Car F
+        VehicleModel mF = new VehicleModel();
+        mF.setModelName("E-Car F");
+        mF.setVersions(new java.util.ArrayList<>());
+
+        VehicleVersion fPlus = newVersion(mF, "Plus",
+                new BigDecimal("1750000000"),
+                110, 580, 190, 2.8f, 6, 230,
+                2050, 4800, 1900, 1680,
+                2025, VehicleStatus.DISCONTINUED);
+        addColor(fPlus, "Blue", "BLU", null, null, null);
+
+        vehicleModelRepository.save(mF);
+
+        // ---- E-Car G
+        VehicleModel mG = new VehicleModel();
+        mG.setModelName("E-Car G");
+        mG.setVersions(new java.util.ArrayList<>());
+
+        VehicleVersion gLux = newVersion(mG, "Luxury",
+                new BigDecimal("1900000000"),
+                120, 620, 200, 3.0f, 7, 250,
+                2200, 4900, 1950, 1750,
+                2025, VehicleStatus.AVAILABLE);
+        addColor(gLux, "Gray", "GRY", null, null, null);
+
+        vehicleModelRepository.save(mG);
 
         // =======================
-        // Customers
+        // Customers  (Gender enum!)
         // =======================
         Customer c1 = new Customer();
         c1.setFullName("Nguyễn Minh Hòa");
         c1.setDob(LocalDate.of(1998, 5, 12));
-        c1.setGender("Nam");
+        c1.setGender(Gender.NAM);  // <-- enum
         c1.setEmail("hoa.nguyen@example.com");
         c1.setPhone("0909123456");
         c1.setAddress("12 Lê Lợi, Q1, TP.HCM");
@@ -354,7 +267,7 @@ public class DataInitializer implements CommandLineRunner {
         Customer c2 = new Customer();
         c2.setFullName("Trần Thu Hà");
         c2.setDob(LocalDate.of(1996, 11, 3));
-        c2.setGender("Nữ");
+        c2.setGender(Gender.NU);   // <-- enum
         c2.setEmail("ha.tran@example.com");
         c2.setPhone("0911222333");
         c2.setAddress("45 Hai Bà Trưng, Q1, TP.HCM");
@@ -364,7 +277,7 @@ public class DataInitializer implements CommandLineRunner {
         Customer c3 = new Customer();
         c3.setFullName("Phạm Quang Khải");
         c3.setDob(LocalDate.of(1993, 2, 20));
-        c3.setGender("Khác");
+        c3.setGender(Gender.KHAC); // <-- enum
         c3.setEmail("khai.pham@example.com");
         c3.setPhone("0933666777");
         c3.setAddress("99 Phạm Văn Đồng, Thủ Đức, TP.HCM");
@@ -372,7 +285,7 @@ public class DataInitializer implements CommandLineRunner {
         customerRepository.save(c3);
 
         // =======================
-        // Helper: làm tròn giờ về mốc 00/30 phút
+        // Helper: round to 00/30
         // =======================
         Function<LocalDateTime, LocalDateTime> roundToSlot = dt -> {
             int m = dt.getMinute();
@@ -380,8 +293,6 @@ public class DataInitializer implements CommandLineRunner {
             if (m < 30) return dt.withMinute(30).withSecond(0).withNano(0);
             return dt.plusHours(1).withMinute(0).withSecond(0).withNano(0);
         };
-
-        LocalTime OPEN = LocalTime.of(8, 0);
         LocalTime CLOSE = LocalTime.of(17, 30);
         Duration SLOT = Duration.ofMinutes(30);
 
@@ -393,15 +304,32 @@ public class DataInitializer implements CommandLineRunner {
         LocalDate yesterday = today.minusDays(1);
         LocalDate threeDaysAgo = today.minusDays(3);
 
-        // --- Lịch hẹn tương lai (ngày mai)
-        TestDrive td1 = new TestDrive(c1, dealer1, v1, LocalDateTime.of(tomorrow, LocalTime.of(9, 0)), TestDriveStatus.PENDING);
+        // --- Future (tomorrow)
+        TestDrive td1 = new TestDrive();
+        td1.setCustomer(c1);
+        td1.setDealer(dealer1);
+        td1.setVersion(aStd);
+        td1.setScheduledAt(LocalDateTime.of(tomorrow, LocalTime.of(9, 0)));
+        td1.setStatus(TestDriveStatus.PENDING);
         testDriveRepository.save(td1);
-        TestDrive td2 = new TestDrive(c2, dealer1, v2, LocalDateTime.of(tomorrow, LocalTime.of(9, 30)), TestDriveStatus.PENDING);
+
+        TestDrive td2 = new TestDrive();
+        td2.setCustomer(c2);
+        td2.setDealer(dealer1);
+        td2.setVersion(aPre);
+        td2.setScheduledAt(LocalDateTime.of(tomorrow, LocalTime.of(9, 30)));
+        td2.setStatus(TestDriveStatus.PENDING);
         testDriveRepository.save(td2);
-        TestDrive td3 = new TestDrive(c3, dealer1, v1, LocalDateTime.of(tomorrow, LocalTime.of(14, 30)), TestDriveStatus.PENDING);
+
+        TestDrive td3 = new TestDrive();
+        td3.setCustomer(c3);
+        td3.setDealer(dealer1);
+        td3.setVersion(aStd);
+        td3.setScheduledAt(LocalDateTime.of(tomorrow, LocalTime.of(14, 30)));
+        td3.setStatus(TestDriveStatus.PENDING);
         testDriveRepository.save(td3);
 
-        // --- Lịch hẹn hôm nay (hiện tại + 3 tiếng)
+        // --- Today (+3h)
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime slot1 = roundToSlot.apply(now.plusHours(3));
         LocalDateTime slot2 = slot1.plusMinutes(30);
@@ -409,27 +337,67 @@ public class DataInitializer implements CommandLineRunner {
             slot2 = LocalDateTime.of(today, CLOSE.minus(SLOT));
         }
 
-        TestDrive tdToday1 = new TestDrive(c2, dealer1, v1, slot1, TestDriveStatus.PENDING);
+        TestDrive tdToday1 = new TestDrive();
+        tdToday1.setCustomer(c2);
+        tdToday1.setDealer(dealer1);
+        tdToday1.setVersion(aStd);
+        tdToday1.setScheduledAt(slot1);
+        tdToday1.setStatus(TestDriveStatus.PENDING);
         testDriveRepository.save(tdToday1);
-        TestDrive tdToday2 = new TestDrive(c3, dealer1, v2, slot2, TestDriveStatus.PENDING);
+
+        TestDrive tdToday2 = new TestDrive();
+        tdToday2.setCustomer(c3);
+        tdToday2.setDealer(dealer1);
+        tdToday2.setVersion(aPre);
+        tdToday2.setScheduledAt(slot2);
+        tdToday2.setStatus(TestDriveStatus.PENDING);
         testDriveRepository.save(tdToday2);
 
-        // --- Lịch hẹn đã qua (hôm qua & 3 ngày trước)
-        TestDrive tdPast1 = new TestDrive(c1, dealer1, v1, LocalDateTime.of(yesterday, LocalTime.of(10, 0)), TestDriveStatus.COMPLETED);
+        // --- Past
+        TestDrive tdPast1 = new TestDrive();
+        tdPast1.setCustomer(c1); tdPast1.setDealer(dealer1); tdPast1.setVersion(aStd);
+        tdPast1.setScheduledAt(LocalDateTime.of(yesterday, LocalTime.of(10, 0)));
+        tdPast1.setStatus(TestDriveStatus.COMPLETED);
         testDriveRepository.save(tdPast1);
-        TestDrive tdPast2 = new TestDrive(c2, dealer1, v2, LocalDateTime.of(yesterday, LocalTime.of(10, 30)), TestDriveStatus.COMPLETED);
+
+        TestDrive tdPast2 = new TestDrive();
+        tdPast2.setCustomer(c2); tdPast2.setDealer(dealer1); tdPast2.setVersion(aPre);
+        tdPast2.setScheduledAt(LocalDateTime.of(yesterday, LocalTime.of(10, 30)));
+        tdPast2.setStatus(TestDriveStatus.COMPLETED);
         testDriveRepository.save(tdPast2);
-        TestDrive tdPast3 = new TestDrive(c3, dealer1, v1, LocalDateTime.of(threeDaysAgo, LocalTime.of(15, 0)), TestDriveStatus.CANCELLED);
+
+        TestDrive tdPast3 = new TestDrive();
+        tdPast3.setCustomer(c3); tdPast3.setDealer(dealer1); tdPast3.setVersion(aStd);
+        tdPast3.setScheduledAt(LocalDateTime.of(threeDaysAgo, LocalTime.of(15, 0)));
+        tdPast3.setStatus(TestDriveStatus.CANCELLED);
         testDriveRepository.save(tdPast3);
-        TestDrive tdPast4 = new TestDrive(c1, dealer1, v2, LocalDateTime.of(threeDaysAgo, LocalTime.of(15, 30)), TestDriveStatus.COMPLETED);
+
+        TestDrive tdPast4 = new TestDrive();
+        tdPast4.setCustomer(c1); tdPast4.setDealer(dealer1); tdPast4.setVersion(aPre);
+        tdPast4.setScheduledAt(LocalDateTime.of(threeDaysAgo, LocalTime.of(15, 30)));
+        tdPast4.setStatus(TestDriveStatus.COMPLETED);
         testDriveRepository.save(tdPast4);
+
+        // --- Example: specific color
+        VersionColor aStdRed  = aStd.getColors().stream()
+                .filter(c -> "RED".equals(c.getColorCode())).findFirst().orElse(null);
+        if (aStdRed != null) {
+            TestDrive tdColor = new TestDrive();
+            tdColor.setCustomer(c1);
+            tdColor.setDealer(dealer1);
+            tdColor.setVersion(aStd);
+            tdColor.setVersionColor(aStdRed);
+            tdColor.setScheduledAt(LocalDateTime.of(tomorrow, LocalTime.of(11, 0)));
+            tdColor.setStatus(TestDriveStatus.PENDING);
+            testDriveRepository.save(tdColor);
+        }
 
         System.out.println("✅ Data initialization completed!");
     }
+
     private void createUserIfAbsent(String username, String rawPass, String fullName,
                                     String email, String phone, UserRole role, Dealer dealer) {
         if (userRepository.findByUsername(username).isPresent()) return;
-
         User u = new User();
         u.setUsername(username);
         u.setPassword(passwordEncoder.encode(rawPass));
@@ -439,5 +407,46 @@ public class DataInitializer implements CommandLineRunner {
         u.setRole(role);
         u.setDealer(dealer);
         userRepository.save(u);
+    }
+
+    private VehicleVersion newVersion(VehicleModel model, String versionName,
+                                      BigDecimal basePrice,
+                                      Integer batteryKwh, Integer rangeKm, Integer maxSpeedKmh,
+                                      Float chargeHours, Integer seats, Integer powerKw,
+                                      Integer weightKg, Integer lenMm, Integer widthMm, Integer heightMm,
+                                      Integer year, VehicleStatus status) {
+        VehicleVersion v = new VehicleVersion();
+        v.setModel(model);
+        v.setVersionName(versionName);
+        v.setBasePrice(basePrice);
+        v.setBatteryCapacityKwh(batteryKwh);
+        v.setRangeKm(rangeKm);
+        v.setMaxSpeedKmh(maxSpeedKmh);
+        v.setChargingTimeHours(chargeHours);
+        v.setSeatingCapacity(seats);
+        v.setMotorPowerKw(powerKw);
+        v.setWeightKg(weightKg);
+        v.setLengthMm(lenMm);
+        v.setWidthMm(widthMm);
+        v.setHeightMm(heightMm);
+        v.setManufactureYear(year);
+        v.setStatus(status);
+        model.getVersions().add(v); // cascade từ model
+        return v;
+    }
+
+    private VersionColor addColor(VehicleVersion version, String name, String code,
+                                  BigDecimal priceDelta, BigDecimal priceOverride,
+                                  String imageUrl) {
+        VersionColor c = new VersionColor();
+        c.setVersion(version);
+        c.setColorName(name);
+        c.setColorCode(code);
+        c.setPriceDelta(priceDelta);
+        c.setPriceOverride(priceOverride);
+        c.setImageUrl(imageUrl);
+        c.setIsActive(true);
+        version.getColors().add(c); // cascade từ version
+        return c;
     }
 }

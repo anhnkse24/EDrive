@@ -1,8 +1,8 @@
 package com.swp391.edrive.controller;
 
-import com.swp391.edrive.dto.request.VehicleUpsertRequest;
+import com.swp391.edrive.dto.request.VehicleVersionUpsertRequest;
 import com.swp391.edrive.dto.response.ResponseObject;
-import com.swp391.edrive.dto.response.VehicleResponse;
+import com.swp391.edrive.dto.response.VehicleVersionResponse;
 import com.swp391.edrive.enums.VehicleStatus;
 import com.swp391.edrive.service.VehicleService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -31,7 +32,7 @@ public class VehicleController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        List<VehicleResponse> vehicles = vehicleService.getAllVehicles(page, size);
+        List<VehicleVersionResponse> vehicles = vehicleService.getAllVehicles(page, size);
         return ResponseEntity.ok(new ResponseObject(200, "Vehicle list retrieved successfully", vehicles));
     }
 
@@ -39,7 +40,7 @@ public class VehicleController {
     @GetMapping("/{id}")
     public ResponseEntity<ResponseObject> findById(@PathVariable Long id) {
         try {
-            VehicleResponse vehicle = vehicleService.findVehicleById(id);
+            VehicleVersionResponse vehicle = vehicleService.findVehicleById(id);
             return ResponseEntity.ok(new ResponseObject(200, "Vehicle found", vehicle));
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -48,7 +49,7 @@ public class VehicleController {
     }
 
     @Operation(summary = "Tìm xe theo trạng thái")
-    @GetMapping("/search/status")
+    @GetMapping
     public ResponseEntity<ResponseObject> findByStatus(
             @RequestParam String status,
             @RequestParam(defaultValue = "0") int page,
@@ -62,12 +63,12 @@ public class VehicleController {
                     .body(new ResponseObject(400, "Invalid status. Use AVAILABLE or DISCONTINUED", null));
         }
 
-        List<VehicleResponse> vehicles = vehicleService.findVehicleByStatus(st, page, size);
+        List<VehicleVersionResponse> vehicles = vehicleService.findVehicleByStatus(st, page, size);
         return ResponseEntity.ok(new ResponseObject(200, "Vehicles by status retrieved", vehicles));
     }
 
     @Operation(summary = "Tìm xe theo màu")
-    @GetMapping("/search/color")
+    @GetMapping
     public ResponseEntity<ResponseObject> findByColor(
             @RequestParam String color,
             @RequestParam(defaultValue = "0") int page,
@@ -78,12 +79,12 @@ public class VehicleController {
                     .body(new ResponseObject(400, "Color must not be empty", null));
         }
 
-        List<VehicleResponse> vehicles = vehicleService.findVehicleByColor(color.trim(), page, size);
+        List<VehicleVersionResponse> vehicles = vehicleService.findVehicleByColor(color.trim(), page, size);
         return ResponseEntity.ok(new ResponseObject(200, "Vehicles by color retrieved", vehicles));
     }
 
     @Operation(summary = "Tìm xe theo năm sản xuất (exact hoặc range)")
-    @GetMapping("/search/year")
+    @GetMapping
     public ResponseEntity<ResponseObject> findByYear(
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) Integer fromYear,
@@ -92,7 +93,7 @@ public class VehicleController {
             @RequestParam(defaultValue = "10") int size) {
 
         try {
-            List<VehicleResponse> vehicles;
+            List<VehicleVersionResponse> vehicles;
 
             if (year != null) {
                 vehicles = vehicleService.findVehicleByManufactureYear(year, page, size);
@@ -111,15 +112,15 @@ public class VehicleController {
     }
 
     @Operation(summary = "Tìm xe theo giá (min/max hoặc khoảng)")
-    @GetMapping("/search/price")
+    @GetMapping
     public ResponseEntity<ResponseObject> findByPrice(
-            @RequestParam(required = false) Double minPrice,
-            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
         try {
-            List<VehicleResponse> vehicles = vehicleService.findVehicleByPrice(minPrice, maxPrice, page, size);
+            List<VehicleVersionResponse> vehicles = vehicleService.findVehicleByPrice(minPrice, maxPrice, page, size);
             return ResponseEntity.ok(new ResponseObject(200, "Vehicles by price retrieved", vehicles));
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -129,9 +130,9 @@ public class VehicleController {
 
     @Operation(summary = "Cập nhật thông tin xe")
     @PutMapping("/{id}")
-    public ResponseEntity<ResponseObject> update(@PathVariable Long id, @Valid @RequestBody VehicleUpsertRequest req) {
+    public ResponseEntity<ResponseObject> update(@PathVariable Long id, @Valid @RequestBody VehicleVersionUpsertRequest req) {
         try {
-            VehicleResponse updated = vehicleService.updateVehicle(id, req);
+            VehicleVersionResponse updated = vehicleService.updateVehicle(id, req);
             return ResponseEntity.ok(new ResponseObject(200, "Vehicle updated", updated));
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -154,8 +155,8 @@ public class VehicleController {
 
     @Operation(summary = "Thêm xe")
     @PostMapping
-    public ResponseEntity<ResponseObject> create(@Valid @RequestBody VehicleUpsertRequest req) {
-        VehicleResponse created = vehicleService.createVehicle(req);
+    public ResponseEntity<ResponseObject> create(@Valid @RequestBody VehicleVersionUpsertRequest req) {
+        VehicleVersionResponse created = vehicleService.createVehicle(req);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new ResponseObject(200, "Vehicle created", created));
     }

@@ -1,10 +1,7 @@
 package com.swp391.edrive.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(name = "tokens")
@@ -20,10 +17,15 @@ public class Token {
     @Column(unique = true)
     private String token;
 
-    private boolean expired;
-    private boolean revoked;
+    @Column(nullable = false)
+    private boolean expired = false;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @Column(nullable = false)
+    private boolean revoked = false;
+
+    /** Liên kết đến user sở hữu token */
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    @ToString.Exclude
     private User user;
 }

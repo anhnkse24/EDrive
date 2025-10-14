@@ -5,7 +5,7 @@ import com.swp391.edrive.dto.response.TestDriveResponse;
 import com.swp391.edrive.entity.Customer;
 import com.swp391.edrive.entity.Dealer;
 import com.swp391.edrive.entity.TestDrive;
-import com.swp391.edrive.entity.Vehicle;
+import com.swp391.edrive.entity.VehicleModel;
 import com.swp391.edrive.enums.TestDriveStatus;
 import com.swp391.edrive.repository.CustomerRepository;
 import com.swp391.edrive.repository.DealerRepository;
@@ -69,7 +69,7 @@ public class TestDriveServiceImpl implements TestDriveService {
     public TestDriveResponse book(TestDriveBookingRequest request) {
         Dealer dealer = dealerRepository.findById(request.getDealerId())
                 .orElseThrow(() -> new IllegalArgumentException("Dealer không tồn tại"));
-        Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
+        VehicleModel vehicle = vehicleRepository.findById(request.getVehicleId())
                 .orElseThrow(() -> new IllegalArgumentException("Xe không tồn tại"));
 
         // Chỉ cho phép phút 0 hoặc 30

@@ -19,36 +19,45 @@ public class TestDrive {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long testdriveId;
+    private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "customer_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
-    @ManyToOne
-    @JoinColumn(name = "vehicle_id")
-    private Vehicle vehicle;
-
-    @ManyToOne
-    @JoinColumn(name = "dealer_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "dealer_id", nullable = false)
     private Dealer dealer;
 
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "version_id", nullable = false)
+    private VehicleVersion version;
+
+    @ManyToOne
+    @JoinColumn(name = "version_color_id")
+    private VersionColor versionColor; // nullable = true
+
+    @Column(name = "scheduled_at", nullable = false)
+    private LocalDateTime scheduledAt;  // thời gian hẹn lái thử
+
     @Column(name = "completed_at")
-    private LocalDateTime completedAt;
+    private LocalDateTime completedAt;  // thời gian hoàn tất
 
     @Column(length = 500)
     private String cancelReason;
 
-    private LocalDateTime scheduleDatetime;
-
     @Enumerated(EnumType.STRING)
-    private TestDriveStatus status;
+    @Column(length = 20, nullable = false)
+    private TestDriveStatus status = TestDriveStatus.PENDING;
 
-    public TestDrive(Customer customer, Dealer dealer, Vehicle vehicle, LocalDateTime scheduleDatetime, TestDriveStatus status) {
+    // Helper constructor cho seed data
+    public TestDrive(Customer customer, Dealer dealer, VehicleVersion version,
+                     LocalDateTime scheduledAt, TestDriveStatus status) {
         this.customer = customer;
         this.dealer = dealer;
-        this.vehicle = vehicle;
-        this.scheduleDatetime = scheduleDatetime;
+        this.version = version;
+        this.scheduledAt = scheduledAt;
         this.status = status;
     }
+
 }

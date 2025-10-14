@@ -3,6 +3,8 @@ package com.swp391.edrive.entity;
 import com.swp391.edrive.enums.PaymentMethod;
 import com.swp391.edrive.enums.PaymentType;
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -13,16 +15,24 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long paymentId;
 
-    @ManyToOne
-    @JoinColumn(name = "order_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-    private Double amount;
-    private LocalDate paymentDate;
+    @Column(name = "amount", precision = 14, scale = 2, nullable = false)
+    private BigDecimal amount = BigDecimal.ZERO;
+
+    @Column(name = "payment_date", nullable = false)
+    private LocalDate paymentDate = LocalDate.now();
 
     @Enumerated(EnumType.STRING)
-    private PaymentType paymentType;
+    @Column(name = "payment_type", length = 20, nullable = false)
+    private PaymentType paymentType = PaymentType.FULL;
 
     @Enumerated(EnumType.STRING)
-    private PaymentMethod method;
+    @Column(name = "method", length = 20, nullable = false)
+    private PaymentMethod method = PaymentMethod.CASH;
+
+    @Column(length = 255)
+    private String note;
 }

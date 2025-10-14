@@ -10,20 +10,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface TestDriveRepository extends JpaRepository<TestDrive, Long> {
-    boolean existsByDealer_DealerIdAndScheduleDatetimeGreaterThanEqualAndScheduleDatetimeLessThan(
-            Long dealerId, LocalDateTime startInclusive, LocalDateTime endExclusive
-    );
-
-    TestDrive save(TestDrive testDrive);
-
-    Page<TestDrive> findAll(Pageable pageable);
+    boolean existsByDealer_DealerIdAndScheduledAtGreaterThanEqualAndScheduledAtLessThan(
+            Long dealerId, LocalDateTime start, LocalDateTime end);
 
     Page<TestDrive> findByDealer_DealerId(Long dealerId, Pageable pageable);
 
-    Page<TestDrive> findByDealer_DealerIdAndScheduleDatetimeBetween(
-            Long dealerId, LocalDateTime start, LocalDateTime end, Pageable pageable
-    );
-
-    Page<TestDrive> findByStatus(TestDriveStatus status, Pageable pageable);
+    Page<TestDrive> findByDealer_DealerIdAndScheduledAtBetween(
+            Long dealerId, LocalDateTime start, LocalDateTime end, Pageable pageable);
 
 }

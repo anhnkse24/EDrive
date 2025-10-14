@@ -10,7 +10,13 @@ import lombok.Setter;
 import java.util.List;
 
 @Entity
-@Table(name = "dealers")
+@Table(
+        name = "dealers",
+        indexes = {
+                @Index(name = "idx_dealer_name", columnList = "dealer_name"),
+                @Index(name = "idx_dealer_code", columnList = "dealer_code", unique = true)
+        }
+)
 @Getter
 @Setter
 @AllArgsConstructor
@@ -21,10 +27,21 @@ public class Dealer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long dealerId;
 
+    @Column(name = "dealer_code", length = 32, nullable = false, unique = true)
+    private String dealerCode;
+
+    @Column(name = "dealer_name", length = 150, nullable = false)
     private String dealerName;
+
+    @Column(name = "address", length = 255, nullable = false)
     private String address;
+
+    @Column(name = "contact_person", length = 100)
     private String contactPerson;
+
+    @Column(name = "phone", length = 30)
     private String phone;
+
     private Integer contractId;
 
     @OneToMany(mappedBy = "dealer")
@@ -33,7 +50,7 @@ public class Dealer {
 
     @OneToMany(mappedBy = "dealer")
     @JsonIgnore
-    private List<Inventory> inventories;
+    private List<DealerInventory> inventories;
 
     @OneToMany(mappedBy = "dealer")
     @JsonIgnore
