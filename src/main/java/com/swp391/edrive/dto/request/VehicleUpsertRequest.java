@@ -41,8 +41,7 @@ public class VehicleUpsertRequest {
     @NotNull(message = "Thời gian sạc bắt buộc")
     @DecimalMin(value = "0.1", inclusive = true, message = "Thời gian sạc tối thiểu 0.1 giờ")
     @DecimalMax(value = "72.0", inclusive = true, message = "Thời gian sạc tối đa 72 giờ")
-    @Digits(integer = 3, fraction = 2, message = "Thời gian sạc tối đa 3 số nguyên và 2 số thập phân")
-    private BigDecimal chargingTimeHours;
+    private Float chargingTimeHours;
 
     @NotNull(message = "Số chỗ ngồi bắt buộc")
     @Min(value = 1, message = "Số chỗ ngồi tối thiểu 1")

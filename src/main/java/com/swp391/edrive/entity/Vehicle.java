@@ -30,7 +30,10 @@ public class Vehicle {
     private Integer batteryCapacityKwh;
     private Integer rangeKm;
     private Integer maxSpeedKmh;
+
+    @Column(name = "charging_time_hours", nullable = false)
     private Float chargingTimeHours;
+
     private Integer seatingCapacity;
     private Integer motorPowerKw;
     private Integer weightKg;

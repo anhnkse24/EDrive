@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -70,17 +71,18 @@ public class VehicleServiceImpl implements VehicleService {
     }
 
     @Override
-    public List<VehicleResponse> findVehicleByPrice(Double minPrice, Double maxPrice, int page, int size) {
+    public List<VehicleResponse> findVehicleByPrice(BigDecimal minPrice, BigDecimal maxPrice, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         if (minPrice == null && maxPrice == null) {
             throw new IllegalArgumentException("At least one of minPrice or maxPrice must be provided");
         }
         Page<Vehicle> result;
         if (minPrice != null && maxPrice != null) {
-            if (minPrice > maxPrice) throw new IllegalArgumentException("minPrice must be <= maxPrice");
+            if (minPrice.compareTo(maxPrice) > 0)
+                throw new IllegalArgumentException("minPrice must be <= maxPrice");
             result = vehicleRepository.findByPriceRetailBetween(minPrice, maxPrice, pageable);
         } else if (minPrice != null) {
-            result = vehicleRepository.findByPriceRetailGreaterThanEqual(minPrice, pageable);
+            result = vehicleRepository.findByPriceRetailGreaterThanEqual(   minPrice, pageable);
         } else {
             result = vehicleRepository.findByPriceRetailLessThanEqual(maxPrice, pageable);
         }
@@ -138,24 +140,24 @@ public class VehicleServiceImpl implements VehicleService {
     }
 
     private VehicleResponse toResponse(Vehicle v) {
-        return new VehicleResponse(
-                v.getVehicleId(),
-                v.getModelName(),
-                v.getVersion(),
-                v.getColor(),
-                v.getBatteryCapacityKwh(),
-                v.getRangeKm(),
-                v.getMaxSpeedKmh(),
-                v.getChargingTimeHours(),
-                v.getSeatingCapacity(),
-                v.getMotorPowerKw(),
-                v.getWeightKg(),
-                v.getLengthMm(),
-                v.getWidthMm(),
-                v.getHeightMm(),
-                v.getPriceRetail(),
-                v.getStatus() != null ? v.getStatus().name() : null,
-                v.getManufactureYear()
-        );
+        return VehicleResponse.builder()
+                .vehicleId(v.getVehicleId())
+                .modelName(v.getModelName())
+                .version(v.getVersion())
+                .color(v.getColor())
+                .batteryCapacityKwh(v.getBatteryCapacityKwh())
+                .rangeKm(v.getRangeKm())
+                .maxSpeedKmh(v.getMaxSpeedKmh())
+                .chargingTimeHours(v.getChargingTimeHours())
+                .seatingCapacity(v.getSeatingCapacity())
+                .motorPowerKw(v.getMotorPowerKw())
+                .weightKg(v.getWeightKg())
+                .lengthMm(v.getLengthMm())
+                .widthMm(v.getWidthMm())
+                .heightMm(v.getHeightMm())
+                .priceRetail(v.getPriceRetail())
+                .status(v.getStatus() != null ? v.getStatus().name() : null)
+                .manufactureYear(v.getManufactureYear())
+                .build();
     }
 }
