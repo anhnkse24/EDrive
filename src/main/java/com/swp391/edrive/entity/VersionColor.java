@@ -43,10 +43,6 @@ public class VersionColor {
     @Column(name = "image_url", length = 255)
     private String imageUrl;
 
-    /** SKU - mã tồn kho nội bộ */
-    @Column(length = 50)
-    private String sku;
-
     /** Còn kinh doanh không */
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;

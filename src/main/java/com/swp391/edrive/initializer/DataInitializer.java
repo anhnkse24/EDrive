@@ -162,7 +162,6 @@ public class DataInitializer implements CommandLineRunner {
                 2025, VehicleStatus.AVAILABLE);
         addColor(bLux, "Black", "BLK", null, null, null);
         addColor(bLux, "Yellow", "YEL", new BigDecimal("20000000"), null, null);
-
         vehicleModelRepository.save(mB);
 
         // ---- E-Car C
