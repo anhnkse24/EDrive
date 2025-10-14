@@ -23,7 +23,7 @@ public class VehicleController {
     private final VehicleService vehicleService;
 
     public VehicleController(VehicleService vehicleService) {
-        this.vehicleService = vehicleService;   
+        this.vehicleService = vehicleService;
     }
 
     @Operation(summary = "Lấy danh sách tất cả xe")
@@ -31,13 +31,12 @@ public class VehicleController {
     public ResponseEntity<ResponseObject> getAllVehicles(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-
         List<VehicleVersionResponse> vehicles = vehicleService.getAllVehicles(page, size);
         return ResponseEntity.ok(new ResponseObject(200, "Vehicle list retrieved successfully", vehicles));
     }
 
     @Operation(summary = "Tìm xe theo ID")
-    @GetMapping("/search/status")
+    @GetMapping("/{id}")
     public ResponseEntity<ResponseObject> findById(@PathVariable Long id) {
         try {
             VehicleVersionResponse vehicle = vehicleService.findVehicleById(id);
@@ -49,7 +48,7 @@ public class VehicleController {
     }
 
     @Operation(summary = "Tìm xe theo trạng thái")
-    @GetMapping
+    @GetMapping("/search/status")
     public ResponseEntity<ResponseObject> findByStatus(
             @RequestParam String status,
             @RequestParam(defaultValue = "0") int page,
@@ -94,7 +93,6 @@ public class VehicleController {
 
         try {
             List<VehicleVersionResponse> vehicles;
-
             if (year != null) {
                 vehicles = vehicleService.findVehicleByManufactureYear(year, page, size);
             } else if (fromYear != null && toYear != null) {
@@ -103,7 +101,6 @@ public class VehicleController {
                 return ResponseEntity.badRequest()
                         .body(new ResponseObject(400, "Provide either 'year' or both 'fromYear' & 'toYear'", null));
             }
-
             return ResponseEntity.ok(new ResponseObject(200, "Vehicles by year retrieved", vehicles));
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

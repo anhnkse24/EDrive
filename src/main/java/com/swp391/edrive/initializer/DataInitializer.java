@@ -37,6 +37,7 @@ public class DataInitializer implements CommandLineRunner {
         // Dealers
         // =======================
         Dealer dealer1 = new Dealer();
+        dealer1.setDealerCode("DLR001");
         dealer1.setDealerName("Edriver Center");
         dealer1.setAddress("123 Nguyen Van Troi, Phu Nhuan, TP. HCM");
         dealer1.setContactPerson("Nguyen Van A");
@@ -44,6 +45,7 @@ public class DataInitializer implements CommandLineRunner {
         dealerRepository.save(dealer1);
 
         Dealer dealer2 = new Dealer();
+        dealer2.setDealerCode("DLR002");
         dealer2.setDealerName("Edrive Hanoi Showroom");
         dealer2.setAddress("25 Tran Duy Hung, Cau Giay, Ha Noi");
         dealer2.setContactPerson("Tran Thi B");
@@ -51,6 +53,7 @@ public class DataInitializer implements CommandLineRunner {
         dealerRepository.save(dealer2);
 
         Dealer dealer3 = new Dealer();
+        dealer3.setDealerCode("DLR003");
         dealer3.setDealerName("Edrive Danang Center");
         dealer3.setAddress("78 Nguyen Van Linh, Hai Chau, Da Nang");
         dealer3.setContactPerson("Le Van C");
@@ -58,6 +61,7 @@ public class DataInitializer implements CommandLineRunner {
         dealerRepository.save(dealer3);
 
         Dealer dealer4 = new Dealer();
+        dealer4.setDealerCode("DLR004");
         dealer4.setDealerName("Edrive Can Tho Auto Mall");
         dealer4.setAddress("45 Cach Mang Thang 8, Ninh Kieu, Can Tho");
         dealer4.setContactPerson("Pham Thi D");
@@ -65,6 +69,7 @@ public class DataInitializer implements CommandLineRunner {
         dealerRepository.save(dealer4);
 
         Dealer dealer5 = new Dealer();
+        dealer5.setDealerCode("DLR005");
         dealer5.setDealerName("Edrive Hai Phong Premium Showroom");
         dealer5.setAddress("12 Le Hong Phong, Ngo Quyen, Hai Phong");
         dealer5.setContactPerson("Do Van E");
