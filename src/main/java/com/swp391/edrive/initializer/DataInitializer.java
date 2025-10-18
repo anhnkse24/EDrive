@@ -29,6 +29,8 @@ public class DataInitializer implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
     private final CustomerRepository customerRepository;
     private final TestDriveRepository testDriveRepository;
+    private final DealerInventoryRepository dealerInventoryRepository;
+    private final VersionColorRepository versionColorRepository;
 
     @Override
     @Transactional
@@ -396,6 +398,11 @@ public class DataInitializer implements CommandLineRunner {
             testDriveRepository.save(tdColor);
         }
 
+        upsertInventory(dealer1, findColorByCode(aStd, "RED"), 2, 0);
+        upsertInventory(dealer1, findColorByCode(aStd, "WHT"), 1, 0);
+        upsertInventory(dealer2, findColorByCode(bLux, "BLK"), 1, 0);
+        upsertInventory(dealer2, findColorByCode(bLux, "YEL"), 1, 0);
+        upsertInventory(dealer3, findColorByCode(aPre, "BLU"), 1, 0);
         System.out.println("✅ Data initialization completed!");
     }
 
@@ -452,5 +459,35 @@ public class DataInitializer implements CommandLineRunner {
         c.setIsActive(true);
         version.getColors().add(c); // cascade từ version
         return c;
+    }
+
+    private VersionColor findColorByCode(VehicleVersion version, String colorCode) {
+        return version.getColors().stream()
+                .filter(c -> c.getColorCode() != null
+                        && c.getColorCode().equalsIgnoreCase(colorCode))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Color code '" + colorCode + "' not found in version " + version.getVersionName()
+                ));
+    }
+
+    private DealerInventory upsertInventory(Dealer dealer, VersionColor color, int onHand, int reserved) {
+        if (onHand < 0 || reserved < 0) {
+            throw new IllegalArgumentException("onHand/reserved must be >= 0");
+        }
+
+        DealerInventory inv = dealerInventoryRepository
+                .findByDealer_DealerIdAndVersionColor_Id(dealer.getDealerId(), color.getId())
+                .orElseGet(() -> {
+                    DealerInventory x = new DealerInventory();
+                    x.setDealer(dealer);
+                    x.setVersionColor(color);
+                    return x;
+                });
+
+        inv.setOnHand(onHand);
+        inv.setReserved(reserved);
+
+        return dealerInventoryRepository.save(inv);
     }
 }
