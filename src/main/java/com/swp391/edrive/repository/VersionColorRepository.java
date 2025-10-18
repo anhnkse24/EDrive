@@ -14,4 +14,7 @@ public interface VersionColorRepository extends JpaRepository<VersionColor, Long
     Optional<VersionColor> findByVersion_IdAndColorCode(Long versionId, String colorCode);
 
     boolean existsByVersion_IdAndColorCode(Long versionId, String colorCode);
+
+    boolean existsByVersion_IdAndColorCodeIgnoreCaseAndIdNot(Long versionId, String colorCode, Long id);
+
 }

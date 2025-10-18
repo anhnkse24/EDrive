@@ -34,7 +34,7 @@ public class VehicleController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        List<VehicleResponse> vehicles = vehicleService.getAllVehicles(page, size); // <<< đổi kiểu
+        List<VehicleResponse> vehicles = vehicleService.getAllVehicles(page, size);
         return ResponseEntity.ok(new ResponseObject(200, "Vehicle list retrieved successfully", vehicles));
     }
 
@@ -42,7 +42,7 @@ public class VehicleController {
     @GetMapping("/{id}")
     public ResponseEntity<ResponseObject> findById(@PathVariable Long id) {
         try {
-            VehicleResponse vehicle = vehicleService.findVehicleById(id); // <<< đổi kiểu
+            VehicleResponse vehicle = vehicleService.findVehicleById(id);
             return ResponseEntity.ok(new ResponseObject(200, "Vehicle found", vehicle));
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -65,7 +65,7 @@ public class VehicleController {
                     .body(new ResponseObject(400, "Invalid status. Use AVAILABLE or DISCONTINUED", null));
         }
 
-        List<VehicleResponse> vehicles = vehicleService.findVehicleByStatus(st, page, size); // <<< đổi kiểu
+        List<VehicleResponse> vehicles = vehicleService.findVehicleByStatus(st, page, size);
         return ResponseEntity.ok(new ResponseObject(200, "Vehicles by status retrieved", vehicles));
     }
 
@@ -120,8 +120,8 @@ public class VehicleController {
             @RequestParam(defaultValue = "10") int size) {
 
         try {
-            List<VehicleResponse> vehicles = vehicleService.findVehicleByPrice(minPrice, maxPrice, page, size); // <<< đổi kiểu
-            return ResponseEntity.ok(new ResponseObject(200, "Vehicles by price retrieved", vehicles));
+            List<VehicleResponse> vehicles = vehicleService.findVehicleByPrice(minPrice, maxPrice, page, size);
+            return ResponseEntity.ok(new ResponseObject(200, "Vehicles by BASE price retrieved", vehicles)); // ← đổi message
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ResponseObject(400, ex.getMessage(), null));
@@ -155,9 +155,9 @@ public class VehicleController {
     @Operation(summary = "Thêm xe")
     @PostMapping
     public ResponseEntity<ResponseObject> create(@Valid @RequestBody VehicleVersionUpsertRequest req) {
-        VehicleResponse created = vehicleService.createVehicle(req); // <<< đổi kiểu
+        VehicleResponse created = vehicleService.createVehicle(req);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new ResponseObject(200, "Vehicle created", created));
+                .body(new ResponseObject(201, "Vehicle created", created)); // ← 201 thay vì 200
     }
 
     @GetMapping("/search/color/options")

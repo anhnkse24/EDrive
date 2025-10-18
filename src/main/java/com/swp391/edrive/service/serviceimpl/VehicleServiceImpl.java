@@ -110,10 +110,8 @@ public class VehicleServiceImpl implements VehicleService {
     public VehicleResponse updateVehicle(Long id, VehicleVersionUpsertRequest req) {
         VehicleVersion v = versionRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Vehicle version not found with id=" + id));
-        if (req.getModelId() != null && (v.getModel() == null || !v.getModel().getId().equals(req.getModelId()))) {
-            VehicleModel model = modelRepo.findById(req.getModelId())
-                    .orElseThrow(() -> new IllegalArgumentException("Vehicle model not found with id=" + req.getModelId()));
-            v.setModel(model);
+        if (req.getModelId() != null && v.getModel() != null && !v.getModel().getId().equals(req.getModelId())) {
+            throw new IllegalArgumentException("Changing modelId of an existing vehicle version is not allowed");
         }
         apply(v, req);
         v = versionRepo.save(v);

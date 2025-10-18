@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface VehicleModelRepository extends JpaRepository <VehicleModel, Long>{
-    Optional<VehicleModel> findByModelName(String modelName);
-    boolean existsByModelName(String modelName);
+    boolean existsByModelNameIgnoreCase(String modelName);
+    Optional<VehicleModel> findByModelNameIgnoreCase(String modelName);
+    boolean existsByModelNameIgnoreCaseAndIdNot(String modelName, Long id);
 }
