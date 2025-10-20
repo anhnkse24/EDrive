@@ -120,11 +120,19 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     @Transactional
-    public void deleteVehicle(Long id) {
-        VehicleVersion v = versionRepo.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Vehicle version not found with id=" + id));
-        versionRepo.delete(v);
+    public void deleteVehicle(Long versionId) {
+        VehicleVersion version = versionRepo.findById(versionId)
+                .orElseThrow(() -> new IllegalArgumentException("Vehicle version not found with id=" + versionId));
+
+        version.setStatus(VehicleStatus.DISCONTINUED);
+
+        if (version.getColors() != null) {
+            version.getColors().forEach(c -> c.setIsActive(false));
+        }
+
+        versionRepo.save(version);
     }
+
 
     private void apply(VehicleVersion v, VehicleVersionUpsertRequest r) {
         v.setVersionName(r.getVersionName());

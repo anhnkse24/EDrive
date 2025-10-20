@@ -30,9 +30,11 @@ public class TestDriveController {
     @GetMapping("/available")
     public List<LocalTime> available(
             @RequestParam Long dealerId,
+            @RequestParam Long versionId, // 👈 thêm: xe khách chọn
+            @RequestParam(required = false) Long versionColorId, // 👈 thêm: nếu chọn màu cụ thể
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     ) {
-        return testDriveService.getAvailableSlots(dealerId, date);
+        return testDriveService.getAvailableSlots(dealerId, versionId, versionColorId, date);
     }
 
     @GetMapping

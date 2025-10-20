@@ -10,6 +10,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface TestDriveRepository extends JpaRepository<TestDrive, Long> {
+    long countByDealer_DealerIdAndVersion_IdAndScheduledAtGreaterThanEqualAndScheduledAtLessThan(
+            Long dealerId, Long versionId, LocalDateTime start, LocalDateTime end);
+
+    long countByDealer_DealerIdAndVersionColor_IdAndScheduledAtGreaterThanEqualAndScheduledAtLessThan(
+            Long dealerId, Long versionColorId, LocalDateTime start, LocalDateTime end);
+
     boolean existsByDealer_DealerIdAndScheduledAtGreaterThanEqualAndScheduledAtLessThan(
             Long dealerId, LocalDateTime start, LocalDateTime end);
 

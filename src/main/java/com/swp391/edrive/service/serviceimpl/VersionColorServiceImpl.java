@@ -114,7 +114,8 @@ public class VersionColorServiceImpl implements VersionColorService {
     @Override
     public void delete(Long versionId, Long colorId) {
         VersionColor c = mustGet(versionId, colorId);
-        colorRepo.delete(c);
+
+        c.setIsActive(false);
     }
 
     // ===== helpers =====

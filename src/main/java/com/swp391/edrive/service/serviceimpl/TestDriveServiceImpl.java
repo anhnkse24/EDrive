@@ -5,6 +5,7 @@ import com.swp391.edrive.dto.response.TestDriveResponse;
 import com.swp391.edrive.entity.*;
 import com.swp391.edrive.enums.TestDriveStatus;
 import com.swp391.edrive.repository.*;
+import com.swp391.edrive.service.InventoryService;
 import com.swp391.edrive.service.TestDriveService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,6 +29,7 @@ public class TestDriveServiceImpl implements TestDriveService {
     private final DealerRepository dealerRepository;
     private final VehicleVersionRepository vehicleVersionRepository;
     private final VersionColorRepository versionColorRepository; // nếu request có colorId
+    private final InventoryService inventoryService;
 
     // Cấu hình khung giờ & rule
     private static final LocalTime OPEN = LocalTime.of(8, 0);
@@ -37,9 +39,30 @@ public class TestDriveServiceImpl implements TestDriveService {
     private static final Duration CANCEL_CUTOFF = Duration.ofHours(1);
 
     @Override
-    public List<LocalTime> getAvailableSlots(Long dealerId, LocalDate date) {
+    public List<LocalTime> getAvailableSlots(Long dealerId, Long versionId, Long versionColorId, LocalDate date) {
         Dealer dealer = dealerRepository.findById(dealerId)
                 .orElseThrow(() -> new IllegalArgumentException("Dealer không tồn tại"));
+
+        // xác thực phiên bản và (nếu có) màu -> bảo vệ dữ liệu
+        VehicleVersion version = vehicleVersionRepository.findById(versionId)
+                .orElseThrow(() -> new IllegalArgumentException("Phiên bản xe không tồn tại"));
+
+        VersionColor vc = null;
+        if (versionColorId != null) {
+            vc = versionColorRepository.findById(versionColorId)
+                    .orElseThrow(() -> new IllegalArgumentException("Màu không tồn tại"));
+            if (!vc.getVersion().getId().equals(version.getId())) {
+                throw new IllegalArgumentException("Màu không thuộc phiên bản đã chọn");
+            }
+        }
+
+        // capacity theo màu (nếu có) hoặc theo phiên bản
+        int capacity = (vc != null)
+                ? inventoryService.getDemoCapacityByVersionColor(dealerId, vc.getId())
+                : inventoryService.getDemoCapacityByVersion(dealerId, versionId);
+
+        // nếu kho chưa cấu hình → fallback 1 xe demo
+        if (capacity <= 0) capacity = 1;
 
         List<LocalTime> slots = buildSlots(date);
         List<LocalTime> available = new ArrayList<>(slots);
@@ -48,11 +71,14 @@ public class TestDriveServiceImpl implements TestDriveService {
             LocalDateTime start = LocalDateTime.of(date, time);
             LocalDateTime end = start.plus(SLOT);
 
-            boolean busy = testDriveRepository
-                    .existsByDealer_DealerIdAndScheduledAtGreaterThanEqualAndScheduledAtLessThan(
-                            dealer.getDealerId(), start, end);
+            long booked = (vc != null)
+                    ? testDriveRepository.countByDealer_DealerIdAndVersionColor_IdAndScheduledAtGreaterThanEqualAndScheduledAtLessThan(
+                    dealer.getDealerId(), vc.getId(), start, end)
+                    : testDriveRepository.countByDealer_DealerIdAndVersion_IdAndScheduledAtGreaterThanEqualAndScheduledAtLessThan(
+                    dealer.getDealerId(), version.getId(), start, end);
 
-            if (busy || !isBookable(start)) {
+            // slot rỗng khi: còn bookable + số booking < capacity
+            if (booked >= capacity || !isBookable(start)) {
                 available.remove(time);
             }
         }
@@ -109,18 +135,29 @@ public class TestDriveServiceImpl implements TestDriveService {
         }
 
         LocalDateTime end = scheduledAt.plus(SLOT);
-        boolean occupied = testDriveRepository
-                .existsByDealer_DealerIdAndScheduledAtGreaterThanEqualAndScheduledAtLessThan(
-                        dealer.getDealerId(), scheduledAt, end);
-        if (occupied) {
-            throw new IllegalStateException("Khung giờ này đã có người đặt.");
+
+// 👇 capacity: màu > version, fallback 1 nếu chưa cấu hình kho
+        int capacity = (versionColor != null)
+                ? inventoryService.getDemoCapacityByVersionColor(dealer.getDealerId(), versionColor.getId())
+                : inventoryService.getDemoCapacityByVersion(dealer.getDealerId(), version.getId());
+        if (capacity <= 0) capacity = 1;
+
+// 👇 booked: đếm theo đúng tiêu chí (màu hoặc phiên bản)
+        long booked = (versionColor != null)
+                ? testDriveRepository.countByDealer_DealerIdAndVersionColor_IdAndScheduledAtGreaterThanEqualAndScheduledAtLessThan(
+                dealer.getDealerId(), versionColor.getId(), scheduledAt, end)
+                : testDriveRepository.countByDealer_DealerIdAndVersion_IdAndScheduledAtGreaterThanEqualAndScheduledAtLessThan(
+                dealer.getDealerId(), version.getId(), scheduledAt, end);
+
+        if (booked >= capacity) {
+            throw new IllegalStateException("Khung giờ này đã đủ số lượng lái thử cho xe đã chọn.");
         }
 
         TestDrive td = new TestDrive();
         td.setCustomer(customer);
         td.setDealer(dealer);
         td.setVersion(version);
-        td.setVersionColor(versionColor); // có thể null
+        td.setVersionColor(versionColor);
         td.setScheduledAt(scheduledAt);
         td.setStatus(TestDriveStatus.PENDING);
 
