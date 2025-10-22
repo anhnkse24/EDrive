@@ -52,6 +52,19 @@ public class TestDrive {
 
     private LocalDateTime cancelledAt;
 
+
+    @Column(name = "customer_full_name", length = 100)
+    private String customerFullName;
+
+    @Column(name = "customer_id_card", length = 20)
+    private String customerIdCard;
+
+    @Column(name = "customer_email", length = 100)
+    private String customerEmail;
+
+    @Column(name = "customer_phone", length = 20)
+    private String customerPhone;
+
     @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = false)
     private TestDriveStatus status = TestDriveStatus.PENDING;

@@ -18,4 +18,6 @@ public interface InventoryService {
     DealerInventoryResponse update(Long dealerId, Long inventoryId, DealerInventoryUpdateRequest req);
     DealerInventoryResponse adjust(Long dealerId, Long inventoryId, DealerInventoryAdjustRequest req);
     void delete(Long dealerId, Long inventoryId);
+    void reserveDemoVehicle(Long dealerId, Long versionId, Long versionColorId);
+    void releaseDemoVehicle(Long dealerId, Long versionId, Long versionColorId);
 }

@@ -12,6 +12,7 @@ import com.swp391.edrive.repository.DealerRepository;
 import com.swp391.edrive.repository.VersionColorRepository;
 import com.swp391.edrive.service.InventoryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -137,6 +138,61 @@ public class InventoryServiceImpl implements InventoryService {
 
     private void requireNonNegative(Integer v, String field) {
         if (v == null || v < 0) throw new IllegalArgumentException(field + " must be >= 0");
+    }
+
+    @Override
+    public void reserveDemoVehicle(Long dealerId, Long versionId, Long versionColorId) {
+        if (versionColorId != null) {
+            var inv = inventoryRepo.lockByDealerAndVersionColor(dealerId, versionColorId)
+                    .orElseThrow(() -> new IllegalArgumentException("Inventory not found for dealer/versionColor"));
+            int available = inv.getOnHand() - inv.getReserved();
+            if (available <= 0) {
+                throw new IllegalStateException("No available demo units to reserve for this color");
+            }
+            inv.setReserved(inv.getReserved() + 1);
+            inventoryRepo.save(inv);
+            return;
+        }
+
+        // Chưa chọn màu: pick 1 dòng còn available của phiên bản
+        var candidates = inventoryRepo.findAvailableByDealerAndVersion(
+                dealerId, versionId, PageRequest.of(0, 1));
+        if (candidates.isEmpty()) {
+            throw new IllegalStateException("No available demo units to reserve for this version");
+        }
+        var inv = candidates.get(0);
+        inv.setReserved(inv.getReserved() + 1);
+        inventoryRepo.save(inv);
+    }
+
+    @Override
+    public void releaseDemoVehicle(Long dealerId, Long versionId, Long versionColorId) {
+        if (versionColorId != null) {
+            var inv = inventoryRepo.lockByDealerAndVersionColor(dealerId, versionColorId)
+                    .orElseThrow(() -> new IllegalArgumentException("Inventory not found for dealer/versionColor"));
+            if (inv.getReserved() > 0) {
+                inv.setReserved(inv.getReserved() - 1);
+                inventoryRepo.save(inv);
+            }
+            return;
+        }
+
+        // Chưa chọn màu: trả về bất kỳ dòng nào cùng phiên bản đang có reserved > 0 (ưu tiên reserved cao)
+        @SuppressWarnings("unchecked")
+        List<DealerInventory> rows = inventoryRepo.findAllByDealer_DealerId(dealerId).stream()
+                .filter(di -> di.getVersionColor().getVersion().getId().equals(versionId))
+                .filter(di -> di.getReserved() != null && di.getReserved() > 0)
+                .sorted((a, b) -> Integer.compare(
+                        (b.getReserved() == null ? 0 : b.getReserved()),
+                        (a.getReserved() == null ? 0 : a.getReserved())
+                ))
+                .toList();
+
+        if (!rows.isEmpty()) {
+            var inv = rows.get(0);
+            inv.setReserved(inv.getReserved() - 1);
+            inventoryRepo.save(inv);
+        }
     }
 
     private DealerInventoryResponse toDto(DealerInventory di) {

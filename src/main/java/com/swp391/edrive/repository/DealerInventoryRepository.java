@@ -1,7 +1,10 @@
 package com.swp391.edrive.repository;
 
 import com.swp391.edrive.entity.DealerInventory;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -36,4 +39,24 @@ public interface DealerInventoryRepository extends JpaRepository<DealerInventory
           and di.versionColor.id = :versionColorId
     """)
     int sumAvailableByDealerAndVersionColor(Long dealerId, Long versionColorId);
+
+    @Query("""
+   select di
+   from DealerInventory di
+   where di.dealer.dealerId = :dealerId
+     and di.versionColor.version.id = :versionId
+     and (di.onHand - di.reserved) > 0
+   order by (di.onHand - di.reserved) desc
+""")
+    List<DealerInventory> findAvailableByDealerAndVersion(Long dealerId, Long versionId, Pageable pageable);
+
+    // Khóa bản ghi theo dealer + versionColor khi cập nhật reserved (giảm tranh chấp)
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+   select di
+   from DealerInventory di
+   where di.dealer.dealerId = :dealerId
+     and di.versionColor.id = :versionColorId
+""")
+    Optional<DealerInventory> lockByDealerAndVersionColor(Long dealerId, Long versionColorId);
 }

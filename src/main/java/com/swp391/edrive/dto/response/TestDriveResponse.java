@@ -25,4 +25,8 @@ public class TestDriveResponse {
     private LocalDateTime completedAt;
     private LocalDateTime cancelledAt;
     private String cancelReason;
+    private String customerFullName;
+    private String customerIdCard;
+    private String customerEmail;
+    private String customerPhone;
 }

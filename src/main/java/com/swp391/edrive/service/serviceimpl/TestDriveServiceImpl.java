@@ -143,6 +143,12 @@ public class TestDriveServiceImpl implements TestDriveService {
             throw new IllegalStateException("Khung giờ này đã đủ số lượng lái thử cho xe đã chọn.");
         }
 
+        inventoryService.reserveDemoVehicle(
+                dealer.getDealerId(),
+                version.getId(),
+                (versionColor != null ? versionColor.getId() : null)
+        );
+
         TestDrive td = new TestDrive();
         td.setCustomer(customer);
         td.setDealer(dealer);
@@ -150,6 +156,10 @@ public class TestDriveServiceImpl implements TestDriveService {
         td.setVersionColor(versionColor);
         td.setScheduledAt(scheduledAt);
         td.setStatus(TestDriveStatus.PENDING);
+        td.setCustomerFullName(customer.getFullName());
+        td.setCustomerIdCard(customer.getIdCardNo());
+        td.setCustomerEmail(customer.getEmail());
+        td.setCustomerPhone(customer.getPhone());
 
         TestDrive saved = testDriveRepository.save(td);
         return toResponse(saved);
@@ -178,6 +188,13 @@ public class TestDriveServiceImpl implements TestDriveService {
         td.setStatus(TestDriveStatus.CANCELLED);
         td.setCancelReason(reason);
         td.setCancelledAt(LocalDateTime.now());
+
+        inventoryService.releaseDemoVehicle(
+                td.getDealer().getDealerId(),
+                td.getVersion().getId(),
+                (td.getVersionColor() != null ? td.getVersionColor().getId() : null)
+        );
+
         TestDrive saved = testDriveRepository.save(td);
         return toResponse(saved);
     }
@@ -279,6 +296,13 @@ public class TestDriveServiceImpl implements TestDriveService {
             throw new IllegalStateException("Chỉ đánh dấu NO_SHOW cho lịch PENDING/CONFIRMED.");
         }
         // ❌ Không cần đợi 30' sau giờ hẹn
+
+        inventoryService.releaseDemoVehicle(
+                td.getDealer().getDealerId(),
+                td.getVersion().getId(),
+                (td.getVersionColor() != null ? td.getVersionColor().getId() : null)
+        );
+
         td.setStatus(TestDriveStatus.NO_SHOW);
         return toResponse(testDriveRepository.save(td));
     }
@@ -305,6 +329,13 @@ public class TestDriveServiceImpl implements TestDriveService {
         // ❌ Không chặn “chưa tới giờ hẹn”
         td.setStatus(TestDriveStatus.COMPLETED);
         td.setCompletedAt(LocalDateTime.now());
+
+        inventoryService.releaseDemoVehicle(
+                td.getDealer().getDealerId(),
+                td.getVersion().getId(),
+                (td.getVersionColor() != null ? td.getVersionColor().getId() : null)
+        );
+
         return toResponse(testDriveRepository.save(td));
     }
 
@@ -335,7 +366,11 @@ public class TestDriveServiceImpl implements TestDriveService {
                 td.getCheckInAt(),
                 td.getCompletedAt(),
                 td.getCancelledAt(),
-                td.getCancelReason()
+                td.getCancelReason(),
+                td.getCustomerIdCard(),
+                td.getCustomerEmail(),
+                td.getCustomerFullName(),
+                td.getCustomerPhone()
         );
         return r;
     }
