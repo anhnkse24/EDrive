@@ -65,8 +65,8 @@ public class SecurityConfig {
                         // Auth endpoints public
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/vehicles/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/test-drive/available").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/test-drive/book").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/test-drive/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/test-drive/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/inventory/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/inventory/**").permitAll()
                         .anyRequest().authenticated()

@@ -8,7 +8,6 @@ import org.springframework.context.annotation.ComponentScan;
 @SpringBootApplication
 @EntityScan("com.swp391.edrive.entity")
 @ComponentScan("com.swp391.edrive")
-
 public class EdriverApplication {
 
 	public static void main(String[] args) {

@@ -46,6 +46,12 @@ public class TestDrive {
     @Column(length = 500)
     private String cancelReason;
 
+    private LocalDateTime confirmedAt;
+
+    private LocalDateTime checkInAt;
+
+    private LocalDateTime cancelledAt;
+
     @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = false)
     private TestDriveStatus status = TestDriveStatus.PENDING;

@@ -20,4 +20,9 @@ public class TestDriveResponse {
     private Long versionColorId; 
     private LocalDateTime scheduledAt;
     private TestDriveStatus status;
+    private LocalDateTime confirmedAt;
+    private LocalDateTime checkInAt;
+    private LocalDateTime completedAt;
+    private LocalDateTime cancelledAt;
+    private String cancelReason;
 }

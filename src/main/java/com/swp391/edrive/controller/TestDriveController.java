@@ -27,29 +27,50 @@ public class TestDriveController {
         return testDriveService.book(request);
     }
 
+
     @GetMapping("/available")
     public List<LocalTime> available(
             @RequestParam Long dealerId,
-            @RequestParam Long versionId, // 👈 thêm: xe khách chọn
-            @RequestParam(required = false) Long versionColorId, // 👈 thêm: nếu chọn màu cụ thể
+            @RequestParam Long versionId,
+            @RequestParam(required = false) Long versionColorId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     ) {
         return testDriveService.getAvailableSlots(dealerId, versionId, versionColorId, date);
     }
 
+    @PostMapping("/{id}/cancel")
+    public TestDriveResponse cancel(
+            @PathVariable("id") Long id,
+            @RequestParam(required = false, defaultValue = "User requested") String reason
+    ) {
+        return testDriveService.cancel(id, reason);
+    }
+
+
+    @PostMapping("/{id}/complete")
+    public ResponseEntity<ResponseObject> complete(@PathVariable Long id) {
+        try {
+            TestDriveResponse result = testDriveService.complete(id);
+            return ResponseEntity.ok(new ResponseObject(200, "Đánh dấu hoàn thành thành công", result));
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            return ResponseEntity.badRequest()
+                    .body(new ResponseObject(400, ex.getMessage(), null));
+        }
+    }
     @GetMapping
     public List<TestDriveResponse> list(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) Long dealerId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) TestDriveStatus status // 👈 thêm lọc trạng thái
     ) {
         if (dealerId != null && date != null) {
-            return testDriveService.listByDealerAndDate(dealerId, date, page, size);
+            return testDriveService.listByDealerAndDate(dealerId, date, page, size, status);
         } else if (dealerId != null) {
-            return testDriveService.listByDealer(dealerId, page, size);
+            return testDriveService.listByDealer(dealerId, page, size, status);
         } else {
-            return testDriveService.list(page, size);
+            return testDriveService.list(page, size, status);
         }
     }
 
@@ -64,22 +85,34 @@ public class TestDriveController {
         }
     }
 
-    @PostMapping("/{id}/cancel")
-    public TestDriveResponse cancel(
-            @PathVariable("id") Long id,
-            @RequestParam(required = false, defaultValue = "User requested") String reason
-    ) {
-        return testDriveService.cancel(id, reason);
+    @PostMapping("/{id}/confirm")
+    public ResponseEntity<ResponseObject> confirm(@PathVariable Long id) {
+        try {
+            TestDriveResponse result = testDriveService.confirm(id);
+            return ResponseEntity.ok(new ResponseObject(200, "Xác nhận lịch lái thử thành công", result));
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            return ResponseEntity.badRequest().body(new ResponseObject(400, ex.getMessage(), null));
+        }
     }
 
-    @PostMapping("/{id}/complete")
-    public ResponseEntity<ResponseObject> complete(@PathVariable Long id) {
+    @PostMapping("/{id}/checkin")
+    public ResponseEntity<ResponseObject> checkIn(@PathVariable Long id) {
         try {
-            TestDriveResponse result = testDriveService.complete(id);
-            return ResponseEntity.ok(new ResponseObject(200, "Đánh dấu hoàn thành thành công", result));
+            TestDriveResponse result = testDriveService.checkIn(id);
+            return ResponseEntity.ok(new ResponseObject(200, "Check-in khách hàng thành công", result));
         } catch (IllegalArgumentException | IllegalStateException ex) {
-            return ResponseEntity.badRequest()
-                    .body(new ResponseObject(400, ex.getMessage(), null));
+            return ResponseEntity.badRequest().body(new ResponseObject(400, ex.getMessage(), null));
+        }
+    }
+
+    /** Admin/Dealer dùng tay (tùy bạn) – ngoài ra có auto scheduler ở bước 5 */
+    @PostMapping("/{id}/noshow")
+    public ResponseEntity<ResponseObject> markNoShow(@PathVariable Long id) {
+        try {
+            TestDriveResponse result = testDriveService.markNoShow(id);
+            return ResponseEntity.ok(new ResponseObject(200, "Đánh dấu khách không đến (no-show) thành công", result));
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            return ResponseEntity.badRequest().body(new ResponseObject(400, ex.getMessage(), null));
         }
     }
 }

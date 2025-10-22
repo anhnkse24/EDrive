@@ -28,22 +28,20 @@ public class TestDriveServiceImpl implements TestDriveService {
     private final CustomerRepository customerRepository;
     private final DealerRepository dealerRepository;
     private final VehicleVersionRepository vehicleVersionRepository;
-    private final VersionColorRepository versionColorRepository; // nếu request có colorId
+    private final VersionColorRepository versionColorRepository;
     private final InventoryService inventoryService;
 
-    // Cấu hình khung giờ & rule
-    private static final LocalTime OPEN = LocalTime.of(8, 0);
-    private static final LocalTime CLOSE = LocalTime.of(17, 30);
-    private static final Duration SLOT = Duration.ofMinutes(30);
-    private static final Duration MIN_AHEAD = Duration.ofHours(2);
-    private static final Duration CANCEL_CUTOFF = Duration.ofHours(1);
+    // === Giờ làm việc & Slot ===
+    private static final LocalTime OPEN = LocalTime.of(8, 0);      // 08:00
+    private static final LocalTime CLOSE = LocalTime.of(17, 30);   // 17:30
+    private static final Duration SLOT = Duration.ofMinutes(30);   // slot 30'
 
     @Override
+    @Transactional(readOnly = true)
     public List<LocalTime> getAvailableSlots(Long dealerId, Long versionId, Long versionColorId, LocalDate date) {
         Dealer dealer = dealerRepository.findById(dealerId)
                 .orElseThrow(() -> new IllegalArgumentException("Dealer không tồn tại"));
 
-        // xác thực phiên bản và (nếu có) màu -> bảo vệ dữ liệu
         VehicleVersion version = vehicleVersionRepository.findById(versionId)
                 .orElseThrow(() -> new IllegalArgumentException("Phiên bản xe không tồn tại"));
 
@@ -56,12 +54,9 @@ public class TestDriveServiceImpl implements TestDriveService {
             }
         }
 
-        // capacity theo màu (nếu có) hoặc theo phiên bản
         int capacity = (vc != null)
                 ? inventoryService.getDemoCapacityByVersionColor(dealerId, vc.getId())
                 : inventoryService.getDemoCapacityByVersion(dealerId, versionId);
-
-        // nếu kho chưa cấu hình → fallback 1 xe demo
         if (capacity <= 0) capacity = 1;
 
         List<LocalTime> slots = buildSlots(date);
@@ -77,8 +72,8 @@ public class TestDriveServiceImpl implements TestDriveService {
                     : testDriveRepository.countByDealer_DealerIdAndVersion_IdAndScheduledAtGreaterThanEqualAndScheduledAtLessThan(
                     dealer.getDealerId(), version.getId(), start, end);
 
-            // slot rỗng khi: còn bookable + số booking < capacity
-            if (booked >= capacity || !isBookable(start)) {
+            // chỉ chặn khi đã đầy capacity, KHÔNG áp rule thời gian khác
+            if (booked >= capacity) {
                 available.remove(time);
             }
         }
@@ -98,18 +93,17 @@ public class TestDriveServiceImpl implements TestDriveService {
         if (request.getVersionColorId() != null) {
             versionColor = versionColorRepository.findById(request.getVersionColorId())
                     .orElseThrow(() -> new IllegalArgumentException("Màu không tồn tại"));
-            // bảo vệ: màu phải thuộc đúng version
             if (!versionColor.getVersion().getId().equals(version.getId())) {
                 throw new IllegalArgumentException("Màu không thuộc phiên bản đã chọn");
             }
         }
 
-        // Chỉ cho phép phút 0 hoặc 30
+        // Chỉ chấp nhận phút 00 hoặc 30 để bám slot 30'
         if (request.getMinute() != 0 && request.getMinute() != 30) {
             throw new IllegalArgumentException("Chỉ nhận các mốc phút 00 hoặc 30 cho khung 30 phút.");
         }
 
-        // Tìm hoặc tạo mới Customer
+        // Tìm hoặc tạo Customer
         Customer customer = customerRepository.findByPhone(request.getPhone())
                 .or(() -> customerRepository.findByEmail(request.getEmail()))
                 .orElseGet(() -> {
@@ -127,22 +121,18 @@ public class TestDriveServiceImpl implements TestDriveService {
                 request.getDate(), LocalTime.of(request.getHour(), request.getMinute())
         );
 
+        // ✅ CHỈ kiểm tra trong giờ làm việc
         if (!isWithinWorkingHours(scheduledAt.toLocalTime())) {
             throw new IllegalArgumentException("Giờ hẹn ngoài khung làm việc (08:00–17:30).");
-        }
-        if (!isBookable(scheduledAt)) {
-            throw new IllegalArgumentException("Vui lòng đặt trước ít nhất 2 giờ.");
         }
 
         LocalDateTime end = scheduledAt.plus(SLOT);
 
-// 👇 capacity: màu > version, fallback 1 nếu chưa cấu hình kho
         int capacity = (versionColor != null)
                 ? inventoryService.getDemoCapacityByVersionColor(dealer.getDealerId(), versionColor.getId())
                 : inventoryService.getDemoCapacityByVersion(dealer.getDealerId(), version.getId());
         if (capacity <= 0) capacity = 1;
 
-// 👇 booked: đếm theo đúng tiêu chí (màu hoặc phiên bản)
         long booked = (versionColor != null)
                 ? testDriveRepository.countByDealer_DealerIdAndVersionColor_IdAndScheduledAtGreaterThanEqualAndScheduledAtLessThan(
                 dealer.getDealerId(), versionColor.getId(), scheduledAt, end)
@@ -177,12 +167,17 @@ public class TestDriveServiceImpl implements TestDriveService {
         if (td.getStatus() == TestDriveStatus.COMPLETED) {
             throw new IllegalStateException("Lịch đã hoàn thành, không thể hủy.");
         }
-        if (LocalDateTime.now().isAfter(td.getScheduledAt().minus(CANCEL_CUTOFF))) {
-            throw new IllegalStateException("Không thể hủy khi còn dưới 1 giờ trước giờ hẹn.");
+        if (td.getStatus() == TestDriveStatus.IN_PROGRESS) {
+            throw new IllegalStateException("Lịch đang diễn ra, không thể hủy.");
+        }
+        if (td.getStatus() == TestDriveStatus.NO_SHOW) {
+            throw new IllegalStateException("Lịch đã no-show, không thể hủy.");
         }
 
+        // ❌ Không còn cutoff thời gian
         td.setStatus(TestDriveStatus.CANCELLED);
         td.setCancelReason(reason);
+        td.setCancelledAt(LocalDateTime.now());
         TestDrive saved = testDriveRepository.save(td);
         return toResponse(saved);
     }
@@ -202,24 +197,90 @@ public class TestDriveServiceImpl implements TestDriveService {
         Page<TestDrive> p = testDriveRepository.findAll(pageable);
         return p.stream().map(this::toResponse).toList();
     }
-
     @Override
     @Transactional(readOnly = true)
-    public List<TestDriveResponse> listByDealer(Long dealerId, int page, int size) {
+    public List<TestDriveResponse> list(int page, int size, TestDriveStatus status) {
+        if (status == null) return list(page, size);
         Pageable pageable = PageRequest.of(page, size);
-        Page<TestDrive> p = testDriveRepository.findByDealer_DealerId(dealerId, pageable);
-        return p.stream().map(this::toResponse).toList();
+        Page<TestDrive> p = testDriveRepository.findAll(pageable);
+        return p.stream()
+                .filter(td -> td.getStatus() == status)
+                .map(this::toResponse)
+                .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<TestDriveResponse> listByDealerAndDate(Long dealerId, LocalDate date, int page, int size) {
+    public List<TestDriveResponse> listByDealer(Long dealerId, int page, int size, TestDriveStatus status) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<TestDrive> p = testDriveRepository.findByDealer_DealerId(dealerId, pageable);
+        if (status == null) {
+            return p.stream().map(this::toResponse).toList();
+        }
+        return p.stream()
+                .filter(td -> td.getStatus() == status)
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TestDriveResponse> listByDealerAndDate(Long dealerId, LocalDate date, int page, int size, TestDriveStatus status) {
         Pageable pageable = PageRequest.of(page, size);
         var start = date.atStartOfDay();
         var end = date.plusDays(1).atStartOfDay();
         Page<TestDrive> p = testDriveRepository
                 .findByDealer_DealerIdAndScheduledAtBetween(dealerId, start, end, pageable);
-        return p.stream().map(this::toResponse).toList();
+        if (status == null) {
+            return p.stream().map(this::toResponse).toList();
+        }
+        return p.stream()
+                .filter(td -> td.getStatus() == status)
+                .map(this::toResponse)
+                .toList();
+    }
+
+    // ====== Trạng thái mở rộng: confirm / check-in / no-show / complete ======
+
+    @Override
+    @Transactional
+    public TestDriveResponse confirm(Long testdriveId) {
+        TestDrive td = testDriveRepository.findById(testdriveId)
+                .orElseThrow(() -> new IllegalArgumentException("Lịch lái thử không tồn tại."));
+        if (td.getStatus() != TestDriveStatus.PENDING) {
+            throw new IllegalStateException("Chỉ có thể xác nhận lịch ở trạng thái PENDING.");
+        }
+        // ❌ Không ràng buộc “quá sát giờ hẹn”
+        td.setStatus(TestDriveStatus.CONFIRMED);
+        td.setConfirmedAt(LocalDateTime.now());
+        return toResponse(testDriveRepository.save(td));
+    }
+
+    @Override
+    @Transactional
+    public TestDriveResponse checkIn(Long testdriveId) {
+        TestDrive td = testDriveRepository.findById(testdriveId)
+                .orElseThrow(() -> new IllegalArgumentException("Lịch lái thử không tồn tại."));
+        if (td.getStatus() != TestDriveStatus.CONFIRMED) {
+            throw new IllegalStateException("Chỉ check-in lịch ở trạng thái CONFIRMED.");
+        }
+        // ❌ Không chặn check-in sớm/muộn
+        td.setStatus(TestDriveStatus.IN_PROGRESS);
+        td.setCheckInAt(LocalDateTime.now());
+        return toResponse(testDriveRepository.save(td));
+    }
+
+    @Override
+    @Transactional
+    public TestDriveResponse markNoShow(Long testdriveId) {
+        TestDrive td = testDriveRepository.findById(testdriveId)
+                .orElseThrow(() -> new IllegalArgumentException("Lịch lái thử không tồn tại."));
+        if (td.getStatus() != TestDriveStatus.CONFIRMED && td.getStatus() != TestDriveStatus.PENDING) {
+            throw new IllegalStateException("Chỉ đánh dấu NO_SHOW cho lịch PENDING/CONFIRMED.");
+        }
+        // ❌ Không cần đợi 30' sau giờ hẹn
+        td.setStatus(TestDriveStatus.NO_SHOW);
+        return toResponse(testDriveRepository.save(td));
     }
 
     @Override
@@ -234,23 +295,23 @@ public class TestDriveServiceImpl implements TestDriveService {
         if (td.getStatus() == TestDriveStatus.COMPLETED) {
             throw new IllegalStateException("Lịch đã hoàn thành trước đó.");
         }
-        if (LocalDateTime.now().isBefore(td.getScheduledAt())) {
-            throw new IllegalStateException("Không thể hoàn thành trước thời gian hẹn.");
+        if (td.getStatus() == TestDriveStatus.NO_SHOW) {
+            throw new IllegalStateException("Lịch đã no-show, không thể hoàn thành.");
+        }
+        if (td.getStatus() != TestDriveStatus.IN_PROGRESS) {
+            throw new IllegalStateException("Chỉ hoàn thành lịch ở trạng thái IN_PROGRESS (đã check-in).");
         }
 
+        // ❌ Không chặn “chưa tới giờ hẹn”
         td.setStatus(TestDriveStatus.COMPLETED);
         td.setCompletedAt(LocalDateTime.now());
-        TestDrive saved = testDriveRepository.save(td);
-        return toResponse(saved);
+        return toResponse(testDriveRepository.save(td));
     }
 
     // ===== Helpers =====
     private boolean isWithinWorkingHours(LocalTime time) {
+        // chỉ cần nằm trong [08:00, 17:30 - SLOT]
         return !time.isBefore(OPEN) && !time.isAfter(CLOSE.minus(SLOT));
-    }
-
-    private boolean isBookable(LocalDateTime schedule) {
-        return schedule.isAfter(LocalDateTime.now().plus(MIN_AHEAD));
     }
 
     private List<LocalTime> buildSlots(LocalDate date) {
@@ -262,14 +323,20 @@ public class TestDriveServiceImpl implements TestDriveService {
     }
 
     private TestDriveResponse toResponse(TestDrive td) {
-        return new TestDriveResponse(
+        TestDriveResponse r = new TestDriveResponse(
                 td.getId(),
                 td.getCustomer().getCustomerId(),
                 td.getDealer().getDealerId(),
                 td.getVersion().getId(),
                 td.getVersionColor() != null ? td.getVersionColor().getId() : null,
                 td.getScheduledAt(),
-                td.getStatus()
+                td.getStatus(),
+                td.getConfirmedAt(),
+                td.getCheckInAt(),
+                td.getCompletedAt(),
+                td.getCancelledAt(),
+                td.getCancelReason()
         );
+        return r;
     }
 }
