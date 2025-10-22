@@ -4,11 +4,13 @@ import com.swp391.edrive.entity.RefreshToken;
 import com.swp391.edrive.entity.User;
 import com.swp391.edrive.repository.RefreshTokenRepository;
 import com.swp391.edrive.service.RefreshTokenService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -21,16 +23,21 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     private long refreshExpirationMs;
 
     @Override
+    @Transactional
     public RefreshToken createRefreshToken(User user) {
         // Nếu policy là: mỗi user chỉ 1 refresh token
-        refreshTokenRepository.deleteByUser(user);
-
-        RefreshToken rt = RefreshToken.builder()
-                .user(user)
-                .token(UUID.randomUUID().toString())
-                .expiryDate(Instant.now().plusMillis(refreshExpirationMs))
-                .build();
-        return refreshTokenRepository.save(rt);
+        RefreshToken refreshToken = refreshTokenRepository.findByUser(user);
+        if(Objects.isNull(refreshToken)){
+            refreshToken = RefreshToken.builder()
+                    .user(user)
+                    .token(UUID.randomUUID().toString())
+                    .expiryDate(Instant.now().plusMillis(refreshExpirationMs))
+                    .build();
+        }
+        else{
+            refreshToken.setToken(UUID.randomUUID().toString());
+        }
+        return refreshTokenRepository.save(refreshToken);
     }
 
     @Override

@@ -107,6 +107,7 @@ public class AuthServiceImpl implements AuthService {
             String accessToken = tokenProvider.generateToken(authentication);
 
             User u = userRepository.findByUsername(request.getUsername()).orElseThrow();
+
             RefreshToken refreshToken = refreshTokenServiceImpl.createRefreshToken(u);
 
             return LoginResult.success(accessToken, refreshToken.getToken());
