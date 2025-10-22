@@ -1,5 +1,6 @@
 package com.swp391.edrive.entity;
 
+import com.swp391.edrive.enums.QuotationKind;
 import com.swp391.edrive.enums.QuotationStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -34,9 +35,13 @@ public class Quotation {
     private Dealer dealer;
 
     /** Khách hàng nhận báo giá */
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "customer_id", nullable = false)
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "customer_id", nullable = true)
     private Customer customer;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "kind", length = 20, nullable = false)
+    private QuotationKind kind = QuotationKind.PURCHASE;
 
     /** Thời điểm tạo báo giá */
     @Column(name = "created_at", nullable = false)
@@ -59,18 +64,22 @@ public class Quotation {
     @Column(length = 255)
     private String note;
 
-    /** Danh sách dòng hàng */
     @OneToMany(mappedBy = "quotation", cascade = CascadeType.ALL, orphanRemoval = true)
-    @ToString.Exclude
     private List<QuotationItem> items = new ArrayList<>();
 
     // --------- Helpers ---------
     public void addItem(QuotationItem item) {
+        if (item == null) return;
         item.setQuotation(this);
         this.items.add(item);
-        recomputeTotals();
+        recomputeTotals(); // nếu bạn có hàm này
     }
-
+    public List<QuotationItem> getItems() {                    // ✅ trả về List<QuotationItem>
+        return items;
+    }
+    public void setItems(List<QuotationItem> items) {
+        this.items = items;
+    }
     public void removeItem(QuotationItem item) {
         this.items.remove(item);
         item.setQuotation(null);

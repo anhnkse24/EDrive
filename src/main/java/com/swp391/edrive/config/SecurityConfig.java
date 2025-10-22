@@ -69,6 +69,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/test-drive/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/dealers/*/inventory/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/dealers/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/quotation/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/quotation/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())

@@ -2,10 +2,12 @@ package com.swp391.edrive.repository;
 
 import com.swp391.edrive.entity.VersionColor;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public interface VersionColorRepository extends JpaRepository<VersionColor, Long> {
     // Danh sách màu của 1 version
     List<VersionColor> findByVersion_Id(Long versionId);
