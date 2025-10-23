@@ -53,7 +53,44 @@ public class QuotationController {
                     .body(new ResponseObject(404, ex.getMessage(), null));
         }
     }
+    @Operation(summary = "Gửi báo giá (chuyển từ DRAFT sang SENT)")
+    @PutMapping("/{id}/send")
+    public ResponseEntity<ResponseObject> send(@PathVariable Long id) {
+        try {
+            QuotationResponse data = quotationService.send(id);
+            return ResponseEntity.ok(new ResponseObject(200, "Quotation sent successfully", data));
+        } catch (IllegalStateException | IllegalArgumentException ex) {
+            return ResponseEntity.badRequest()
+                    .body(new ResponseObject(400, ex.getMessage(), null));
+        }
+    }
 
+    @Operation(summary = "Phê duyệt báo giá (chuyển từ SENT sang APPROVED)")
+    @PutMapping("/{id}/approve")
+    public ResponseEntity<ResponseObject> approve(@PathVariable Long id) {
+        try {
+            QuotationResponse data = quotationService.approve(id);
+            return ResponseEntity.ok(new ResponseObject(200, "Quotation approved successfully", data));
+        } catch (IllegalStateException | IllegalArgumentException ex) {
+            return ResponseEntity.badRequest()
+                    .body(new ResponseObject(400, ex.getMessage(), null));
+        }
+    }
+
+    @Operation(summary = "Hủy báo giá (có thể kèm lý do)")
+    @PutMapping("/{id}/cancel")
+    public ResponseEntity<ResponseObject> cancel(
+            @PathVariable Long id,
+            @RequestParam(required = false) String reason
+    ) {
+        try {
+            QuotationResponse data = quotationService.cancel(id, reason);
+            return ResponseEntity.ok(new ResponseObject(200, "Quotation cancelled successfully", data));
+        } catch (IllegalStateException | IllegalArgumentException ex) {
+            return ResponseEntity.badRequest()
+                    .body(new ResponseObject(400, ex.getMessage(), null));
+        }
+    }
     @Operation(summary = "Tìm báo giá theo đại lý")
     @GetMapping("/dealer/{dealerId}")
     public ResponseEntity<ResponseObject> getByDealer(@PathVariable Long dealerId) {
