@@ -1,12 +1,14 @@
 package com.swp391.edrive.service.serviceimpl;
 
-import com.swp391.edrive.dto.request.VehicleUpsertRequest;
+import com.swp391.edrive.dto.request.VehicleVersionUpsertRequest;
+import com.swp391.edrive.dto.response.ColorBriefResponse;
 import com.swp391.edrive.dto.response.VehicleResponse;
-import com.swp391.edrive.entity.Promotion;
-import com.swp391.edrive.entity.Vehicle;
-import com.swp391.edrive.enums.DiscountType;
+import com.swp391.edrive.dto.response.VehicleVersionResponse;
+import com.swp391.edrive.entity.VehicleModel;
+import com.swp391.edrive.entity.VehicleVersion;
 import com.swp391.edrive.enums.VehicleStatus;
-import com.swp391.edrive.repository.VehicleRepository;
+import com.swp391.edrive.repository.VehicleModelRepository;
+import com.swp391.edrive.repository.VehicleVersionRepository;
 import com.swp391.edrive.service.VehicleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -16,140 +18,146 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class VehicleServiceImpl implements VehicleService {
-    private final VehicleRepository vehicleRepository;
+    private final VehicleVersionRepository versionRepo;
+    private final VehicleModelRepository modelRepo;
 
     @Override
     public List<VehicleResponse> getAllVehicles(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Vehicle> vehicles = vehicleRepository.findAll(pageable);
-        return vehicles.stream().map(this::toResponse).toList();
+        Page<VehicleVersion> p = versionRepo.findAll(pageable);
+        return p.stream().map(this::mapToVehicleResponse).toList();
     }
 
     @Override
     public VehicleResponse findVehicleById(Long id) {
-        Vehicle v = vehicleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Vehicle not found with id=" + id));
-        return toResponse(v);
+        VehicleVersion v = versionRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Vehicle version not found with id=" + id));
+        return mapToVehicleResponse(v);
     }
 
     @Override
     public List<VehicleResponse> findVehicleByStatus(VehicleStatus status, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Vehicle> result = vehicleRepository.findByStatus(status, pageable);
-        return result.stream().map(this::toResponse).toList();
+        return versionRepo.findByStatus(status, pageable)
+                .stream().map(this::mapToVehicleResponse).toList();
     }
 
     @Override
     public List<VehicleResponse> findVehicleByColor(String color, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Vehicle> result = vehicleRepository.findByColorIgnoreCaseContaining(color, pageable);
-        return result.stream().map(this::toResponse).toList();
+        return versionRepo.findDistinctByColors_ColorNameContainingIgnoreCase(color, pageable)
+                .stream().map(this::mapToVehicleResponse).toList();
     }
 
     @Override
     public List<VehicleResponse> findVehicleByManufactureYear(Integer year, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Vehicle> result = vehicleRepository.findByManufactureYear(year, pageable);
-        return result.stream().map(this::toResponse).toList();
+        return versionRepo.findByManufactureYear(year, pageable)
+                .stream().map(this::mapToVehicleResponse).toList();
     }
 
     @Override
     public List<VehicleResponse> findVehicleByManufactureYearRange(Integer fromYear, Integer toYear, int page, int size) {
-        if (fromYear == null || toYear == null) {
-            throw new IllegalArgumentException("fromYear and toYear are required");
-        }
-        if (fromYear > toYear) {
-            throw new IllegalArgumentException("fromYear must be <= toYear");
-        }
+        if (fromYear == null || toYear == null) throw new IllegalArgumentException("fromYear and toYear are required");
+        if (fromYear > toYear) throw new IllegalArgumentException("fromYear must be <= toYear");
+
         Pageable pageable = PageRequest.of(page, size);
-        Page<Vehicle> result = vehicleRepository.findByManufactureYearBetween(fromYear, toYear, pageable);
-        return result.stream().map(this::toResponse).toList();
+        return versionRepo.findByManufactureYearBetween(fromYear, toYear, pageable)
+                .stream().map(this::mapToVehicleResponse).toList();
     }
 
     @Override
     public List<VehicleResponse> findVehicleByPrice(BigDecimal minPrice, BigDecimal maxPrice, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        if (minPrice == null && maxPrice == null) {
+        if (minPrice == null && maxPrice == null)
             throw new IllegalArgumentException("At least one of minPrice or maxPrice must be provided");
-        }
-        Page<Vehicle> result;
+
+        Pageable pageable = PageRequest.of(page, size);
+
         if (minPrice != null && maxPrice != null) {
             if (minPrice.compareTo(maxPrice) > 0)
                 throw new IllegalArgumentException("minPrice must be <= maxPrice");
-            result = vehicleRepository.findByPriceRetailBetween(minPrice, maxPrice, pageable);
+            return versionRepo.findByBasePriceBetween(minPrice, maxPrice, pageable)
+                    .stream().map(this::mapToVehicleResponse).toList();
         } else if (minPrice != null) {
-            result = vehicleRepository.findByPriceRetailGreaterThanEqual(   minPrice, pageable);
+            return versionRepo.findByBasePriceGreaterThanEqual(minPrice, pageable)
+                    .stream().map(this::mapToVehicleResponse).toList();
         } else {
-            result = vehicleRepository.findByPriceRetailLessThanEqual(maxPrice, pageable);
+            return versionRepo.findByBasePriceLessThanEqual(maxPrice, pageable)
+                    .stream().map(this::mapToVehicleResponse).toList();
         }
-        return result.stream().map(this::toResponse).toList();
     }
 
-    // === CREATE ===
     @Override
     @Transactional
-    public VehicleResponse createVehicle(VehicleUpsertRequest req) {
-        Vehicle v = new Vehicle();
+    public VehicleResponse createVehicle(VehicleVersionUpsertRequest req) {
+        VehicleModel model = modelRepo.findById(req.getModelId())
+                .orElseThrow(() -> new IllegalArgumentException("Vehicle model not found with id=" + req.getModelId()));
+        VehicleVersion v = new VehicleVersion();
+        v.setModel(model);
         apply(v, req);
-        v = vehicleRepository.save(v);
-        return toResponse(v);
+        v = versionRepo.save(v);
+        return mapToVehicleResponse(v);
     }
 
-    // === UPDATE ===
     @Override
     @Transactional
-    public VehicleResponse updateVehicle(Long id, VehicleUpsertRequest req) {
-        Vehicle v = vehicleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Vehicle not found with id=" + id));
+    public VehicleResponse updateVehicle(Long id, VehicleVersionUpsertRequest req) {
+        VehicleVersion v = versionRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Vehicle version not found with id=" + id));
+        if (req.getModelId() != null && v.getModel() != null && !v.getModel().getId().equals(req.getModelId())) {
+            throw new IllegalArgumentException("Changing modelId of an existing vehicle version is not allowed");
+        }
         apply(v, req);
-        v = vehicleRepository.save(v);
-        return toResponse(v);
+        v = versionRepo.save(v);
+        return mapToVehicleResponse(v);
     }
 
-    // === DELETE ===
     @Override
     @Transactional
-    public void deleteVehicle(Long id) {
-        Vehicle v = vehicleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Vehicle not found with id=" + id));
-        vehicleRepository.delete(v);
+    public void deleteVehicle(Long versionId) {
+        VehicleVersion version = versionRepo.findById(versionId)
+                .orElseThrow(() -> new IllegalArgumentException("Vehicle version not found with id=" + versionId));
+
+        version.setStatus(VehicleStatus.DISCONTINUED);
+
+        if (version.getColors() != null) {
+            version.getColors().forEach(c -> c.setIsActive(false));
+        }
+
+        versionRepo.save(version);
     }
 
-    // === mapping helpers ===
-    private void apply(Vehicle v, VehicleUpsertRequest r) {
-        v.setModelName(r.getModelName());
-        v.setVersion(r.getVersion());
-        v.setColor(r.getColor());
+
+    private void apply(VehicleVersion v, VehicleVersionUpsertRequest r) {
+        v.setVersionName(r.getVersionName());
         v.setBatteryCapacityKwh(r.getBatteryCapacityKwh());
         v.setRangeKm(r.getRangeKm());
         v.setMaxSpeedKmh(r.getMaxSpeedKmh());
-        v.setChargingTimeHours(r.getChargingTimeHours());
+        v.setChargingTimeHours(r.getChargingTimeHours() != null ? r.getChargingTimeHours().floatValue() : null);
         v.setSeatingCapacity(r.getSeatingCapacity());
         v.setMotorPowerKw(r.getMotorPowerKw());
         v.setWeightKg(r.getWeightKg());
         v.setLengthMm(r.getLengthMm());
         v.setWidthMm(r.getWidthMm());
         v.setHeightMm(r.getHeightMm());
-        v.setPriceRetail(r.getPriceRetail());
+        v.setBasePrice(r.getBasePrice());
         v.setStatus(r.getStatus());
         v.setManufactureYear(r.getManufactureYear());
     }
 
-    private VehicleResponse toResponse(Vehicle v) {
+    // ===== Mapper sang VehicleResponse (có colors) =====
+    private VehicleResponse mapToVehicleResponse(VehicleVersion v) {
         return VehicleResponse.builder()
-                .vehicleId(v.getVehicleId())
-                .modelName(v.getModelName())
-                .version(v.getVersion())
-                .color(v.getColor())
+                .versionId(v.getId())
+                .modelId(v.getModel() != null ? v.getModel().getId() : null)
+                .modelName(v.getModel() != null ? v.getModel().getModelName() : null)
+                .versionName(v.getVersionName())
                 .batteryCapacityKwh(v.getBatteryCapacityKwh())
                 .rangeKm(v.getRangeKm())
                 .maxSpeedKmh(v.getMaxSpeedKmh())
@@ -160,40 +168,23 @@ public class VehicleServiceImpl implements VehicleService {
                 .lengthMm(v.getLengthMm())
                 .widthMm(v.getWidthMm())
                 .heightMm(v.getHeightMm())
-                .priceRetail(v.getPriceRetail())
-                .finalPrice(calculateDiscountedPrice(v))
-                .status(v.getStatus() != null ? v.getStatus().name() : null)
+                .basePrice(v.getBasePrice())
                 .manufactureYear(v.getManufactureYear())
+                .status(v.getStatus()) // DTO dùng enum VehicleStatus
+                .colors(v.getColors() == null ? List.of()
+                        : v.getColors().stream()
+                        .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
+                        .map(vc -> ColorBriefResponse.builder()
+                                .colorId(vc.getId())
+                                .colorName(vc.getColorName())
+                                .colorCode(vc.getColorCode())
+                                .imageUrl(vc.getImageUrl())
+                                .active(vc.getIsActive())
+                                .priceDelta(vc.getPriceDelta())
+                                .priceOverride(vc.getPriceOverride())
+                                .retailPrice(vc.retailPrice())
+                                .build())
+                        .toList())
                 .build();
-    }
-    public BigDecimal calculateDiscountedPrice(Vehicle vehicle) {
-        BigDecimal basePrice = vehicle.getPriceRetail();
-        BigDecimal discountedPrice = basePrice;
-
-        if (vehicle.getPromotions() == null || vehicle.getPromotions().isEmpty()) {
-            return basePrice;
-        }
-
-        LocalDate now = LocalDate.now();
-
-        // Lọc ra các khuyến mãi còn hiệu lực
-        Set<Promotion> activePromotions = vehicle.getPromotions().stream()
-                .filter(p -> p.getStartDate() != null && p.getEndDate() != null)
-                .filter(p -> !now.isBefore(p.getStartDate()) && !now.isAfter(p.getEndDate()))
-                .collect(Collectors.toSet());
-
-        for (Promotion promo : activePromotions) {
-            if (promo.getDiscountType() == DiscountType.PERCENTAGE) {
-                // Giảm theo %
-                double percent = promo.getDiscountValue() / 100.0;
-                discountedPrice = discountedPrice.multiply(BigDecimal.valueOf(1 - percent));
-            } else if (promo.getDiscountType() == DiscountType.FIXED_AMOUNT) {
-                // Giảm số tiền cố định
-                discountedPrice = discountedPrice.subtract(BigDecimal.valueOf(promo.getDiscountValue()));
-            }
-        }
-
-        // Không để giá âm
-        return discountedPrice.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : discountedPrice;
     }
 }

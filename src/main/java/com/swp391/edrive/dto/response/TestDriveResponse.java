@@ -16,7 +16,17 @@ public class TestDriveResponse {
     private Long id;
     private Long customerId;
     private Long dealerId;
-    private Long vehicleId;
-    private LocalDateTime scheduleDatetime;
+    private Long versionId;
+    private Long versionColorId; 
+    private LocalDateTime scheduledAt;
     private TestDriveStatus status;
+    private LocalDateTime confirmedAt;
+    private LocalDateTime checkInAt;
+    private LocalDateTime completedAt;
+    private LocalDateTime cancelledAt;
+    private String cancelReason;
+    private String customerFullName;
+    private String customerIdCard;
+    private String customerEmail;
+    private String customerPhone;
 }

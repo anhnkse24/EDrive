@@ -1,13 +1,16 @@
 package com.swp391.edrive.controller;
 
-import com.swp391.edrive.dto.request.VehicleUpsertRequest;
+import com.swp391.edrive.dto.request.VehicleVersionUpsertRequest;
 import com.swp391.edrive.dto.response.ResponseObject;
+import com.swp391.edrive.dto.response.VehicleColorOptionResponse;
 import com.swp391.edrive.dto.response.VehicleResponse;
 import com.swp391.edrive.enums.VehicleStatus;
+import com.swp391.edrive.service.VehicleQueryService;
 import com.swp391.edrive.service.VehicleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,13 +21,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/vehicles")
 @Tag(name = "Vehicles", description = "API quản lý danh sách xe")
+@RequiredArgsConstructor
 public class VehicleController {
 
     private final VehicleService vehicleService;
+    private final VehicleQueryService vehicleQueryService;
 
-    public VehicleController(VehicleService vehicleService) {
-        this.vehicleService = vehicleService;   
-    }
 
     @Operation(summary = "Lấy danh sách tất cả xe")
     @GetMapping
@@ -79,7 +81,7 @@ public class VehicleController {
                     .body(new ResponseObject(400, "Color must not be empty", null));
         }
 
-        List<VehicleResponse> vehicles = vehicleService.findVehicleByColor(color.trim(), page, size);
+        List<VehicleResponse> vehicles = vehicleService.findVehicleByColor(color.trim(), page, size); // <<< đổi kiểu
         return ResponseEntity.ok(new ResponseObject(200, "Vehicles by color retrieved", vehicles));
     }
 
@@ -93,8 +95,7 @@ public class VehicleController {
             @RequestParam(defaultValue = "10") int size) {
 
         try {
-            List<VehicleResponse> vehicles;
-
+            List<VehicleResponse> vehicles; // <<< đổi kiểu
             if (year != null) {
                 vehicles = vehicleService.findVehicleByManufactureYear(year, page, size);
             } else if (fromYear != null && toYear != null) {
@@ -103,7 +104,6 @@ public class VehicleController {
                 return ResponseEntity.badRequest()
                         .body(new ResponseObject(400, "Provide either 'year' or both 'fromYear' & 'toYear'", null));
             }
-
             return ResponseEntity.ok(new ResponseObject(200, "Vehicles by year retrieved", vehicles));
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -121,7 +121,7 @@ public class VehicleController {
 
         try {
             List<VehicleResponse> vehicles = vehicleService.findVehicleByPrice(minPrice, maxPrice, page, size);
-            return ResponseEntity.ok(new ResponseObject(200, "Vehicles by price retrieved", vehicles));
+            return ResponseEntity.ok(new ResponseObject(200, "Vehicles by BASE price retrieved", vehicles)); // ← đổi message
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ResponseObject(400, ex.getMessage(), null));
@@ -130,9 +130,9 @@ public class VehicleController {
 
     @Operation(summary = "Cập nhật thông tin xe")
     @PutMapping("/{id}")
-    public ResponseEntity<ResponseObject> update(@PathVariable Long id, @Valid @RequestBody VehicleUpsertRequest req) {
+    public ResponseEntity<ResponseObject> update(@PathVariable Long id, @Valid @RequestBody VehicleVersionUpsertRequest req) {
         try {
-            VehicleResponse updated = vehicleService.updateVehicle(id, req);
+            VehicleResponse updated = vehicleService.updateVehicle(id, req); // <<< đổi kiểu
             return ResponseEntity.ok(new ResponseObject(200, "Vehicle updated", updated));
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -140,7 +140,6 @@ public class VehicleController {
         }
     }
 
-    // ====== DELETE ======
     @Operation(summary = "Xoá xe")
     @DeleteMapping("/{id}")
     public ResponseEntity<ResponseObject> delete(@PathVariable Long id) {
@@ -155,9 +154,19 @@ public class VehicleController {
 
     @Operation(summary = "Thêm xe")
     @PostMapping
-    public ResponseEntity<ResponseObject> create(@Valid @RequestBody VehicleUpsertRequest req) {
+    public ResponseEntity<ResponseObject> create(@Valid @RequestBody VehicleVersionUpsertRequest req) {
         VehicleResponse created = vehicleService.createVehicle(req);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new ResponseObject(200, "Vehicle created", created));
+                .body(new ResponseObject(201, "Vehicle created", created)); // ← 201 thay vì 200
+    }
+
+    @GetMapping("/search/color/options")
+    public ResponseEntity<ResponseObject> findColorOptions(@RequestParam String color) {
+        if (color == null || color.isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body(new ResponseObject(400, "Color must not be empty", null));
+        }
+        List<VehicleColorOptionResponse> data = vehicleQueryService.searchByColor(color);
+        return ResponseEntity.ok(new ResponseObject(200, "Vehicles by color retrieved", data));
     }
 }

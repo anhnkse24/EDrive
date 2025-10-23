@@ -1,5 +1,6 @@
 package com.swp391.edrive.dto.response;
 
+import com.swp391.edrive.enums.Gender;
 import lombok.*;
 import java.time.LocalDate;
 
@@ -11,7 +12,7 @@ public class CustomerResponse {
     private Long customerId;
     private String fullName;
     private LocalDate dob;
-    private String gender;
+    private Gender gender;
     private String email;
     private String phone;
     private String address;
