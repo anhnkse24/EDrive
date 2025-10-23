@@ -3,12 +3,20 @@ package com.swp391.edrive.entity;
 import com.swp391.edrive.enums.PaymentMethod;
 import com.swp391.edrive.enums.PaymentType;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "payments")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Payment {
 
     @Id
