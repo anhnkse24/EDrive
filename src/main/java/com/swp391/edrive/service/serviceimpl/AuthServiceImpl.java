@@ -49,40 +49,39 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public UserResponse register(RegisterRequest request) {
-        // Check confirmPassword
+        // Kiểm tra xác nhận mật khẩu
         if (!request.getPassword().equals(request.getConfirmPassword())) {
             throw new RuntimeException("Mật khẩu xác nhận không khớp");
         }
-        // Check email
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email đã được sử dụng");
         }
-        // Check username
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             throw new RuntimeException("Username đã được sử dụng");
         }
-        // Check phone
         if (userRepository.findByPhone(request.getPhone()).isPresent()) {
             throw new RuntimeException("Số điện thoại đã được sử dụng");
         }
-        // Check dealerName trùng
         dealerRepository.findByDealerName(request.getDealerName())
                 .ifPresent(d -> {
-                    throw new RuntimeException("Dealer name đã được sử dụng");
+                    throw new RuntimeException("Tên đại lý đã được sử dụng");
                 });
 
-        // Encode password
         String encodedPassword = passwordEncoder.encode(request.getPassword());
 
-        // Tạo dealer mới
+        // 🔹 Tạo dealer mới
         Dealer dealer = new Dealer();
         dealer.setDealerName(request.getDealerName());
-        dealer.setAddress(request.getAddress());
+        dealer.setHouseNumberAndStreet(request.getHouseNumberAndStreet());
+        dealer.setWardOrCommune(request.getWardOrCommune());
+        dealer.setDistrict(request.getDistrict());
+        dealer.setProvinceOrCity(request.getProvinceOrCity());
         dealer.setContactPerson(request.getFullName());
         dealer.setPhone(request.getPhone());
+
         dealerRepository.save(dealer);
 
-        // Tạo user mới
+        // 🔹 Tạo user mới
         User user = new User();
         user.setFullName(request.getFullName());
         user.setUsername(request.getUsername());

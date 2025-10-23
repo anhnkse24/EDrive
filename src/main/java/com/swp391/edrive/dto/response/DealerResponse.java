@@ -10,8 +10,20 @@ import lombok.Setter;
 public class DealerResponse {
     private Long dealerId;
     private String dealerName;
-    private String address;
+
+    // Địa chỉ chi tiết
+    private String houseNumberAndStreet;
+    private String wardOrCommune;
+    private String district;
+    private String provinceOrCity;
+
+    // Thông tin liên hệ
     private String contactPerson;
     private String phone;
-    private Integer contractId;
+
+    // Địa chỉ đầy đủ (nếu muốn trả thêm)
+    public String getFullAddress() {
+        return String.format("%s, %s, %s, %s",
+                houseNumberAndStreet, wardOrCommune, district, provinceOrCity);
+    }
 }

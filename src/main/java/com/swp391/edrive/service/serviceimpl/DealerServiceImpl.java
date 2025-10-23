@@ -20,44 +20,51 @@ public class DealerServiceImpl implements DealerService {
     @Override
     @Transactional
     public DealerResponse createDealer(DealerRequest req) {
-        Dealer d = new Dealer();
-        d.setDealerName(req.getDealerName());
-        d.setAddress(req.getAddress());
-        d.setContactPerson(req.getContactPerson());
-        d.setPhone(req.getPhone());
-        d.setContractId(req.getContractId());
-        return toResponse(dealerRepository.save(d));
+        Dealer dealer = new Dealer();
+        dealer.setDealerName(req.getDealerName());
+        dealer.setHouseNumberAndStreet(req.getHouseNumberAndStreet());
+        dealer.setWardOrCommune(req.getWardOrCommune());
+        dealer.setDistrict(req.getDistrict());
+        dealer.setProvinceOrCity(req.getProvinceOrCity());
+        dealer.setContactPerson(req.getContactPerson());
+        dealer.setPhone(req.getPhone());
+
+        Dealer saved = dealerRepository.save(dealer);
+        return toResponse(saved);
     }
 
     @Override
     @Transactional
     public DealerResponse updateDealer(Long dealerId, DealerRequest req) {
-        Dealer d = dealerRepository.findById(dealerId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy đại lý với id = " + dealerId));
+        Dealer dealer = dealerRepository.findById(dealerId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đại lý với ID = " + dealerId));
 
-        d.setDealerName(req.getDealerName());
-        d.setAddress(req.getAddress());
-        d.setContactPerson(req.getContactPerson());
-        d.setPhone(req.getPhone());
-        d.setContractId(req.getContractId());
+        dealer.setDealerName(req.getDealerName());
+        dealer.setHouseNumberAndStreet(req.getHouseNumberAndStreet());
+        dealer.setWardOrCommune(req.getWardOrCommune());
+        dealer.setDistrict(req.getDistrict());
+        dealer.setProvinceOrCity(req.getProvinceOrCity());
+        dealer.setContactPerson(req.getContactPerson());
+        dealer.setPhone(req.getPhone());
 
-        return toResponse(dealerRepository.save(d));
+        Dealer updated = dealerRepository.save(dealer);
+        return toResponse(updated);
     }
 
     @Override
     @Transactional
     public void deleteDealer(Long dealerId) {
-        Dealer d = dealerRepository.findById(dealerId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy đại lý với id = " + dealerId));
-        dealerRepository.delete(d);
+        Dealer dealer = dealerRepository.findById(dealerId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đại lý với ID = " + dealerId));
+        dealerRepository.delete(dealer);
     }
 
     @Override
     @Transactional(readOnly = true)
     public DealerResponse getDealerById(Long dealerId) {
-        Dealer d = dealerRepository.findById(dealerId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy đại lý với id = " + dealerId));
-        return toResponse(d);
+        Dealer dealer = dealerRepository.findById(dealerId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đại lý với ID = " + dealerId));
+        return toResponse(dealer);
     }
 
     @Override
@@ -69,14 +76,16 @@ public class DealerServiceImpl implements DealerService {
                 .toList();
     }
 
-    private DealerResponse toResponse(Dealer d) {
+    private DealerResponse toResponse(Dealer dealer) {
         return DealerResponse.builder()
-                .dealerId(d.getDealerId())
-                .dealerName(d.getDealerName())
-                .address(d.getAddress())
-                .contactPerson(d.getContactPerson())
-                .phone(d.getPhone())
-                .contractId(d.getContractId())
+                .dealerId(dealer.getDealerId())
+                .dealerName(dealer.getDealerName())
+                .houseNumberAndStreet(dealer.getHouseNumberAndStreet())
+                .wardOrCommune(dealer.getWardOrCommune())
+                .district(dealer.getDistrict())
+                .provinceOrCity(dealer.getProvinceOrCity())
+                .contactPerson(dealer.getContactPerson())
+                .phone(dealer.getPhone())
                 .build();
     }
 }

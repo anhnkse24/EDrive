@@ -6,6 +6,7 @@ import com.swp391.edrive.dto.response.ResponseObject;
 import com.swp391.edrive.service.DealerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ public class DealerController {
     // 🟢 CREATE
     @Operation(summary = "Tạo mới đại lý")
     @PostMapping
-    public ResponseEntity<ResponseObject> createDealer(@RequestBody DealerRequest request) {
+    public ResponseEntity<ResponseObject> createDealer(@Valid @RequestBody DealerRequest request) {
         DealerResponse created = dealerService.createDealer(request);
         return ResponseEntity.ok(
                 new ResponseObject(200, "Tạo đại lý thành công", created)
@@ -35,7 +36,7 @@ public class DealerController {
     @PutMapping("/{dealerId}")
     public ResponseEntity<ResponseObject> updateDealer(
             @PathVariable Long dealerId,
-            @RequestBody DealerRequest request) {
+            @Valid @RequestBody DealerRequest request) {
         DealerResponse updated = dealerService.updateDealer(dealerId, request);
         return ResponseEntity.ok(
                 new ResponseObject(200, "Cập nhật đại lý thành công", updated)
