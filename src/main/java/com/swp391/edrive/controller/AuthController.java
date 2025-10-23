@@ -25,6 +25,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @Tag(name = "Auth", description = "API quản lý người dùng")
 public class AuthController {
     private final AuthServiceImpl authService;
@@ -101,16 +102,22 @@ public class AuthController {
 
     @Operation(summary = "Đổi mật khẩu người dùng hiện tại")
     @PostMapping("/change-password")
-    public ResponseEntity<ResponseObject> changePassword(
-            @Valid @RequestBody ChangePasswordRequest request,
-            Authentication authentication
-    ) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(401)
-                    .body(new ResponseObject(401, "Unauthorized", null));
-        }
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ResponseObject> changePassword(@RequestBody ChangePasswordRequest request) {
+        return authService.changePassword(request);
+    }
+    @Operation(summary = "Gửi email reset mật khẩu khi quên mật khẩu")
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ResponseObject> requestPasswordReset(@RequestParam String email) {
+        return authService.requestPasswordReset(email);
+    }
 
-        String username = authentication.getName(); // Spring lấy từ token
-        return authService.changePassword(username, request);
+    @Operation(summary = "Đặt lại mật khẩu qua token reset")
+    @PostMapping("/reset-password")
+    public ResponseEntity<ResponseObject> resetPassword(
+            @RequestParam String token,
+            @RequestParam String newPassword
+    ) {
+        return authService.resetPassword(token, newPassword);
     }
 }

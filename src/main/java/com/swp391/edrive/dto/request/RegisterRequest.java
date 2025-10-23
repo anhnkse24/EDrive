@@ -29,13 +29,28 @@ public class RegisterRequest {
     @Pattern(regexp = "^(0[0-9]{9})$", message = "Phone must be 10 digits and start with 0")
     private String phone;
 
+    @NotBlank(message = "Dealer code is required")
+    @Size(min = 3, max = 20, message = "Dealer code must be between 3–20 characters")
+    private String dealerCode;
+
     @NotBlank(message = "Dealer name is required")
-    @Size(min = 4, max = 40, message = "Dealername must be between 4–40 characters")
+    @Size(min = 4, max = 40, message = "Dealer name must be between 4–40 characters")
     private String dealerName;
 
-    @NotBlank(message = "Address is required")
-    @Size(min = 5, max = 100, message = "Address must be between 5–100 characters")
-    private String address;
+    @NotBlank(message = "House number and street are required")
+    @Size(min = 5, max = 100, message = "House number and street must be between 5–100 characters")
+    private String houseNumberAndStreet;
+
+    @NotBlank(message = "Ward or commune is required")
+    private String wardOrCommune;
+
+    @NotBlank(message = "District is required")
+    private String district;
+
+    @NotBlank(message = "Province or city is required")
+    private String provinceOrCity;
+
+    private int contractId; // optional, can be null
 
     @NotBlank(message = "Username is required")
     @Size(min = 4, max = 20, message = "Username must be between 4–20 characters")

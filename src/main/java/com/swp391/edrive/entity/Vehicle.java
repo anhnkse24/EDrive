@@ -10,7 +10,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "vehicles")
@@ -63,4 +65,7 @@ public class Vehicle {
 
     @OneToMany(mappedBy = "vehicle")
     private List<Quotation> quotations;
+
+    @ManyToMany(mappedBy = "vehicles")
+    private Set<Promotion> promotions = new HashSet<>();
 }

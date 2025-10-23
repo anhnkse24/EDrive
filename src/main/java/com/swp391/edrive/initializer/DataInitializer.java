@@ -37,35 +37,50 @@ public class DataInitializer implements CommandLineRunner {
         // =======================
         Dealer dealer1 = new Dealer();
         dealer1.setDealerName("Edriver Center");
-        dealer1.setAddress("123 Nguyen Van Troi, Phu Nhuan, TP. HCM");
+        dealer1.setHouseNumberAndStreet("123 Nguyen Van Troi");
+        dealer1.setWardOrCommune("Phu Nhuan");
+        dealer1.setDistrict("Phu Nhuan");
+        dealer1.setProvinceOrCity("Ho Chi Minh City");
         dealer1.setContactPerson("Nguyen Van A");
         dealer1.setPhone("0909123456");
         dealerRepository.save(dealer1);
 
         Dealer dealer2 = new Dealer();
         dealer2.setDealerName("Edrive Hanoi Showroom");
-        dealer2.setAddress("25 Tran Duy Hung, Cau Giay, Ha Noi");
+        dealer2.setHouseNumberAndStreet("25 Tran Duy Hung");
+        dealer2.setWardOrCommune("Trung Hoa");
+        dealer2.setDistrict("Cau Giay");
+        dealer2.setProvinceOrCity("Ha Noi");
         dealer2.setContactPerson("Tran Thi B");
         dealer2.setPhone("0912345678");
         dealerRepository.save(dealer2);
 
         Dealer dealer3 = new Dealer();
         dealer3.setDealerName("Edrive Danang Center");
-        dealer3.setAddress("78 Nguyen Van Linh, Hai Chau, Da Nang");
+        dealer3.setHouseNumberAndStreet("78 Nguyen Van Linh");
+        dealer3.setWardOrCommune("Hai Chau");
+        dealer3.setDistrict("Hai Chau");
+        dealer3.setProvinceOrCity("Da Nang");
         dealer3.setContactPerson("Le Van C");
         dealer3.setPhone("0938765432");
         dealerRepository.save(dealer3);
 
         Dealer dealer4 = new Dealer();
         dealer4.setDealerName("Edrive Can Tho Auto Mall");
-        dealer4.setAddress("45 Cach Mang Thang 8, Ninh Kieu, Can Tho");
+        dealer4.setHouseNumberAndStreet("45 Cach Mang Thang 8");
+        dealer4.setWardOrCommune("Ninh Kieu");
+        dealer4.setDistrict("Ninh Kieu");
+        dealer4.setProvinceOrCity("Can Tho");
         dealer4.setContactPerson("Pham Thi D");
         dealer4.setPhone("0978123456");
         dealerRepository.save(dealer4);
 
         Dealer dealer5 = new Dealer();
         dealer5.setDealerName("Edrive Hai Phong Premium Showroom");
-        dealer5.setAddress("12 Le Hong Phong, Ngo Quyen, Hai Phong");
+        dealer5.setHouseNumberAndStreet("12 Le Hong Phong");
+        dealer5.setWardOrCommune("Ngo Quyen");
+        dealer5.setDistrict("Ngo Quyen");
+        dealer5.setProvinceOrCity("Hai Phong");
         dealer5.setContactPerson("Do Van E");
         dealer5.setPhone("0989988776");
         dealerRepository.save(dealer5);

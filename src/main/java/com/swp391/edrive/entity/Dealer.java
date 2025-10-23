@@ -21,11 +21,26 @@ public class Dealer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long dealerId;
 
+    @Column(nullable = false, length = 100)
     private String dealerName;
-    private String address;
+
+    @Column(length = 150)
+    private String houseNumberAndStreet;
+
+    @Column(length = 100)
+    private String wardOrCommune;
+
+    @Column(length = 100)
+    private String district;
+
+    @Column(length = 100)
+    private String provinceOrCity;
+
+    @Column(nullable = false, length = 100)
     private String contactPerson;
+
+    @Column(nullable = false, length = 20)
     private String phone;
-    private Integer contractId;
 
     @OneToMany(mappedBy = "dealer")
     @JsonIgnore

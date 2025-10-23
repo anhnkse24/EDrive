@@ -2,7 +2,9 @@ package com.swp391.edrive.service.serviceimpl;
 
 import com.swp391.edrive.dto.request.VehicleUpsertRequest;
 import com.swp391.edrive.dto.response.VehicleResponse;
+import com.swp391.edrive.entity.Promotion;
 import com.swp391.edrive.entity.Vehicle;
+import com.swp391.edrive.enums.DiscountType;
 import com.swp391.edrive.enums.VehicleStatus;
 import com.swp391.edrive.repository.VehicleRepository;
 import com.swp391.edrive.service.VehicleService;
@@ -14,7 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -156,8 +161,39 @@ public class VehicleServiceImpl implements VehicleService {
                 .widthMm(v.getWidthMm())
                 .heightMm(v.getHeightMm())
                 .priceRetail(v.getPriceRetail())
+                .finalPrice(calculateDiscountedPrice(v))
                 .status(v.getStatus() != null ? v.getStatus().name() : null)
                 .manufactureYear(v.getManufactureYear())
                 .build();
+    }
+    public BigDecimal calculateDiscountedPrice(Vehicle vehicle) {
+        BigDecimal basePrice = vehicle.getPriceRetail();
+        BigDecimal discountedPrice = basePrice;
+
+        if (vehicle.getPromotions() == null || vehicle.getPromotions().isEmpty()) {
+            return basePrice;
+        }
+
+        LocalDate now = LocalDate.now();
+
+        // Lọc ra các khuyến mãi còn hiệu lực
+        Set<Promotion> activePromotions = vehicle.getPromotions().stream()
+                .filter(p -> p.getStartDate() != null && p.getEndDate() != null)
+                .filter(p -> !now.isBefore(p.getStartDate()) && !now.isAfter(p.getEndDate()))
+                .collect(Collectors.toSet());
+
+        for (Promotion promo : activePromotions) {
+            if (promo.getDiscountType() == DiscountType.PERCENTAGE) {
+                // Giảm theo %
+                double percent = promo.getDiscountValue() / 100.0;
+                discountedPrice = discountedPrice.multiply(BigDecimal.valueOf(1 - percent));
+            } else if (promo.getDiscountType() == DiscountType.FIXED_AMOUNT) {
+                // Giảm số tiền cố định
+                discountedPrice = discountedPrice.subtract(BigDecimal.valueOf(promo.getDiscountValue()));
+            }
+        }
+
+        // Không để giá âm
+        return discountedPrice.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : discountedPrice;
     }
 }

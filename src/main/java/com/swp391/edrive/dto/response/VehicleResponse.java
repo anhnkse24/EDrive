@@ -25,6 +25,7 @@ public class VehicleResponse {
     private Integer widthMm;
     private Integer heightMm;
     private BigDecimal priceRetail;
+    private BigDecimal finalPrice;
     private String status;
     private Integer manufactureYear;
 }

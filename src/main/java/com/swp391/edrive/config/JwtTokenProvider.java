@@ -1,9 +1,11 @@
 package com.swp391.edrive.config;
 
+import com.swp391.edrive.repository.TokenRepository;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,12 +19,15 @@ import java.util.Date;
 public class JwtTokenProvider {
     private final SecretKey secretKey;
     private final long expirationMs;
+    private final TokenRepository tokenRepository;
 
     public JwtTokenProvider(
             @Value("${security.jwt.secret}") String secret,
-            @Value("${security.jwt.expiration-ms}") long expirationMs) {
+            @Value("${security.jwt.expiration-ms}") long expirationMs,
+            TokenRepository tokenRepository) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.expirationMs = expirationMs;
+        this.tokenRepository = tokenRepository;
     }
 
     public String generateToken(Authentication authentication) {
@@ -48,6 +53,12 @@ public class JwtTokenProvider {
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
+
+            // ✅ Kiểm tra DB xem token có bị thu hồi hoặc hết hạn không
+            var tokenEntity = tokenRepository.findByToken(token);
+            if (tokenEntity.isEmpty()) return false;
+            if (tokenEntity.get().isExpired() || tokenEntity.get().isRevoked()) return false;
+
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             return false;
