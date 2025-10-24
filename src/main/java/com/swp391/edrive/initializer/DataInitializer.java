@@ -28,6 +28,7 @@ public class DataInitializer implements CommandLineRunner {
     private final CustomerRepository customerRepository;
     private final TestDriveRepository testDriveRepository;
     private final PromotionRepository promotionRepository;
+    private final InventoryRepository inventoryRepository;
 
 
     @Override
@@ -441,8 +442,8 @@ public class DataInitializer implements CommandLineRunner {
 //        testDriveRepository.save(tdPast4);
 
         // =======================
-// Promotions (sample data)
-// =======================
+        // Promotions (sample data)
+        // =======================
         Promotion promo1 = new Promotion();
         promo1.setTitle("Giảm 10% cho dòng E-Car B");
         promo1.setDescription("Chương trình khuyến mãi mùa hè - giảm 10% giá bán cho tất cả phiên bản của dòng E-Car B.");
@@ -494,6 +495,65 @@ public class DataInitializer implements CommandLineRunner {
         promo5.setApplicableTo(PromoTarget.CUSTOMER);
 
         promotionRepository.saveAll(List.of(promo1, promo2, promo3, promo4, promo5));
+
+        // =======================
+        // Inventory (số lượng xe mỗi đại lý có trong kho)
+        // =======================
+        Inventory inv1 = new Inventory();
+        inv1.setDealer(dealer1);
+        inv1.setVehicle(v3);
+        inv1.setQuantity(8);
+        inv1.setLastUpdated(LocalDateTime.now());
+        inventoryRepository.save(inv1);
+
+        Inventory inv2 = new Inventory();
+        inv2.setDealer(dealer1);
+        inv2.setVehicle(v4);
+        inv2.setQuantity(5);
+        inv2.setLastUpdated(LocalDateTime.now());
+        inventoryRepository.save(inv2);
+
+        Inventory inv3 = new Inventory();
+        inv3.setDealer(dealer2);
+        inv3.setVehicle(v5);
+        inv3.setQuantity(10);
+        inv3.setLastUpdated(LocalDateTime.now());
+        inventoryRepository.save(inv3);
+
+        Inventory inv4 = new Inventory();
+        inv4.setDealer(dealer2);
+        inv4.setVehicle(v6);
+        inv4.setQuantity(7);
+        inv4.setLastUpdated(LocalDateTime.now());
+        inventoryRepository.save(inv4);
+
+        Inventory inv5 = new Inventory();
+        inv5.setDealer(dealer3);
+        inv5.setVehicle(v7);
+        inv5.setQuantity(6);
+        inv5.setLastUpdated(LocalDateTime.now());
+        inventoryRepository.save(inv5);
+
+        Inventory inv6 = new Inventory();
+        inv6.setDealer(dealer4);
+        inv6.setVehicle(v9);
+        inv6.setQuantity(12);
+        inv6.setLastUpdated(LocalDateTime.now());
+        inventoryRepository.save(inv6);
+
+        Inventory inv7 = new Inventory();
+        inv7.setDealer(dealer5);
+        inv7.setVehicle(v10);
+        inv7.setQuantity(4);
+        inv7.setLastUpdated(LocalDateTime.now());
+        inventoryRepository.save(inv7);
+
+        Inventory inv8 = new Inventory();
+        inv8.setDealer(dealer5);
+        inv8.setVehicle(v12);
+        inv8.setQuantity(2);
+        inv8.setLastUpdated(LocalDateTime.now());
+        inventoryRepository.save(inv8);
 
         System.out.println("✅ Data initialization completed!");
     }
