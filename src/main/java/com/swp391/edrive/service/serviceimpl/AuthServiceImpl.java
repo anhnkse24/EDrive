@@ -4,6 +4,7 @@ import com.swp391.edrive.config.JwtTokenProvider;
 import com.swp391.edrive.dto.request.ChangePasswordRequest;
 import com.swp391.edrive.dto.request.LoginRequest;
 import com.swp391.edrive.dto.request.RegisterRequest;
+import com.swp391.edrive.dto.response.DealerResponse;
 import com.swp391.edrive.dto.response.ResponseObject;
 import com.swp391.edrive.dto.response.UserResponse;
 import com.swp391.edrive.entity.*;
@@ -50,21 +51,20 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public UserResponse register(RegisterRequest request) {
 
-        // 🔹 Kiểm tra mật khẩu xác nhận
+        // 🔹 Kiểm tra xác nhận mật khẩu
         if (!request.getPassword().equals(request.getConfirmPassword())) {
             throw new RuntimeException("Mật khẩu xác nhận không khớp");
         }
 
-        // 🔹 Kiểm tra trùng dữ liệu người dùng
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+        // 🔹 Kiểm tra trùng thông tin người dùng
+        if (userRepository.findByEmail(request.getEmail()).isPresent())
             throw new RuntimeException("Email đã được sử dụng");
-        }
-        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+
+        if (userRepository.findByUsername(request.getUsername()).isPresent())
             throw new RuntimeException("Tên đăng nhập đã được sử dụng");
-        }
-        if (userRepository.findByPhone(request.getPhone()).isPresent()) {
+
+        if (userRepository.findByPhone(request.getPhone()).isPresent())
             throw new RuntimeException("Số điện thoại đã được sử dụng");
-        }
 
         // 🔹 Kiểm tra trùng tên đại lý
         dealerRepository.findByDealerName(request.getDealerName())
@@ -75,7 +75,7 @@ public class AuthServiceImpl implements AuthService {
         // 🔹 Mã hóa mật khẩu
         String encodedPassword = passwordEncoder.encode(request.getPassword());
 
-        // 🔹 Tạo dealer mới
+        // 🔹 Tạo mới Dealer
         Dealer dealer = new Dealer();
         dealer.setDealerName(request.getDealerName());
         dealer.setHouseNumberAndStreet(request.getHouseNumberAndStreet());
@@ -84,32 +84,43 @@ public class AuthServiceImpl implements AuthService {
         dealer.setProvinceOrCity(request.getProvinceOrCity());
         dealer.setContactPerson(request.getFullName());
         dealer.setPhone(request.getPhone());
-
         Dealer savedDealer = dealerRepository.save(dealer);
 
-        // 🔹 Tạo user mới
+        // 🔹 Tạo mới User
         User user = new User();
         user.setFullName(request.getFullName());
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
         user.setPassword(encodedPassword);
-        user.setRole(UserRole.DEALER_MANAGER); // người tạo đầu tiên là chủ đại lý
+        user.setRole(UserRole.DEALER_MANAGER); // chủ đại lý
         user.setDealer(savedDealer);
-
         User savedUser = userRepository.save(user);
 
-        // 🔹 Trả về response
-        return new UserResponse(
-                savedUser.getUserId(),
-                savedUser.getUsername(),
-                savedUser.getFullName(),
-                savedUser.getEmail(),
-                savedUser.getPhone(),
-                savedUser.getRole(),
-                savedUser.getDealer().getDealerName()
-        );
+        // 🔹 Tạo DealerResponse để lồng vào UserResponse
+        DealerResponse dealerResponse = DealerResponse.builder()
+                .dealerId(savedDealer.getDealerId())
+                .dealerName(savedDealer.getDealerName())
+                .houseNumberAndStreet(savedDealer.getHouseNumberAndStreet())
+                .wardOrCommune(savedDealer.getWardOrCommune())
+                .district(savedDealer.getDistrict())
+                .provinceOrCity(savedDealer.getProvinceOrCity())
+                .contactPerson(savedDealer.getContactPerson())
+                .phone(savedDealer.getPhone())
+                .build();
+
+        // 🔹 Trả về UserResponse có Dealer
+        return UserResponse.builder()
+                .userId(savedUser.getUserId())
+                .username(savedUser.getUsername())
+                .fullName(savedUser.getFullName())
+                .email(savedUser.getEmail())
+                .phone(savedUser.getPhone())
+                .role(savedUser.getRole())
+                .dealer(dealerResponse)
+                .build();
     }
+
 
 
     @Override
