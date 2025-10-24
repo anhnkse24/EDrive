@@ -202,8 +202,8 @@ public class PaymentServiceImpl implements PaymentService {
             }
 
             String respCode = params.get("vnp_ResponseCode"); // "00" success
-            String txnRef   = params.get("vnp_TxnRef");       // paymentId
-            Long paymentId  = Long.valueOf(txnRef);
+            String txnRef   = params.get("vnp_TxnRef");
+            Long paymentId  = Long.valueOf(txnRef.split("-")[0]); // tách lại id
 
             Payment payment = paymentRepo.findById(paymentId)
                     .orElse(null);

@@ -32,6 +32,9 @@ public class Payment {
     @Enumerated(EnumType.STRING)
     private PaymentMethod method;
 
+    @Column(name = "vnp_txn_ref")
+    private String vnpTxnRef;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private PaymentStatus status = PaymentStatus.PENDING;
