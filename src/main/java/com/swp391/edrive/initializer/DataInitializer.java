@@ -510,6 +510,54 @@ public class DataInitializer implements CommandLineRunner {
 
         promotionRepository.saveAll(List.of(promo1, promo2, promo3, promo4, promo5));
 
+
+        // =======================
+        // TestDrives (dữ liệu mẫu)
+        // =======================
+        LocalDateTime now = LocalDateTime.now();
+
+        TestDrive td1 = new TestDrive();
+        td1.setCustomer(c1);
+        td1.setDealer(dealer1);
+        td1.setVehicle(v3);
+        td1.setScheduleDatetime(now.plusDays(1).withHour(9).withMinute(0));
+        td1.setStatus(TestDriveStatus.PENDING);
+        testDriveRepository.save(td1);
+
+        TestDrive td2 = new TestDrive();
+        td2.setCustomer(c2);
+        td2.setDealer(dealer1);
+        td2.setVehicle(v4);
+        td2.setScheduleDatetime(now.plusDays(2).withHour(10).withMinute(30));
+        td2.setStatus(TestDriveStatus.PENDING);
+        testDriveRepository.save(td2);
+
+        TestDrive td3 = new TestDrive();
+        td3.setCustomer(c3);
+        td3.setDealer(dealer2);
+        td3.setVehicle(v6);
+        td3.setScheduleDatetime(now.minusDays(1).withHour(14).withMinute(0));
+        td3.setStatus(TestDriveStatus.COMPLETED);
+        td3.setCompletedAt(now.minusDays(1).withHour(15));
+        testDriveRepository.save(td3);
+
+        TestDrive td4 = new TestDrive();
+        td4.setCustomer(c1);
+        td4.setDealer(dealer3);
+        td4.setVehicle(v7);
+        td4.setScheduleDatetime(now.minusDays(2).withHour(10));
+        td4.setStatus(TestDriveStatus.CANCELLED);
+        td4.setCancelReason("Khách bận công tác");
+        testDriveRepository.save(td4);
+
+        TestDrive td5 = new TestDrive();
+        td5.setCustomer(c2);
+        td5.setDealer(dealer5);
+        td5.setVehicle(v10);
+        td5.setScheduleDatetime(now.plusDays(3).withHour(16));
+        td5.setStatus(TestDriveStatus.PENDING);
+        testDriveRepository.save(td5);
+
         // =======================
         // Inventory (số lượng xe mỗi đại lý có trong kho)
         // =======================

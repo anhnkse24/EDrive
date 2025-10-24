@@ -49,24 +49,30 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public UserResponse register(RegisterRequest request) {
-        // Kiểm tra xác nhận mật khẩu
+
+        // 🔹 Kiểm tra mật khẩu xác nhận
         if (!request.getPassword().equals(request.getConfirmPassword())) {
             throw new RuntimeException("Mật khẩu xác nhận không khớp");
         }
+
+        // 🔹 Kiểm tra trùng dữ liệu người dùng
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email đã được sử dụng");
         }
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new RuntimeException("Username đã được sử dụng");
+            throw new RuntimeException("Tên đăng nhập đã được sử dụng");
         }
         if (userRepository.findByPhone(request.getPhone()).isPresent()) {
             throw new RuntimeException("Số điện thoại đã được sử dụng");
         }
+
+        // 🔹 Kiểm tra trùng tên đại lý
         dealerRepository.findByDealerName(request.getDealerName())
                 .ifPresent(d -> {
                     throw new RuntimeException("Tên đại lý đã được sử dụng");
                 });
 
+        // 🔹 Mã hóa mật khẩu
         String encodedPassword = passwordEncoder.encode(request.getPassword());
 
         // 🔹 Tạo dealer mới
@@ -79,7 +85,7 @@ public class AuthServiceImpl implements AuthService {
         dealer.setContactPerson(request.getFullName());
         dealer.setPhone(request.getPhone());
 
-        dealerRepository.save(dealer);
+        Dealer savedDealer = dealerRepository.save(dealer);
 
         // 🔹 Tạo user mới
         User user = new User();
@@ -88,11 +94,12 @@ public class AuthServiceImpl implements AuthService {
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
         user.setPassword(encodedPassword);
-        user.setRole(UserRole.DEALER_STAFF); // mặc định staff
-        user.setDealer(dealer);
+        user.setRole(UserRole.DEALER_MANAGER); // người tạo đầu tiên là chủ đại lý
+        user.setDealer(savedDealer);
 
         User savedUser = userRepository.save(user);
 
+        // 🔹 Trả về response
         return new UserResponse(
                 savedUser.getUserId(),
                 savedUser.getUsername(),
@@ -103,6 +110,7 @@ public class AuthServiceImpl implements AuthService {
                 savedUser.getDealer().getDealerName()
         );
     }
+
 
     @Override
     public LoginResult login(LoginRequest request) {
