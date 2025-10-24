@@ -20,6 +20,7 @@ public class VehicleUpsertRequest {
 
     @NotBlank(message = "Màu không được để trống")
     @Size(max = 50, message = "Màu tối đa 50 ký tự")
+    @Pattern(regexp = "^[A-Za-zÀ-ỹ\\s]+$", message = "Màu chỉ được chứa chữ và khoảng trắng")
     private String color;
 
     @NotNull(message = "Dung lượng pin bắt buộc")

@@ -94,10 +94,20 @@ public class VehicleServiceImpl implements VehicleService {
         return result.stream().map(this::toResponse).toList();
     }
 
-    // === CREATE ===
     @Override
     @Transactional
     public VehicleResponse createVehicle(VehicleUpsertRequest req) {
+        boolean exists = vehicleRepository
+                .existsByModelNameIgnoreCaseAndVersionIgnoreCaseAndColorIgnoreCaseAndManufactureYear(
+                        req.getModelName().trim(),
+                        req.getVersion().trim(),
+                        req.getColor().trim(),
+                        req.getManufactureYear()
+                );
+        if (exists) {
+            throw new IllegalArgumentException("Xe đã tồn tại (trùng model, phiên bản, màu, năm SX)");
+        }
+
         Vehicle v = new Vehicle();
         apply(v, req);
         v = vehicleRepository.save(v);

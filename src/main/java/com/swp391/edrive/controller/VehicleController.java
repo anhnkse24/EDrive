@@ -153,11 +153,15 @@ public class VehicleController {
         }
     }
 
-    @Operation(summary = "Thêm xe")
     @PostMapping
     public ResponseEntity<ResponseObject> create(@Valid @RequestBody VehicleUpsertRequest req) {
-        VehicleResponse created = vehicleService.createVehicle(req);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new ResponseObject(200, "Vehicle created", created));
+        try {
+            VehicleResponse created = vehicleService.createVehicle(req);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new ResponseObject(201, "Vehicle created", created));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new ResponseObject(409, ex.getMessage(), null));
+        }
     }
 }
