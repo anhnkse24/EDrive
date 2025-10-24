@@ -23,4 +23,7 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
     Page<Vehicle> findByPriceRetailBetween(BigDecimal min, BigDecimal max, Pageable p);
     Page<Vehicle> findByPriceRetailGreaterThanEqual(BigDecimal min, Pageable p);
     Page<Vehicle> findByPriceRetailLessThanEqual(BigDecimal max, Pageable p);
+
+    boolean existsByModelNameIgnoreCaseAndVersionIgnoreCaseAndColorIgnoreCaseAndManufactureYear(
+            String modelName, String version, String color, Integer manufactureYear);
 }

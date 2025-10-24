@@ -9,7 +9,6 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDate;
@@ -17,7 +16,7 @@ import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
-    // Sai format JSON hoặc sai định dạng ngày trong body
+    
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ResponseObject> handleJsonParse(HttpMessageNotReadableException ex) {
         String message = "Dữ liệu không hợp lệ.";

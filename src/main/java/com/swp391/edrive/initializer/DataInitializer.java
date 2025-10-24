@@ -391,55 +391,55 @@ public class DataInitializer implements CommandLineRunner {
         // =======================
         // Helper: làm tròn giờ về mốc 00/30 phút
         // =======================
-        Function<LocalDateTime, LocalDateTime> roundToSlot = dt -> {
-            int m = dt.getMinute();
-            if (m == 0 || m == 30) return dt.withSecond(0).withNano(0);
-            if (m < 30) return dt.withMinute(30).withSecond(0).withNano(0);
-            return dt.plusHours(1).withMinute(0).withSecond(0).withNano(0);
-        };
-
-        LocalTime OPEN = LocalTime.of(8, 0);
-        LocalTime CLOSE = LocalTime.of(17, 30);
-        Duration SLOT = Duration.ofMinutes(30);
-
-        // =======================
-        // TestDrives
-        // =======================
-        LocalDate today = LocalDate.now();
-        LocalDate tomorrow = today.plusDays(1);
-        LocalDate yesterday = today.minusDays(1);
-        LocalDate threeDaysAgo = today.minusDays(3);
-
-        // --- Lịch hẹn tương lai (ngày mai)
-        TestDrive td1 = new TestDrive(c1, dealer1, v1, LocalDateTime.of(tomorrow, LocalTime.of(9, 0)), TestDriveStatus.PENDING);
-        testDriveRepository.save(td1);
-        TestDrive td2 = new TestDrive(c2, dealer1, v2, LocalDateTime.of(tomorrow, LocalTime.of(9, 30)), TestDriveStatus.PENDING);
-        testDriveRepository.save(td2);
-        TestDrive td3 = new TestDrive(c3, dealer1, v1, LocalDateTime.of(tomorrow, LocalTime.of(14, 30)), TestDriveStatus.PENDING);
-        testDriveRepository.save(td3);
-
-        // --- Lịch hẹn hôm nay (hiện tại + 3 tiếng)
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime slot1 = roundToSlot.apply(now.plusHours(3));
-        LocalDateTime slot2 = slot1.plusMinutes(30);
-        if (slot2.toLocalTime().isAfter(CLOSE.minus(SLOT))) {
-            slot2 = LocalDateTime.of(today, CLOSE.minus(SLOT));
-        }
-
-        TestDrive tdToday1 = new TestDrive(c2, dealer1, v1, slot1, TestDriveStatus.PENDING);
-        testDriveRepository.save(tdToday1);
-        TestDrive tdToday2 = new TestDrive(c3, dealer1, v2, slot2, TestDriveStatus.PENDING);
-        testDriveRepository.save(tdToday2);
-
-        // --- Lịch hẹn đã qua (hôm qua & 3 ngày trước)
-        TestDrive tdPast1 = new TestDrive(c1, dealer1, v1, LocalDateTime.of(yesterday, LocalTime.of(10, 0)), TestDriveStatus.COMPLETED);
-        testDriveRepository.save(tdPast1);
-        TestDrive tdPast2 = new TestDrive(c2, dealer1, v2, LocalDateTime.of(yesterday, LocalTime.of(10, 30)), TestDriveStatus.COMPLETED);
-        testDriveRepository.save(tdPast2);
-        TestDrive tdPast3 = new TestDrive(c3, dealer1, v1, LocalDateTime.of(threeDaysAgo, LocalTime.of(15, 0)), TestDriveStatus.CANCELLED);
-        testDriveRepository.save(tdPast3);
-        TestDrive tdPast4 = new TestDrive(c1, dealer1, v2, LocalDateTime.of(threeDaysAgo, LocalTime.of(15, 30)), TestDriveStatus.COMPLETED);
-        testDriveRepository.save(tdPast4);
+//        Function<LocalDateTime, LocalDateTime> roundToSlot = dt -> {
+//            int m = dt.getMinute();
+//            if (m == 0 || m == 30) return dt.withSecond(0).withNano(0);
+//            if (m < 30) return dt.withMinute(30).withSecond(0).withNano(0);
+//            return dt.plusHours(1).withMinute(0).withSecond(0).withNano(0);
+//        };
+//
+//        LocalTime OPEN = LocalTime.of(8, 0);
+//        LocalTime CLOSE = LocalTime.of(17, 30);
+//        Duration SLOT = Duration.ofMinutes(30);
+//
+//        // =======================
+//        // TestDrives
+//        // =======================
+//        LocalDate today = LocalDate.now();
+//        LocalDate tomorrow = today.plusDays(1);
+//        LocalDate yesterday = today.minusDays(1);
+//        LocalDate threeDaysAgo = today.minusDays(3);
+//
+//        // --- Lịch hẹn tương lai (ngày mai)
+//        TestDrive td1 = new TestDrive(c1, dealer1, v1, LocalDateTime.of(tomorrow, LocalTime.of(9, 0)), TestDriveStatus.PENDING);
+//        testDriveRepository.save(td1);
+//        TestDrive td2 = new TestDrive(c2, dealer1, v2, LocalDateTime.of(tomorrow, LocalTime.of(9, 30)), TestDriveStatus.PENDING);
+//        testDriveRepository.save(td2);
+//        TestDrive td3 = new TestDrive(c3, dealer1, v1, LocalDateTime.of(tomorrow, LocalTime.of(14, 30)), TestDriveStatus.PENDING);
+//        testDriveRepository.save(td3);
+//
+//        // --- Lịch hẹn hôm nay (hiện tại + 3 tiếng)
+//        LocalDateTime now = LocalDateTime.now();
+//        LocalDateTime slot1 = roundToSlot.apply(now.plusHours(3));
+//        LocalDateTime slot2 = slot1.plusMinutes(30);
+//        if (slot2.toLocalTime().isAfter(CLOSE.minus(SLOT))) {
+//            slot2 = LocalDateTime.of(today, CLOSE.minus(SLOT));
+//        }
+//
+//        TestDrive tdToday1 = new TestDrive(c2, dealer1, v1, slot1, TestDriveStatus.PENDING);
+//        testDriveRepository.save(tdToday1);
+//        TestDrive tdToday2 = new TestDrive(c3, dealer1, v2, slot2, TestDriveStatus.PENDING);
+//        testDriveRepository.save(tdToday2);
+//
+//        // --- Lịch hẹn đã qua (hôm qua & 3 ngày trước)
+//        TestDrive tdPast1 = new TestDrive(c1, dealer1, v1, LocalDateTime.of(yesterday, LocalTime.of(10, 0)), TestDriveStatus.COMPLETED);
+//        testDriveRepository.save(tdPast1);
+//        TestDrive tdPast2 = new TestDrive(c2, dealer1, v2, LocalDateTime.of(yesterday, LocalTime.of(10, 30)), TestDriveStatus.COMPLETED);
+//        testDriveRepository.save(tdPast2);
+//        TestDrive tdPast3 = new TestDrive(c3, dealer1, v1, LocalDateTime.of(threeDaysAgo, LocalTime.of(15, 0)), TestDriveStatus.CANCELLED);
+//        testDriveRepository.save(tdPast3);
+//        TestDrive tdPast4 = new TestDrive(c1, dealer1, v2, LocalDateTime.of(threeDaysAgo, LocalTime.of(15, 30)), TestDriveStatus.COMPLETED);
+//        testDriveRepository.save(tdPast4);
 
         // =======================
         // Promotions (sample data)

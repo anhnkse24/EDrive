@@ -20,6 +20,7 @@ public class VehicleUpsertRequest {
 
     @NotBlank(message = "Màu không được để trống")
     @Size(max = 50, message = "Màu tối đa 50 ký tự")
+    @Pattern(regexp = "^[A-Za-zÀ-ỹ\\s]+$", message = "Màu chỉ được chứa chữ và khoảng trắng")
     private String color;
 
     @NotNull(message = "Dung lượng pin bắt buộc")
@@ -43,10 +44,9 @@ public class VehicleUpsertRequest {
     @DecimalMax(value = "72.0", inclusive = true, message = "Thời gian sạc tối đa 72 giờ")
     private Float chargingTimeHours;
 
-    @NotNull(message = "Số chỗ ngồi bắt buộc")
-    @Min(value = 1, message = "Số chỗ ngồi tối thiểu 1")
-    @Max(value = 20, message = "Số chỗ ngồi tối đa 20")
-    private Integer seatingCapacity;
+    @NotBlank(message = "Số chỗ ngồi bắt buộc")
+    @Pattern(regexp = "4|7", message = "Chỉ chấp nhận xe 4 chỗ hoặc 7 chỗ")
+    private String seatingCapacity;
 
     @NotNull(message = "Công suất mô tơ bắt buộc")
     @Min(value = 1, message = "Công suất mô tơ tối thiểu 1 kW")
