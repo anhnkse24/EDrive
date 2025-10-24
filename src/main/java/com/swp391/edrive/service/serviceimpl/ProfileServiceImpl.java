@@ -12,31 +12,34 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-
 public class ProfileServiceImpl implements ProfileService {
+
     private final UserRepository userRepository;
 
     @Override
     @Transactional(Transactional.TxType.SUPPORTS)
     public ProfileResponse getMyProfile(String username) {
-        User u = userRepository.findByUsername(username)
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
-        return ProfileResponse.from(u);
+
+        return ProfileResponse.from(user);
     }
 
     @Override
     @Transactional
     public ProfileResponse updateMyProfile(String username, UpdateProfileRequest req) {
-        User u = userRepository.findByUsername(username)
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
-        // Tùy policy: có cho sửa email không? Nếu không, bỏ dòng setEmail
-        u.setFullName(req.getFullName());
-        if (req.getEmail() != null && !req.getEmail().isBlank()) u.setEmail(req.getEmail());
-        if (req.getPhone() != null && !req.getPhone().isBlank()) u.setPhone(req.getPhone());
+        // Cập nhật thông tin có thay đổi
+        if (req.getFullName() != null && !req.getFullName().isBlank())
+            user.setFullName(req.getFullName());
+        if (req.getEmail() != null && !req.getEmail().isBlank())
+            user.setEmail(req.getEmail());
+        if (req.getPhone() != null && !req.getPhone().isBlank())
+            user.setPhone(req.getPhone());
 
-        // save và trả về
-        User saved = userRepository.save(u);
+        User saved = userRepository.save(user);
         return ProfileResponse.from(saved);
     }
 }
