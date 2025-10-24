@@ -155,7 +155,7 @@ public class DataInitializer implements CommandLineRunner {
         v1.setLengthMm(4450);
         v1.setWidthMm(1800);
         v1.setHeightMm(1580);
-        v1.setPriceRetail(BigDecimal.valueOf(1_150_000_000.00));
+        v1.setPriceRetail(BigDecimal.valueOf(1_150_000.00));
         v1.setStatus(VehicleStatus.DISCONTINUED);
         v1.setManufactureYear(2022);
         vehicleRepository.save(v1);

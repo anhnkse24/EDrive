@@ -9,6 +9,7 @@ import com.swp391.edrive.enums.PaymentStatus;
 import com.swp391.edrive.enums.PaymentType;
 import com.swp391.edrive.repository.*;
 import com.swp391.edrive.service.OrderService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,131 +25,91 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepo;
     private final DealerRepository dealerRepo;
-    private final QuotationRepository quotationRepo;
-    private final PaymentRepository paymentRepo;
+    private final VehicleRepository vehicleRepo; // NEW
 
-    @Value("${edrive.vat-rate:0.1}") // 10% mặc định
+    @Value("${edrive.vat-rate:0.1}")
     private BigDecimal vatRate;
 
     public OrderServiceImpl(OrderRepository orderRepo,
                             DealerRepository dealerRepo,
-                            QuotationRepository quotationRepo,
-                            PaymentRepository paymentRepo) {
+                            VehicleRepository vehicleRepo) { // CHANGED
         this.orderRepo = orderRepo;
         this.dealerRepo = dealerRepo;
-        this.quotationRepo = quotationRepo;
-        this.paymentRepo = paymentRepo;
+        this.vehicleRepo = vehicleRepo; // NEW
     }
 
     @Override
     @Transactional
-    public OrderSummaryResponse createOrderByDealerCashOnly(OrderCreateRequest req, Long dealerId) {
+    public OrderSummaryResponse createOrder(OrderCreateRequest req, Long dealerId) {
         validate(req);
 
         Dealer dealer = dealerRepo.findById(dealerId)
                 .orElseThrow(() -> new IllegalArgumentException("Dealer not found"));
 
-        // 1) Lấy đơn giá
-        BigDecimal unitPrice = resolveUnitPrice(req);
+        // 1) LẤY GIÁ TỪ VEHICLE.priceRetail (BigDecimal)
+        var vehicle = vehicleRepo.findById(req.vehicleId)
+                .orElseThrow(() -> new IllegalArgumentException("Vehicle not found: id=" + req.vehicleId));
+        BigDecimal unitPrice = vehicle.getPriceRetail();          // <— dùng đúng field của bạn
+        if (unitPrice == null || unitPrice.signum() <= 0) {
+            throw new IllegalStateException("Vehicle.priceRetail is null or <= 0");
+        }
 
-        // 2) Tính tiền: Subtotal -> Discount -> VAT -> GrandTotal
+        // 2) TÍNH TIỀN
         BigDecimal qty = BigDecimal.valueOf(req.quantity);
         BigDecimal subtotal = unitPrice.multiply(qty);
 
         BigDecimal dealerDiscount = calcDealerDiscount(dealer, req.quantity, subtotal);
-        BigDecimal taxable = subtotal.subtract(dealerDiscount);
-        if (taxable.signum() < 0) taxable = BigDecimal.ZERO;
+        BigDecimal priceAfterDiscountBeforeVat = subtotal.subtract(dealerDiscount).max(BigDecimal.ZERO);
 
-        BigDecimal vatAmount = taxable.multiply(vatRate).setScale(0, RoundingMode.HALF_UP);
-        BigDecimal grandTotal = taxable.add(vatAmount);
+        BigDecimal vatAmount = priceAfterDiscountBeforeVat
+                .multiply(vatRate)
+                .setScale(0, java.math.RoundingMode.HALF_UP);
 
-        // 3) Lưu Order
+        BigDecimal priceWithVatBeforeDiscount = subtotal.add(subtotal.multiply(vatRate));
+        BigDecimal grandTotal = priceAfterDiscountBeforeVat.add(vatAmount);
+
+        // 3) LƯU ORDER (chưa thanh toán)
         Order o = new Order();
-        o.setOrderDate(LocalDate.now());
+        o.setOrderDate(java.time.LocalDate.now());
         o.setDealer(dealer);
-        o.setStatus(OrderStatus.PENDING);                    // tạo đơn
-        o.setPaymentMethod(PaymentType.FULL);               // field của bạn là PaymentType (không phải PaymentMethod)
-        o.setPaymentStatus(PaymentStatus.PAID);             // thu tiền mặt ngay
-        o.setTotalPrice(grandTotal.doubleValue());          // entity đang dùng Double
-
-        if (req.quotationId != null) {
-            Quotation q = quotationRepo.findById(req.quotationId)
-                    .orElseThrow(() -> new IllegalArgumentException("Quotation not found"));
-            o.setQuotation(q);
-        }
-        // Nếu Order có các field giao hàng, thêm vào entity và mở set ở đây:
-        // o.setDesiredDeliveryDate(req.desiredDeliveryDate);
-        // o.setDeliveryAddress(req.deliveryAddress);
-        // o.setDeliveryNote(req.deliveryNote);
-
+        o.setStatus(com.swp391.edrive.enums.OrderStatus.PENDING);
+        o.setPaymentMethod(com.swp391.edrive.enums.PaymentType.FULL);      // field của Order là PaymentType
+        o.setPaymentStatus(com.swp391.edrive.enums.PaymentStatus.PENDING); // chưa thanh toán
+        o.setTotalPrice(grandTotal.doubleValue());
         orderRepo.save(o);
 
-        // 4) Ghi nhận Payment (CASH, FULL, PAID)
-        Payment p = new Payment();
-        p.setOrder(o);
-        p.setAmount(grandTotal.doubleValue());
-        p.setPaymentDate(LocalDate.now());
-        p.setPaymentType(PaymentType.FULL);
-        p.setMethod(PaymentMethod.CASH);
-        p.setStatus(PaymentStatus.PAID);
-        paymentRepo.save(p);
-
-        // 5) Cập nhật Order status sang PROCESSING (đã thanh toán, chờ giao)
-        o.setStatus(OrderStatus.PROCESSING);
-        orderRepo.save(o);
-
-        // 6) Response
+        // 4) TRẢ RESPONSE HIỂN THỊ CHI TIẾT GIÁ
         OrderSummaryResponse res = new OrderSummaryResponse();
         res.orderId = o.getOrderId();
-        res.unitPrice = unitPrice;
-        res.quantity = req.quantity;
         res.subtotal = subtotal;
         res.dealerDiscount = dealerDiscount;
         res.vatAmount = vatAmount;
         res.grandTotal = grandTotal;
+
         res.desiredDeliveryDate = req.desiredDeliveryDate;
         res.deliveryAddress = req.deliveryAddress;
         res.deliveryNote = req.deliveryNote;
+
         res.orderStatus = o.getStatus().name();
-        res.paymentMethod = PaymentMethod.CASH.name();
-        res.paymentStatus = o.getPaymentStatus().name();
+        res.paymentMethod = o.getPaymentMethod().name();   // FULL (kiểu thanh toán)
+        res.paymentStatus = o.getPaymentStatus().name();   // PENDING
         return res;
     }
 
     private void validate(OrderCreateRequest req) {
-        if (req.quantity == null || req.quantity <= 0) {
+        if (req.vehicleId == null) throw new IllegalArgumentException("vehicleId is required");
+        if (req.quantity == null || req.quantity <= 0)
             throw new IllegalArgumentException("quantity must be > 0");
-        }
-        if (req.desiredDeliveryDate != null && req.desiredDeliveryDate.isBefore(LocalDate.now())) {
+        if (req.desiredDeliveryDate != null &&
+                req.desiredDeliveryDate.isBefore(java.time.LocalDate.now()))
             throw new IllegalArgumentException("desiredDeliveryDate cannot be in the past");
-        }
-        if (req.quotationId == null && req.vehicleId == null) {
-            throw new IllegalArgumentException("Either quotationId or vehicleId is required");
-        }
-    }
-
-    private BigDecimal resolveUnitPrice(OrderCreateRequest req) {
-        if (req.quotationId != null) {
-            Quotation q = quotationRepo.findById(req.quotationId)
-                    .orElseThrow(() -> new IllegalArgumentException("Quotation not found"));
-            // dùng quotedPrice từ Quotation (Double -> BigDecimal)
-            if (q.getQuotedPrice() == null) {
-                throw new IllegalStateException("Quotation.quotedPrice is null");
-            }
-            return BigDecimal.valueOf(q.getQuotedPrice());
-        }
-        // Nếu không có quotationId mà có vehicleId:
-        // Chưa có thông tin getter giá ở Vehicle -> cần bạn bổ sung Vehicle entity hoặc field giá.
-        throw new IllegalStateException("Vehicle pricing not implemented yet. Please provide Vehicle entity with a price field (e.g., getListPrice() or getPrice()).");
     }
 
     private BigDecimal calcDealerDiscount(Dealer dealer, int quantity, BigDecimal subtotal) {
-        // Ví dụ bậc thang số lượng; thay bằng chính sách thật của bạn nếu có
         BigDecimal rate = BigDecimal.ZERO;
         if (quantity >= 10) rate = new BigDecimal("0.05");
         else if (quantity >= 5) rate = new BigDecimal("0.03");
         else if (quantity >= 2) rate = new BigDecimal("0.01");
-        return subtotal.multiply(rate).setScale(0, RoundingMode.HALF_UP);
+        return subtotal.multiply(rate).setScale(0, java.math.RoundingMode.HALF_UP);
     }
-
 }
