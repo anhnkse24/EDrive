@@ -2,6 +2,7 @@ package com.swp391.edrive.service.serviceimpl;
 
 import com.swp391.edrive.dto.request.UpdateProfileRequest;
 import com.swp391.edrive.dto.response.ProfileResponse;
+import com.swp391.edrive.entity.Dealer;
 import com.swp391.edrive.entity.User;
 import com.swp391.edrive.repository.UserRepository;
 import com.swp391.edrive.service.ProfileService;
@@ -21,8 +22,7 @@ public class ProfileServiceImpl implements ProfileService {
     public ProfileResponse getMyProfile(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
-
-        return ProfileResponse.from(user);
+        return toResponse(user);
     }
 
     @Override
@@ -31,7 +31,7 @@ public class ProfileServiceImpl implements ProfileService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
-        // Cập nhật thông tin có thay đổi
+        // ✅ Cập nhật thông tin người dùng
         if (req.getFullName() != null && !req.getFullName().isBlank())
             user.setFullName(req.getFullName());
         if (req.getEmail() != null && !req.getEmail().isBlank())
@@ -40,6 +40,40 @@ public class ProfileServiceImpl implements ProfileService {
             user.setPhone(req.getPhone());
 
         User saved = userRepository.save(user);
-        return ProfileResponse.from(saved);
+        return toResponse(saved);
+    }
+
+    // ====================
+    // Helper convert entity
+    // ====================
+    private ProfileResponse toResponse(User user) {
+        Dealer dealer = user.getDealer();
+
+        String fullAddress = null;
+        if (dealer != null) {
+            fullAddress = String.format("%s, %s, %s, %s",
+                    dealer.getHouseNumberAndStreet() != null ? dealer.getHouseNumberAndStreet() : "",
+                    dealer.getWardOrCommune() != null ? dealer.getWardOrCommune() : "",
+                    dealer.getDistrict() != null ? dealer.getDistrict() : "",
+                    dealer.getProvinceOrCity() != null ? dealer.getProvinceOrCity() : ""
+            ).replaceAll(", ,", ",").trim();
+        }
+
+        return ProfileResponse.builder()
+                .profileId(user.getUserId())
+                .fullName(user.getFullName())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .phoneNumber(user.getPhone())
+                .agencyName(dealer != null ? dealer.getDealerName() : null)
+                .contactPerson(dealer != null ? dealer.getContactPerson() : null)
+                .agencyPhone(dealer != null ? dealer.getPhone() : null)
+                .streetAddress(dealer != null ? dealer.getHouseNumberAndStreet() : null)
+                .ward(dealer != null ? dealer.getWardOrCommune() : null)
+                .district(dealer != null ? dealer.getDistrict() : null)
+                .city(dealer != null ? dealer.getProvinceOrCity() : null)
+                .fullAddress(fullAddress)
+                .dealerId(dealer != null ? dealer.getDealerId() : null)
+                .build();
     }
 }

@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,21 +23,25 @@ public class ProfileController {
     /**
      * 📘 Xem hồ sơ của người dùng hiện tại
      */
-    @GetMapping
-    @Operation(summary = "Xem hồ sơ người dùng hiện tại")
-    public ProfileResponse getProfile(Authentication auth) {
-        return profileService.getMyProfile(auth.getName());
+    @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Lấy hồ sơ của người dùng hiện tại")
+    public ResponseEntity<ProfileResponse> getProfile(Authentication auth) {
+        ProfileResponse response = profileService.getMyProfile(auth.getName());
+        return ResponseEntity.ok(response);
     }
 
     /**
      * ✏️ Cập nhật hồ sơ cá nhân
      */
-    @PutMapping
+    @PutMapping("/me")
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Cập nhật hồ sơ người dùng hiện tại")
-    public ProfileResponse updateProfile(
+    public ResponseEntity<ProfileResponse> updateProfile(
             Authentication auth,
             @Valid @RequestBody UpdateProfileRequest req
     ) {
-        return profileService.updateMyProfile(auth.getName(), req);
+        ProfileResponse response = profileService.updateMyProfile(auth.getName(), req);
+        return ResponseEntity.ok(response);
     }
 }

@@ -1,45 +1,63 @@
 package com.swp391.edrive.dto.response;
 
+import com.swp391.edrive.entity.Dealer;
 import com.swp391.edrive.entity.User;
-import com.swp391.edrive.enums.UserRole;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Builder;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
+@Builder
 public class ProfileResponse {
-    private Long id;
-    private String username;
+    private Long profileId;
     private String fullName;
+    private String username;
     private String email;
-    private String phone;
-    private UserRole role;
+    private String phoneNumber;
+    private String agencyName;
+    private String contactPerson;
+    private String agencyPhone;
+    private String streetAddress;
+    private String ward;
+    private String district;
+    private String city;
+    private String fullAddress;
+    private Long dealerId;
 
-    private DealerResponse dealer; // 🔹 Thêm object DealerResponse
+    // ======================
+    // Convert from User entity
+    // ======================
+    public static ProfileResponse from(User user) {
+        Dealer dealer = user.getDealer();
 
-    public static ProfileResponse from(User u) {
-        ProfileResponse p = new ProfileResponse();
-        p.setId(u.getUserId());
-        p.setUsername(u.getUsername());
-        p.setFullName(u.getFullName());
-        p.setEmail(u.getEmail());
-        p.setPhone(u.getPhone());
-        p.setRole(u.getRole());
+        String street = (dealer != null && dealer.getHouseNumberAndStreet() != null)
+                ? dealer.getHouseNumberAndStreet() : "";
+        String ward = (dealer != null && dealer.getWardOrCommune() != null)
+                ? dealer.getWardOrCommune() : "";
+        String district = (dealer != null && dealer.getDistrict() != null)
+                ? dealer.getDistrict() : "";
+        String city = (dealer != null && dealer.getProvinceOrCity() != null)
+                ? dealer.getProvinceOrCity() : "";
 
-        if (u.getDealer() != null) {
-            DealerResponse dealerResponse = DealerResponse.builder()
-                    .dealerId(u.getDealer().getDealerId())
-                    .dealerName(u.getDealer().getDealerName())
-                    .houseNumberAndStreet(u.getDealer().getHouseNumberAndStreet())
-                    .wardOrCommune(u.getDealer().getWardOrCommune())
-                    .district(u.getDealer().getDistrict())
-                    .provinceOrCity(u.getDealer().getProvinceOrCity())
-                    .contactPerson(u.getDealer().getContactPerson())
-                    .phone(u.getDealer().getPhone())
-                    .build();
-            p.setDealer(dealerResponse);
-        }
+        String fullAddress = String.join(", ",
+                street, ward, district, city).replaceAll("(^, |, $)", "");
 
-        return p;
+        return ProfileResponse.builder()
+                .profileId(user.getUserId())
+                .fullName(user.getFullName())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .phoneNumber(user.getPhone())
+
+                // Dealer info
+                .agencyName(dealer != null ? dealer.getDealerName() : null)
+                .contactPerson(dealer != null ? dealer.getContactPerson() : null)
+                .agencyPhone(dealer != null ? dealer.getPhone() : null)
+                .streetAddress(street)
+                .ward(ward)
+                .district(district)
+                .city(city)
+                .fullAddress(fullAddress.isBlank() ? null : fullAddress)
+                .dealerId(dealer != null ? dealer.getDealerId() : null)
+                .build();
     }
 }
