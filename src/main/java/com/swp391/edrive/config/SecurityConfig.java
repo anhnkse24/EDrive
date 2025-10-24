@@ -1,6 +1,5 @@
 package com.swp391.edrive.config;
 
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,42 +29,55 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        // KHÔNG dùng allowedOrigins("*") khi allowCredentials = true
+        config.setAllowedOriginPatterns(List.of(
+                "http://localhost:5173",
+                "http://127.0.0.1:5173",
+                "http://localhost:3000",
+                "http://127.0.0.1:3000"
+        ));
+        config.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));           // Content-Type, Authorization, ...
+        config.setExposedHeaders(List.of("Location"));    // nếu FE cần đọc header này
+        config.setAllowCredentials(true);                 // nếu dùng cookie/Authorization header
+        config.setMaxAge(3600L);                          // cache preflight 1h
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                // 2) BẬT CORS CHO SECURITY
+                .cors(c -> c.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/v3/api-docs/**",
-                                "/v3/api-docs",
-                                "/api-docs/**"
-                        ).permitAll()
-                        .requestMatchers(
-                                "/api/auth/forgot-password",
-                                "/api/auth/reset-password",
-                                "/api/auth/login",
-                                "/api/auth/register",
-                                "/api/auth/refresh"
-
-                        ).permitAll()
-                        .requestMatchers("/api/auth/change-password").authenticated()
+                        // 3) PERMIT preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // Swagger
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/api-docs/**").permitAll()
+                        // Auth endpoints public
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/chat").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/vehicles/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/test-drive/available").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/test-drive/book").permitAll()
+
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(
-                        (request, response, authException) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED)
-                ));
-
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration)
@@ -75,19 +87,7 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // dùng BCrypt để mã hoá password
+        return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("*"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
-    }
 }
