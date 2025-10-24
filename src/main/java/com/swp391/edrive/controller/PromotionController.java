@@ -43,6 +43,17 @@ public class PromotionController {
         PromotionResponse res = promotionService.getPromotionById(id);
         return ResponseEntity.ok(new ResponseObject(200, "Promotion retrieved successfully", res));
     }
+    @Operation(summary = "Cập nhật thông tin khuyến mãi theo ID")
+    @PutMapping("/{id}")
+    public ResponseEntity<ResponseObject> update(
+            @PathVariable Long id,
+            @Valid @RequestBody PromotionRequest req) {
+
+        PromotionResponse updated = promotionService.updatePromotion(id, req);
+        return ResponseEntity.ok(
+                new ResponseObject(200, "Promotion updated successfully", updated)
+        );
+    }
 
     @Operation(summary = "Xoá khuyến mãi theo ID")
     @DeleteMapping("/{id}")
