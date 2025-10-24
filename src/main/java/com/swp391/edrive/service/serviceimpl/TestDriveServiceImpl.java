@@ -89,6 +89,13 @@ public class TestDriveServiceImpl implements TestDriveService {
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
+    @Override
+    public List<TestDriveResponse> getTestDrivesByDealerId(Long dealerId) {
+        List<TestDrive> testDrives = testDriveRepository.findByDealer_DealerId(dealerId);
+        return testDrives.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
 
     private TestDriveResponse mapToResponse(TestDrive testDrive) {
         return TestDriveResponse.builder()

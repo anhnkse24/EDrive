@@ -11,4 +11,6 @@ public interface TestDriveService {
     void deleteTestDrive(Long id);
     TestDriveResponse getTestDriveById(Long id);
     List<TestDriveResponse> getAllTestDrives();
+    List<TestDriveResponse> getTestDrivesByDealerId(Long dealerId);
+
 }

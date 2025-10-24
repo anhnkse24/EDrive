@@ -62,4 +62,12 @@ public class PromotionController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .body(new ResponseObject(204, "Promotion deleted successfully", null));
     }
+    @Operation(summary = "Lấy danh sách khuyến mãi theo Dealer ID")
+    @GetMapping("/dealer/{dealerId}")
+    public ResponseEntity<ResponseObject> getByDealerId(@PathVariable Long dealerId) {
+        return ResponseEntity.ok(
+                new ResponseObject(200, "Promotions retrieved successfully by dealer ID",
+                        promotionService.getPromotionsByDealerId(dealerId))
+        );
+    }
 }

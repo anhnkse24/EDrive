@@ -87,6 +87,13 @@ public class PromotionServiceImpl implements PromotionService {
         }
         promotionRepository.deleteById(id);
     }
+    @Override
+    public List<PromotionResponse> getPromotionsByDealerId(Long dealerId) {
+        return promotionRepository.findByDealer_DealerId(dealerId)
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
 
     // ======================
     // Helper: convert entity

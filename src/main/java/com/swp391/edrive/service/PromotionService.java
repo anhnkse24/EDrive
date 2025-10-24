@@ -10,4 +10,6 @@ public interface PromotionService {
     List<PromotionResponse> getAllPromotions();
     PromotionResponse updatePromotion(Long id, PromotionRequest request);
     void deletePromotion(Long id);
+    List<PromotionResponse> getPromotionsByDealerId(Long dealerId);
+
 }
