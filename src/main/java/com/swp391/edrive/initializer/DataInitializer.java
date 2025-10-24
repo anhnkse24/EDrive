@@ -14,6 +14,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.function.Function;
 
@@ -370,8 +371,10 @@ public class DataInitializer implements CommandLineRunner {
         vehicleRepository.save(v12);
 
         // =======================
-        // Customers
-        // =======================
+// Customers
+// =======================
+
+// Customer 1
         Customer c1 = new Customer();
         c1.setFullName("Nguyễn Minh Hòa");
         c1.setDob(LocalDate.of(1998, 5, 12));
@@ -380,8 +383,10 @@ public class DataInitializer implements CommandLineRunner {
         c1.setPhone("0909123456");
         c1.setAddress("12 Lê Lợi, Q1, TP.HCM");
         c1.setIdCardNo("079123456789");
+        c1.setDealer(dealer1); // ✅ Gán dealer
         customerRepository.save(c1);
 
+// Customer 2
         Customer c2 = new Customer();
         c2.setFullName("Trần Thu Hà");
         c2.setDob(LocalDate.of(1996, 11, 3));
@@ -390,8 +395,10 @@ public class DataInitializer implements CommandLineRunner {
         c2.setPhone("0911222333");
         c2.setAddress("45 Hai Bà Trưng, Q1, TP.HCM");
         c2.setIdCardNo("031234567");
+        c2.setDealer(dealer2); // ✅ Cùng dealer hoặc dealer khác tùy bạn
         customerRepository.save(c2);
 
+// Customer 3
         Customer c3 = new Customer();
         c3.setFullName("Phạm Quang Khải");
         c3.setDob(LocalDate.of(1993, 2, 20));
@@ -400,6 +407,7 @@ public class DataInitializer implements CommandLineRunner {
         c3.setPhone("0933666777");
         c3.setAddress("99 Phạm Văn Đồng, Thủ Đức, TP.HCM");
         c3.setIdCardNo("123456789012");
+        c3.setDealer(dealer3); // ✅ Dealer khác nếu có
         customerRepository.save(c3);
 
         // =======================
@@ -456,8 +464,10 @@ public class DataInitializer implements CommandLineRunner {
 //        testDriveRepository.save(tdPast4);
 
         // =======================
-        // Promotions (sample data)
-        // =======================
+// Promotions (sample data)
+// =======================
+
+// Giảm 10% cho dòng E-Car B (thuộc đại lý d1)
         Promotion promo1 = new Promotion();
         promo1.setTitle("Giảm 10% cho dòng E-Car B");
         promo1.setDescription("Chương trình khuyến mãi mùa hè - giảm 10% giá bán cho tất cả phiên bản của dòng E-Car B.");
@@ -466,9 +476,11 @@ public class DataInitializer implements CommandLineRunner {
         promo1.setStartDate(LocalDate.now().minusDays(5));
         promo1.setEndDate(LocalDate.now().plusDays(20));
         promo1.setApplicableTo(PromoTarget.ALL);
-        promo1.getVehicles().add(v3); // E-Car B Sport
-        promo1.getVehicles().add(v4); // E-Car B Luxury
+        promo1.setDealer(dealer1);
+        promo1.setVehicles(new HashSet<>(List.of(v3, v4))); // E-Car B Sport + E-Car B Luxury
 
+
+// Giảm 50 triệu cho E-Car C Plus (thuộc đại lý d2)
         Promotion promo2 = new Promotion();
         promo2.setTitle("Giảm 50 triệu cho E-Car C Plus");
         promo2.setDescription("Ưu đãi đặc biệt khi mua E-Car C Plus trong tháng này – giảm trực tiếp 50 triệu đồng.");
@@ -477,8 +489,11 @@ public class DataInitializer implements CommandLineRunner {
         promo2.setStartDate(LocalDate.now());
         promo2.setEndDate(LocalDate.now().plusDays(30));
         promo2.setApplicableTo(PromoTarget.ALL);
-        promo2.getVehicles().add(v6);
+        promo2.setDealer(dealer2);
+        promo2.setVehicles(new HashSet<>(List.of(v6)));
 
+
+// Ưu đãi sinh nhật E-Drive (toàn hệ thống, không giới hạn đại lý)
         Promotion promo3 = new Promotion();
         promo3.setTitle("Ưu đãi sinh nhật E-Drive");
         promo3.setDescription("Giảm 5% cho tất cả các mẫu xe trong dịp sinh nhật thương hiệu E-Drive.");
@@ -487,7 +502,10 @@ public class DataInitializer implements CommandLineRunner {
         promo3.setStartDate(LocalDate.now().minusDays(10));
         promo3.setEndDate(LocalDate.now().plusDays(10));
         promo3.setApplicableTo(PromoTarget.ALL);
+// Không set dealer => nghĩa là áp dụng cho toàn hệ thống
 
+
+// Tặng gói bảo dưỡng 2 năm (thuộc đại lý d3)
         Promotion promo4 = new Promotion();
         promo4.setTitle("Tặng gói bảo dưỡng 2 năm cho khách hàng E-Car D");
         promo4.setDescription("Mua xe E-Car D trong thời gian khuyến mãi sẽ được tặng gói bảo dưỡng miễn phí 2 năm.");
@@ -496,9 +514,11 @@ public class DataInitializer implements CommandLineRunner {
         promo4.setStartDate(LocalDate.now().plusDays(1));
         promo4.setEndDate(LocalDate.now().plusDays(45));
         promo4.setApplicableTo(PromoTarget.ALL);
-        promo4.getVehicles().add(v7);
-        promo4.getVehicles().add(v8);
+        promo4.setDealer(dealer3);
+        promo4.setVehicles(new HashSet<>(List.of(v7, v8)));
 
+
+// Giảm giá 7% cho khách hàng thân thiết (áp dụng toàn hệ thống)
         Promotion promo5 = new Promotion();
         promo5.setTitle("Giảm giá 7% cho khách hàng thân thiết");
         promo5.setDescription("Áp dụng cho khách hàng đã từng đặt lịch lái thử hoặc mua xe trước đây.");
@@ -507,6 +527,8 @@ public class DataInitializer implements CommandLineRunner {
         promo5.setStartDate(LocalDate.now().minusDays(3));
         promo5.setEndDate(LocalDate.now().plusDays(25));
         promo5.setApplicableTo(PromoTarget.CUSTOMER);
+// Không set dealer
+
 
         promotionRepository.saveAll(List.of(promo1, promo2, promo3, promo4, promo5));
 

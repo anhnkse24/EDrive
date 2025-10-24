@@ -59,4 +59,8 @@
 
         @OneToMany(mappedBy = "customer")
         private List<CustomerDebt> customerDebts;
+
+        @ManyToOne
+        @JoinColumn(name = "dealer_id", nullable = false)
+        private Dealer dealer;
     }

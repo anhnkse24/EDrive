@@ -49,4 +49,15 @@ public class CustomerController {
     public ResponseEntity<ResponseObject> getAllCustomers() {
         return ResponseEntity.ok(new ResponseObject(200, "Customers retrieved successfully", customerService.getAllCustomers()));
     }
+    @Operation(summary = "Lấy danh sách khách hàng theo Dealer ID")
+    @GetMapping("/dealer/{dealerId}")
+    public ResponseEntity<ResponseObject> getCustomersByDealer(@PathVariable("dealerId") Long dealerId) {
+        return ResponseEntity.ok(
+                new ResponseObject(
+                        200,
+                        "Customers retrieved successfully for dealer " + dealerId,
+                        customerService.getCustomersByDealer(dealerId)
+                )
+        );
+    }
 }

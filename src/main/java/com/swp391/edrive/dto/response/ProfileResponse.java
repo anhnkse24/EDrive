@@ -14,8 +14,8 @@ public class ProfileResponse {
     private String email;
     private String phone;
     private UserRole role;
-    private Long dealerId;
-    private String dealerName;
+
+    private DealerResponse dealer; // 🔹 Thêm object DealerResponse
 
     public static ProfileResponse from(User u) {
         ProfileResponse p = new ProfileResponse();
@@ -25,10 +25,21 @@ public class ProfileResponse {
         p.setEmail(u.getEmail());
         p.setPhone(u.getPhone());
         p.setRole(u.getRole());
+
         if (u.getDealer() != null) {
-            p.setDealerId(u.getDealer().getDealerId()   );
-            p.setDealerName(u.getDealer().getDealerName());
+            DealerResponse dealerResponse = DealerResponse.builder()
+                    .dealerId(u.getDealer().getDealerId())
+                    .dealerName(u.getDealer().getDealerName())
+                    .houseNumberAndStreet(u.getDealer().getHouseNumberAndStreet())
+                    .wardOrCommune(u.getDealer().getWardOrCommune())
+                    .district(u.getDealer().getDistrict())
+                    .provinceOrCity(u.getDealer().getProvinceOrCity())
+                    .contactPerson(u.getDealer().getContactPerson())
+                    .phone(u.getDealer().getPhone())
+                    .build();
+            p.setDealer(dealerResponse);
         }
+
         return p;
     }
 }

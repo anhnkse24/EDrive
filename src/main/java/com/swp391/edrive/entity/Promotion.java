@@ -36,6 +36,10 @@ public class Promotion {
     @Enumerated(EnumType.STRING)
     private PromoTarget applicableTo;
 
+    @ManyToOne
+    @JoinColumn(name = "dealer_id")
+    private Dealer dealer;
+
     // Gắn với Vehicle
     @ManyToMany
     @JoinTable(

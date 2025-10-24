@@ -56,4 +56,10 @@ public class TestDriveController {
         List<TestDriveResponse> list = testDriveService.getAllTestDrives();
         return ResponseEntity.ok(new ResponseObject(200, "Lấy danh sách lịch lái thử thành công", list));
     }
+    @Operation(summary = "Lấy danh sách lịch lái thử theo Dealer ID")
+    @GetMapping("/dealer/{dealerId}")
+    public ResponseEntity<ResponseObject> getTestDrivesByDealerId(@PathVariable Long dealerId) {
+        List<TestDriveResponse> list = testDriveService.getTestDrivesByDealerId(dealerId);
+        return ResponseEntity.ok(new ResponseObject(200, "Lấy danh sách lịch lái thử thành công theo dealerId", list));
+    }
 }

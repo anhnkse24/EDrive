@@ -70,6 +70,14 @@ public class CustomerServiceImpl implements CustomerService {
                 .map(this::toResponse)
                 .toList();
     }
+    @Override
+    @Transactional(readOnly = true)
+    public List<CustomerResponse> getCustomersByDealer(Long dealerId) {
+        List<Customer> customers = customerRepository.findByDealer_DealerId(dealerId);
+        return customers.stream()
+                .map(this::toResponse)
+                .toList();
+    }
 
     private CustomerResponse toResponse(Customer c) {
         return CustomerResponse.builder()
