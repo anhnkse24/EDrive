@@ -1,83 +1,59 @@
 package com.swp391.edrive.controller;
 
-import com.swp391.edrive.dto.request.TestDriveBookingRequest;
+import com.swp391.edrive.dto.request.TestDriveRequest;
 import com.swp391.edrive.dto.response.ResponseObject;
 import com.swp391.edrive.dto.response.TestDriveResponse;
-import com.swp391.edrive.enums.TestDriveStatus;
 import com.swp391.edrive.service.TestDriveService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/test-drive")
+@RequestMapping("/api/testdrives")
 @RequiredArgsConstructor
+@Tag(name = "Test Drive Management", description = "Quản lý lịch lái thử xe (CRUD)")
 public class TestDriveController {
+
     private final TestDriveService testDriveService;
 
-    @PostMapping("/book")
-    public TestDriveResponse book(@Valid @RequestBody TestDriveBookingRequest request) {
-        return testDriveService.book(request);
+    @Operation(summary = "Tạo mới lịch lái thử")
+    @PostMapping
+    public ResponseEntity<ResponseObject> createTestDrive(@Valid @RequestBody TestDriveRequest request) {
+        TestDriveResponse created = testDriveService.createTestDrive(request);
+        return ResponseEntity.ok(new ResponseObject(200, "Tạo lịch lái thử thành công", created));
     }
 
-    @GetMapping("/available")
-    public List<LocalTime> available(
-            @RequestParam Long dealerId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
-    ) {
-        return testDriveService.getAvailableSlots(dealerId, date);
+    @Operation(summary = "Cập nhật lịch lái thử")
+    @PutMapping("/{id}")
+    public ResponseEntity<ResponseObject> updateTestDrive(@PathVariable Long id,
+                                                          @Valid @RequestBody TestDriveRequest request) {
+        TestDriveResponse updated = testDriveService.updateTestDrive(id, request);
+        return ResponseEntity.ok(new ResponseObject(200, "Cập nhật lịch lái thử thành công", updated));
     }
 
-    @GetMapping
-    public List<TestDriveResponse> list(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) Long dealerId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
-    ) {
-        if (dealerId != null && date != null) {
-            return testDriveService.listByDealerAndDate(dealerId, date, page, size);
-        } else if (dealerId != null) {
-            return testDriveService.listByDealer(dealerId, page, size);
-        } else {
-            return testDriveService.list(page, size);
-        }
+    @Operation(summary = "Xóa lịch lái thử")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ResponseObject> deleteTestDrive(@PathVariable Long id) {
+        testDriveService.deleteTestDrive(id);
+        return ResponseEntity.ok(new ResponseObject(200, "Xóa lịch lái thử thành công", null));
     }
 
+    @Operation(summary = "Lấy thông tin lịch lái thử theo ID")
     @GetMapping("/{id}")
-    public ResponseEntity<ResponseObject> getById(@PathVariable Long id) {
-        try {
-            TestDriveResponse td = testDriveService.getById(id);
-            return ResponseEntity.ok(new ResponseObject(200, "Thông tin lịch lái thử", td));
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ResponseObject(404, ex.getMessage(), null));
-        }
+    public ResponseEntity<ResponseObject> getTestDriveById(@PathVariable Long id) {
+        TestDriveResponse response = testDriveService.getTestDriveById(id);
+        return ResponseEntity.ok(new ResponseObject(200, "Lấy thông tin thành công", response));
     }
 
-    @PostMapping("/{id}/cancel")
-    public TestDriveResponse cancel(
-            @PathVariable("id") Long id,
-            @RequestParam(required = false, defaultValue = "User requested") String reason
-    ) {
-        return testDriveService.cancel(id, reason);
-    }
-
-    @PostMapping("/{id}/complete")
-    public ResponseEntity<ResponseObject> complete(@PathVariable Long id) {
-        try {
-            TestDriveResponse result = testDriveService.complete(id);
-            return ResponseEntity.ok(new ResponseObject(200, "Đánh dấu hoàn thành thành công", result));
-        } catch (IllegalArgumentException | IllegalStateException ex) {
-            return ResponseEntity.badRequest()
-                    .body(new ResponseObject(400, ex.getMessage(), null));
-        }
+    @Operation(summary = "Lấy danh sách tất cả lịch lái thử")
+    @GetMapping
+    public ResponseEntity<ResponseObject> getAllTestDrives() {
+        List<TestDriveResponse> list = testDriveService.getAllTestDrives();
+        return ResponseEntity.ok(new ResponseObject(200, "Lấy danh sách lịch lái thử thành công", list));
     }
 }

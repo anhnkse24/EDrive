@@ -1,29 +1,15 @@
 package com.swp391.edrive.repository;
 
 import com.swp391.edrive.entity.TestDrive;
-import com.swp391.edrive.enums.TestDriveStatus;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import com.swp391.edrive.entity.Dealer;
+import com.swp391.edrive.entity.Customer;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
+@Repository
 public interface TestDriveRepository extends JpaRepository<TestDrive, Long> {
-    boolean existsByDealer_DealerIdAndScheduleDatetimeGreaterThanEqualAndScheduleDatetimeLessThan(
-            Long dealerId, LocalDateTime startInclusive, LocalDateTime endExclusive
-    );
-
-    TestDrive save(TestDrive testDrive);
-
-    Page<TestDrive> findAll(Pageable pageable);
-
-    Page<TestDrive> findByDealer_DealerId(Long dealerId, Pageable pageable);
-
-    Page<TestDrive> findByDealer_DealerIdAndScheduleDatetimeBetween(
-            Long dealerId, LocalDateTime start, LocalDateTime end, Pageable pageable
-    );
-
-    Page<TestDrive> findByStatus(TestDriveStatus status, Pageable pageable);
-
+    List<TestDrive> findByDealer(Dealer dealer);
+    List<TestDrive> findByCustomer(Customer customer);
 }
