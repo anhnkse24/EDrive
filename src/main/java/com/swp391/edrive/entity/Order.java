@@ -1,12 +1,18 @@
 package com.swp391.edrive.entity;
 
 import com.swp391.edrive.enums.OrderStatus;
+import com.swp391.edrive.enums.PaymentStatus;
 import com.swp391.edrive.enums.PaymentType;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "orders")
+@Getter
+@Setter
 public class Order {
 
     @Id
@@ -33,4 +39,8 @@ public class Order {
 
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_status", nullable = false)
+    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
 }

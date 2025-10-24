@@ -1,12 +1,18 @@
 package com.swp391.edrive.entity;
 
 import com.swp391.edrive.enums.PaymentMethod;
+import com.swp391.edrive.enums.PaymentStatus;
 import com.swp391.edrive.enums.PaymentType;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "payments")
+@Getter
+@Setter
 public class Payment {
 
     @Id
@@ -25,4 +31,8 @@ public class Payment {
 
     @Enumerated(EnumType.STRING)
     private PaymentMethod method;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private PaymentStatus status = PaymentStatus.PENDING;
 }

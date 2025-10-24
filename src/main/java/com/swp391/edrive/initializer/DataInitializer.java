@@ -85,7 +85,21 @@ public class DataInitializer implements CommandLineRunner {
         dealer5.setProvinceOrCity("Hai Phong");
         dealer5.setContactPerson("Do Van E");
         dealer5.setPhone("0989988776");
-        dealerRepository.save(dealer5);
+        dealerRepository.save(dealer5);Dealer dealer6 = new Dealer();
+        dealer6.setDealerName("Edrive Nha Trang Showroom");
+        dealer6.setHouseNumberAndStreet("99 Tran Phu");
+        dealer6.setWardOrCommune("Lộc Thọ");
+        dealer6.setDistrict("Nha Trang");
+        dealer6.setProvinceOrCity("Khanh Hoa");
+        dealer6.setContactPerson("Nguyen Thi F");
+        dealer6.setPhone("0909888777");
+        dealerRepository.save(dealer6);
+
+// --- Tạo user cho đại lý (Manager + Staff)
+        createUserIfAbsent("manager_nt", "manager123", "Dealer Manager NT",
+                "manager_nt@edriver.com", "0909888778", UserRole.DEALER_MANAGER, dealer6);
+        createUserIfAbsent("staff_nt1", "staff123", "Dealer Staff NT 1",
+                "staff_nt1@edriver.com", "0909888779", UserRole.DEALER_STAFF, dealer6);
 
         // =======================
         // Tạo User (Hãng + mỗi đại lý)
