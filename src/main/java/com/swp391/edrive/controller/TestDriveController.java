@@ -21,6 +21,10 @@ public class TestDriveController {
 
     private final TestDriveService testDriveService;
 
+    // =====================================
+    // 🔹 CRUD CHUNG
+    // =====================================
+
     @Operation(summary = "Tạo mới lịch lái thử")
     @PostMapping
     public ResponseEntity<ResponseObject> createTestDrive(@Valid @RequestBody TestDriveRequest request) {
@@ -28,7 +32,7 @@ public class TestDriveController {
         return ResponseEntity.ok(new ResponseObject(200, "Tạo lịch lái thử thành công", created));
     }
 
-    @Operation(summary = "Cập nhật lịch lái thử")
+    @Operation(summary = "Cập nhật lịch lái thử theo ID")
     @PutMapping("/{id}")
     public ResponseEntity<ResponseObject> updateTestDrive(@PathVariable Long id,
                                                           @Valid @RequestBody TestDriveRequest request) {
@@ -36,7 +40,7 @@ public class TestDriveController {
         return ResponseEntity.ok(new ResponseObject(200, "Cập nhật lịch lái thử thành công", updated));
     }
 
-    @Operation(summary = "Xóa lịch lái thử")
+    @Operation(summary = "Xóa lịch lái thử theo ID")
     @DeleteMapping("/{id}")
     public ResponseEntity<ResponseObject> deleteTestDrive(@PathVariable Long id) {
         testDriveService.deleteTestDrive(id);
@@ -47,7 +51,7 @@ public class TestDriveController {
     @GetMapping("/{id}")
     public ResponseEntity<ResponseObject> getTestDriveById(@PathVariable Long id) {
         TestDriveResponse response = testDriveService.getTestDriveById(id);
-        return ResponseEntity.ok(new ResponseObject(200, "Lấy thông tin thành công", response));
+        return ResponseEntity.ok(new ResponseObject(200, "Lấy thông tin lịch lái thử thành công", response));
     }
 
     @Operation(summary = "Lấy danh sách tất cả lịch lái thử")
@@ -56,10 +60,40 @@ public class TestDriveController {
         List<TestDriveResponse> list = testDriveService.getAllTestDrives();
         return ResponseEntity.ok(new ResponseObject(200, "Lấy danh sách lịch lái thử thành công", list));
     }
+
+    // =====================================
+    // 🔹 CRUD THEO DEALER ID
+    // =====================================
+
     @Operation(summary = "Lấy danh sách lịch lái thử theo Dealer ID")
     @GetMapping("/dealer/{dealerId}")
     public ResponseEntity<ResponseObject> getTestDrivesByDealerId(@PathVariable Long dealerId) {
         List<TestDriveResponse> list = testDriveService.getTestDrivesByDealerId(dealerId);
-        return ResponseEntity.ok(new ResponseObject(200, "Lấy danh sách lịch lái thử thành công theo dealerId", list));
+        return ResponseEntity.ok(new ResponseObject(200, "Lấy danh sách lịch lái thử thành công theo Dealer ID", list));
+    }
+
+    @Operation(summary = "Tạo mới lịch lái thử cho Dealer cụ thể")
+    @PostMapping("/dealer/{dealerId}")
+    public ResponseEntity<ResponseObject> createTestDriveByDealer(@PathVariable Long dealerId,
+                                                                  @Valid @RequestBody TestDriveRequest request) {
+        TestDriveResponse created = testDriveService.createTestDriveByDealer(dealerId, request);
+        return ResponseEntity.ok(new ResponseObject(200, "Tạo lịch lái thử cho Dealer thành công", created));
+    }
+
+    @Operation(summary = "Cập nhật lịch lái thử theo Dealer ID")
+    @PutMapping("/dealer/{dealerId}/{testDriveId}")
+    public ResponseEntity<ResponseObject> updateTestDriveByDealer(@PathVariable Long dealerId,
+                                                                  @PathVariable Long testDriveId,
+                                                                  @Valid @RequestBody TestDriveRequest request) {
+        TestDriveResponse updated = testDriveService.updateTestDriveByDealer(dealerId, testDriveId, request);
+        return ResponseEntity.ok(new ResponseObject(200, "Cập nhật lịch lái thử cho Dealer thành công", updated));
+    }
+
+    @Operation(summary = "Xóa lịch lái thử theo Dealer ID")
+    @DeleteMapping("/dealer/{dealerId}/{testDriveId}")
+    public ResponseEntity<ResponseObject> deleteTestDriveByDealer(@PathVariable Long dealerId,
+                                                                  @PathVariable Long testDriveId) {
+        testDriveService.deleteTestDriveByDealer(dealerId, testDriveId);
+        return ResponseEntity.ok(new ResponseObject(200, "Xóa lịch lái thử cho Dealer thành công", null));
     }
 }

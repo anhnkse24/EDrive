@@ -11,6 +11,9 @@ public interface TestDriveService {
     void deleteTestDrive(Long id);
     TestDriveResponse getTestDriveById(Long id);
     List<TestDriveResponse> getAllTestDrives();
-    List<TestDriveResponse> getTestDrivesByDealerId(Long dealerId);
 
+    List<TestDriveResponse> getTestDrivesByDealerId(Long dealerId);
+    TestDriveResponse createTestDriveByDealer(Long dealerId, TestDriveRequest request);
+    TestDriveResponse updateTestDriveByDealer(Long dealerId, Long testDriveId, TestDriveRequest request);
+    void deleteTestDriveByDealer(Long dealerId, Long testDriveId);
 }

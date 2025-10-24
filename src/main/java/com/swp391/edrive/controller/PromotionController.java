@@ -12,13 +12,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/promotions")
 @RequiredArgsConstructor
-@Tag(name = "Promotions", description = "API quản lý khuyến mãi")
+@Tag(name = "Promotions", description = "API quản lý khuyến mãi (CRUD + Dealer)")
 public class PromotionController {
 
     private final PromotionService promotionService;
+
+    // ------------------ CRUD CHUNG ------------------
 
     @Operation(summary = "Tạo khuyến mãi mới")
     @PostMapping
@@ -31,10 +35,8 @@ public class PromotionController {
     @Operation(summary = "Lấy danh sách tất cả khuyến mãi")
     @GetMapping
     public ResponseEntity<ResponseObject> getAll() {
-        return ResponseEntity.ok(
-                new ResponseObject(200, "Promotions retrieved successfully",
-                        promotionService.getAllPromotions())
-        );
+        List<PromotionResponse> list = promotionService.getAllPromotions();
+        return ResponseEntity.ok(new ResponseObject(200, "Promotions retrieved successfully", list));
     }
 
     @Operation(summary = "Lấy khuyến mãi theo ID")
@@ -43,16 +45,13 @@ public class PromotionController {
         PromotionResponse res = promotionService.getPromotionById(id);
         return ResponseEntity.ok(new ResponseObject(200, "Promotion retrieved successfully", res));
     }
-    @Operation(summary = "Cập nhật thông tin khuyến mãi theo ID")
-    @PutMapping("/{id}")
-    public ResponseEntity<ResponseObject> update(
-            @PathVariable Long id,
-            @Valid @RequestBody PromotionRequest req) {
 
+    @Operation(summary = "Cập nhật khuyến mãi theo ID")
+    @PutMapping("/{id}")
+    public ResponseEntity<ResponseObject> update(@PathVariable Long id,
+                                                 @Valid @RequestBody PromotionRequest req) {
         PromotionResponse updated = promotionService.updatePromotion(id, req);
-        return ResponseEntity.ok(
-                new ResponseObject(200, "Promotion updated successfully", updated)
-        );
+        return ResponseEntity.ok(new ResponseObject(200, "Promotion updated successfully", updated));
     }
 
     @Operation(summary = "Xoá khuyến mãi theo ID")
@@ -62,12 +61,52 @@ public class PromotionController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .body(new ResponseObject(204, "Promotion deleted successfully", null));
     }
+
+    // ------------------ CRUD THEO DEALER ID ------------------
+
     @Operation(summary = "Lấy danh sách khuyến mãi theo Dealer ID")
     @GetMapping("/dealer/{dealerId}")
     public ResponseEntity<ResponseObject> getByDealerId(@PathVariable Long dealerId) {
-        return ResponseEntity.ok(
-                new ResponseObject(200, "Promotions retrieved successfully by dealer ID",
-                        promotionService.getPromotionsByDealerId(dealerId))
-        );
+        List<PromotionResponse> list = promotionService.getPromotionsByDealerId(dealerId);
+        return ResponseEntity.ok(new ResponseObject(200,
+                "Promotions retrieved successfully by dealer ID", list));
+    }
+
+    @Operation(summary = "Lấy khuyến mãi cụ thể theo ID và Dealer ID")
+    @GetMapping("/dealer/{dealerId}/{promotionId}")
+    public ResponseEntity<ResponseObject> getByIdAndDealerId(@PathVariable Long dealerId,
+                                                             @PathVariable Long promotionId) {
+        PromotionResponse res = promotionService.getPromotionByIdAndDealerId(promotionId, dealerId);
+        return ResponseEntity.ok(new ResponseObject(200,
+                "Promotion retrieved successfully by dealer ID", res));
+    }
+
+    @Operation(summary = "Tạo khuyến mãi mới cho Dealer cụ thể")
+    @PostMapping("/dealer/{dealerId}")
+    public ResponseEntity<ResponseObject> createByDealer(@PathVariable Long dealerId,
+                                                         @Valid @RequestBody PromotionRequest req) {
+        PromotionResponse res = promotionService.createPromotionByDealer(dealerId, req);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new ResponseObject(201,
+                        "Promotion created successfully for dealer", res));
+    }
+
+    @Operation(summary = "Cập nhật khuyến mãi theo ID và Dealer ID")
+    @PutMapping("/dealer/{dealerId}/{promotionId}")
+    public ResponseEntity<ResponseObject> updateByDealer(@PathVariable Long dealerId,
+                                                         @PathVariable Long promotionId,
+                                                         @Valid @RequestBody PromotionRequest req) {
+        PromotionResponse updated = promotionService.updatePromotionByDealer(dealerId, promotionId, req);
+        return ResponseEntity.ok(new ResponseObject(200,
+                "Promotion updated successfully for dealer", updated));
+    }
+
+    @Operation(summary = "Xoá khuyến mãi theo ID và Dealer ID")
+    @DeleteMapping("/dealer/{dealerId}/{promotionId}")
+    public ResponseEntity<ResponseObject> deleteByDealer(@PathVariable Long dealerId,
+                                                         @PathVariable Long promotionId) {
+        promotionService.deletePromotionByDealer(dealerId, promotionId);
+        return ResponseEntity.ok(new ResponseObject(200,
+                "Promotion deleted successfully for dealer", null));
     }
 }

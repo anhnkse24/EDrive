@@ -21,5 +21,6 @@ public class PromotionResponse {
     private LocalDate endDate;
     private PromoTarget applicableTo;
 
+    private Long dealerId;
     private List<Long> vehicleIds;
 }

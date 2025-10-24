@@ -23,6 +23,10 @@ public class TestDriveServiceImpl implements TestDriveService {
     private final DealerRepository dealerRepository;
     private final VehicleRepository vehicleRepository;
 
+    // =====================================
+    // 🔹 CRUD CHUNG
+    // =====================================
+
     @Override
     public TestDriveResponse createTestDrive(TestDriveRequest request) {
         Customer customer = customerRepository.findById(request.getCustomerId())
@@ -32,7 +36,6 @@ public class TestDriveServiceImpl implements TestDriveService {
         Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy xe"));
 
-        // Khi tạo mới => mặc định là PENDING (đang chờ xác nhận)
         TestDrive testDrive = new TestDrive(
                 customer,
                 dealer,
@@ -89,21 +92,87 @@ public class TestDriveServiceImpl implements TestDriveService {
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
+
+    // =====================================
+    // 🔹 CRUD THEO DEALER ID
+    // =====================================
+
     @Override
     public List<TestDriveResponse> getTestDrivesByDealerId(Long dealerId) {
         List<TestDrive> testDrives = testDriveRepository.findByDealer_DealerId(dealerId);
+        if (testDrives.isEmpty()) {
+            throw new EntityNotFoundException("Không có lịch lái thử nào thuộc Dealer ID: " + dealerId);
+        }
         return testDrives.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public TestDriveResponse createTestDriveByDealer(Long dealerId, TestDriveRequest request) {
+        Dealer dealer = dealerRepository.findById(dealerId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy đại lý"));
+
+        Customer customer = customerRepository.findById(request.getCustomerId())
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy khách hàng"));
+        Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy xe"));
+
+        TestDrive testDrive = new TestDrive(
+                customer,
+                dealer,
+                vehicle,
+                request.getScheduleDatetime(),
+                request.getStatus() != null ? request.getStatus() : TestDriveStatus.PENDING
+        );
+
+        testDrive.setCancelReason(request.getCancelReason());
+        testDriveRepository.save(testDrive);
+
+        return mapToResponse(testDrive);
+    }
+
+    @Override
+    public TestDriveResponse updateTestDriveByDealer(Long dealerId, Long testDriveId, TestDriveRequest request) {
+        TestDrive testDrive = testDriveRepository.findById(testDriveId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy lịch lái thử"));
+
+        if (!testDrive.getDealer().getDealerId().equals(dealerId))
+            throw new EntityNotFoundException("Không có quyền cập nhật lịch lái thử của Dealer khác");
+
+        if (request.getScheduleDatetime() != null)
+            testDrive.setScheduleDatetime(request.getScheduleDatetime());
+        if (request.getStatus() != null)
+            testDrive.setStatus(request.getStatus());
+        if (request.getCancelReason() != null)
+            testDrive.setCancelReason(request.getCancelReason());
+
+        testDriveRepository.save(testDrive);
+        return mapToResponse(testDrive);
+    }
+
+    @Override
+    public void deleteTestDriveByDealer(Long dealerId, Long testDriveId) {
+        TestDrive testDrive = testDriveRepository.findById(testDriveId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy lịch lái thử"));
+
+        if (!testDrive.getDealer().getDealerId().equals(dealerId))
+            throw new EntityNotFoundException("Không có quyền xóa lịch lái thử của Dealer khác");
+
+        testDriveRepository.delete(testDrive);
+    }
+
+    // =====================================
+    // 🔹 MAPPING ENTITY -> RESPONSE
+    // =====================================
 
     private TestDriveResponse mapToResponse(TestDrive testDrive) {
         return TestDriveResponse.builder()
                 .testdriveId(testDrive.getTestdriveId())
                 .customerId(testDrive.getCustomer().getCustomerId())
                 .customerName(testDrive.getCustomer().getFullName())
-                .dealerId(testDrive.getDealer().getDealerId())
-                .dealerName(testDrive.getDealer().getDealerName()) // sửa lại đúng tên field
+                .dealerId(testDrive.getDealer() != null ? testDrive.getDealer().getDealerId() : null)
+                .dealerName(testDrive.getDealer() != null ? testDrive.getDealer().getDealerName() : null)
                 .vehicleId(testDrive.getVehicle().getVehicleId())
                 .vehicleModel(testDrive.getVehicle().getModelName())
                 .scheduleDatetime(testDrive.getScheduleDatetime())
