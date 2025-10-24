@@ -143,7 +143,7 @@ public class VehicleServiceImpl implements VehicleService {
         v.setRangeKm(r.getRangeKm());
         v.setMaxSpeedKmh(r.getMaxSpeedKmh());
         v.setChargingTimeHours(r.getChargingTimeHours());
-        v.setSeatingCapacity(r.getSeatingCapacity());
+        v.setSeatingCapacity(Integer.valueOf(r.getSeatingCapacity()));
         v.setMotorPowerKw(r.getMotorPowerKw());
         v.setWeightKg(r.getWeightKg());
         v.setLengthMm(r.getLengthMm());
