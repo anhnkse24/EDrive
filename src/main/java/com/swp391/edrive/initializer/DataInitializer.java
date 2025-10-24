@@ -1,9 +1,7 @@
 package com.swp391.edrive.initializer;
 
 import com.swp391.edrive.entity.*;
-import com.swp391.edrive.enums.TestDriveStatus;
-import com.swp391.edrive.enums.UserRole;
-import com.swp391.edrive.enums.VehicleStatus;
+import com.swp391.edrive.enums.*;
 import com.swp391.edrive.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +14,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.function.Function;
 
 @Component
@@ -28,6 +27,8 @@ public class DataInitializer implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
     private final CustomerRepository customerRepository;
     private final TestDriveRepository testDriveRepository;
+    private final PromotionRepository promotionRepository;
+
 
     @Override
     @Transactional
@@ -438,6 +439,61 @@ public class DataInitializer implements CommandLineRunner {
         testDriveRepository.save(tdPast3);
         TestDrive tdPast4 = new TestDrive(c1, dealer1, v2, LocalDateTime.of(threeDaysAgo, LocalTime.of(15, 30)), TestDriveStatus.COMPLETED);
         testDriveRepository.save(tdPast4);
+
+        // =======================
+// Promotions (sample data)
+// =======================
+        Promotion promo1 = new Promotion();
+        promo1.setTitle("Giảm 10% cho dòng E-Car B");
+        promo1.setDescription("Chương trình khuyến mãi mùa hè - giảm 10% giá bán cho tất cả phiên bản của dòng E-Car B.");
+        promo1.setDiscountType(DiscountType.PERCENTAGE);
+        promo1.setDiscountValue(10.0);
+        promo1.setStartDate(LocalDate.now().minusDays(5));
+        promo1.setEndDate(LocalDate.now().plusDays(20));
+        promo1.setApplicableTo(PromoTarget.ALL);
+        promo1.getVehicles().add(v3); // E-Car B Sport
+        promo1.getVehicles().add(v4); // E-Car B Luxury
+
+        Promotion promo2 = new Promotion();
+        promo2.setTitle("Giảm 50 triệu cho E-Car C Plus");
+        promo2.setDescription("Ưu đãi đặc biệt khi mua E-Car C Plus trong tháng này – giảm trực tiếp 50 triệu đồng.");
+        promo2.setDiscountType(DiscountType.FIXED_AMOUNT);
+        promo2.setDiscountValue(50_000_000.0);
+        promo2.setStartDate(LocalDate.now());
+        promo2.setEndDate(LocalDate.now().plusDays(30));
+        promo2.setApplicableTo(PromoTarget.ALL);
+        promo2.getVehicles().add(v6);
+
+        Promotion promo3 = new Promotion();
+        promo3.setTitle("Ưu đãi sinh nhật E-Drive");
+        promo3.setDescription("Giảm 5% cho tất cả các mẫu xe trong dịp sinh nhật thương hiệu E-Drive.");
+        promo3.setDiscountType(DiscountType.PERCENTAGE);
+        promo3.setDiscountValue(5.0);
+        promo3.setStartDate(LocalDate.now().minusDays(10));
+        promo3.setEndDate(LocalDate.now().plusDays(10));
+        promo3.setApplicableTo(PromoTarget.ALL);
+
+        Promotion promo4 = new Promotion();
+        promo4.setTitle("Tặng gói bảo dưỡng 2 năm cho khách hàng E-Car D");
+        promo4.setDescription("Mua xe E-Car D trong thời gian khuyến mãi sẽ được tặng gói bảo dưỡng miễn phí 2 năm.");
+        promo4.setDiscountType(DiscountType.FIXED_AMOUNT);
+        promo4.setDiscountValue(0.0);
+        promo4.setStartDate(LocalDate.now().plusDays(1));
+        promo4.setEndDate(LocalDate.now().plusDays(45));
+        promo4.setApplicableTo(PromoTarget.ALL);
+        promo4.getVehicles().add(v7);
+        promo4.getVehicles().add(v8);
+
+        Promotion promo5 = new Promotion();
+        promo5.setTitle("Giảm giá 7% cho khách hàng thân thiết");
+        promo5.setDescription("Áp dụng cho khách hàng đã từng đặt lịch lái thử hoặc mua xe trước đây.");
+        promo5.setDiscountType(DiscountType.PERCENTAGE);
+        promo5.setDiscountValue(7.0);
+        promo5.setStartDate(LocalDate.now().minusDays(3));
+        promo5.setEndDate(LocalDate.now().plusDays(25));
+        promo5.setApplicableTo(PromoTarget.CUSTOMER);
+
+        promotionRepository.saveAll(List.of(promo1, promo2, promo3, promo4, promo5));
 
         System.out.println("✅ Data initialization completed!");
     }

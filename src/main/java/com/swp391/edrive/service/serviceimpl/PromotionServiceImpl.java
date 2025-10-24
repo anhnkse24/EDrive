@@ -40,29 +40,58 @@ public class PromotionServiceImpl implements PromotionService {
         }
 
         Promotion saved = promotionRepository.save(promo);
+        return toResponse(saved);
+    }
 
-        // Trả về response
-        return PromotionResponse.builder()
-                .promoId(saved.getPromoId())
-                .title(saved.getTitle())
-                .description(saved.getDescription())
-                .discountType(saved.getDiscountType())
-                .discountValue(saved.getDiscountValue())
-                .startDate(saved.getStartDate())
-                .endDate(saved.getEndDate())
-                .applicableTo(saved.getApplicableTo())
-                .vehicleIds(saved.getVehicles()
-                        .stream()
-                        .map(Vehicle::getVehicleId)
-                        .collect(Collectors.toList()))
-                .build();
+    @Override
+    public PromotionResponse updatePromotion(Long id, PromotionRequest req) {
+        Promotion promo = promotionRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy khuyến mãi với ID = " + id));
+
+        promo.setTitle(req.getTitle());
+        promo.setDescription(req.getDescription());
+        promo.setDiscountType(req.getDiscountType());
+        promo.setDiscountValue(req.getDiscountValue());
+        promo.setStartDate(req.getStartDate());
+        promo.setEndDate(req.getEndDate());
+        promo.setApplicableTo(req.getApplicableTo());
+
+        // Cập nhật danh sách vehicles
+        if (req.getVehicleIds() != null) {
+            Set<Vehicle> vehicles = new HashSet<>(vehicleRepository.findAllById(req.getVehicleIds()));
+            promo.setVehicles(vehicles);
+        }
+
+        Promotion updated = promotionRepository.save(promo);
+        return toResponse(updated);
     }
 
     @Override
     public PromotionResponse getPromotionById(Long id) {
         Promotion promo = promotionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Promotion not found"));
+        return toResponse(promo);
+    }
 
+    @Override
+    public List<PromotionResponse> getAllPromotions() {
+        return promotionRepository.findAll().stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void deletePromotion(Long id) {
+        if (!promotionRepository.existsById(id)) {
+            throw new IllegalArgumentException("Promotion not found");
+        }
+        promotionRepository.deleteById(id);
+    }
+
+    // ======================
+    // Helper: convert entity
+    // ======================
+    private PromotionResponse toResponse(Promotion promo) {
         return PromotionResponse.builder()
                 .promoId(promo.getPromoId())
                 .title(promo.getTitle())
@@ -77,33 +106,5 @@ public class PromotionServiceImpl implements PromotionService {
                         .map(Vehicle::getVehicleId)
                         .collect(Collectors.toList()))
                 .build();
-    }
-
-    @Override
-    public List<PromotionResponse> getAllPromotions() {
-        return promotionRepository.findAll().stream()
-                .map(promo -> PromotionResponse.builder()
-                        .promoId(promo.getPromoId())
-                        .title(promo.getTitle())
-                        .description(promo.getDescription())
-                        .discountType(promo.getDiscountType())
-                        .discountValue(promo.getDiscountValue())
-                        .startDate(promo.getStartDate())
-                        .endDate(promo.getEndDate())
-                        .applicableTo(promo.getApplicableTo())
-                        .vehicleIds(promo.getVehicles()
-                                .stream()
-                                .map(Vehicle::getVehicleId)
-                                .collect(Collectors.toList()))
-                        .build())
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public void deletePromotion(Long id) {
-        if (!promotionRepository.existsById(id)) {
-            throw new IllegalArgumentException("Promotion not found");
-        }
-        promotionRepository.deleteById(id);
     }
 }
