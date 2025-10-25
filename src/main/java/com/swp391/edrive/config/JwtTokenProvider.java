@@ -54,7 +54,6 @@ public class JwtTokenProvider {
         try {
             Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
 
-            // ✅ Kiểm tra DB xem token có bị thu hồi hoặc hết hạn không
             var tokenEntity = tokenRepository.findByToken(token);
             if (tokenEntity.isEmpty()) return false;
             if (tokenEntity.get().isExpired() || tokenEntity.get().isRevoked()) return false;

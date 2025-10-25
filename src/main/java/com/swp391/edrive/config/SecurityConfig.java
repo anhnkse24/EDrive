@@ -28,34 +28,44 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        // KHÔNG dùng allowedOrigins("*") khi allowCredentials = true
-        config.setAllowedOriginPatterns(List.of(
-                "http://localhost:5173",
-                "http://127.0.0.1:5173",
-                "http://localhost:3000",
-                "http://127.0.0.1:3000"
-        ));
-        config.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));           // Content-Type, Authorization, ...
-        config.setExposedHeaders(List.of("Location"));    // nếu FE cần đọc header này
-        config.setAllowCredentials(true);                 // nếu dùng cookie/Authorization header
-        config.setMaxAge(3600L);                          // cache preflight 1h
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
-    }
+//    @Bean
+//    CorsConfigurationSource corsConfigurationSource() {
+//        CorsConfiguration config = new CorsConfiguration();
+//        // KHÔNG dùng allowedOrigins("*") khi allowCredentials = true
+//        config.setAllowedOriginPatterns(List.of(
+//                "http://localhost:5173",
+//                "http://127.0.0.1:5173",
+//                "http://localhost:3000",
+//                "http://127.0.0.1:3000"
+//        ));
+//        config.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
+//        config.setAllowedHeaders(List.of("*"));           // Content-Type, Authorization, ...
+//        config.setExposedHeaders(List.of("Location"));    // nếu FE cần đọc header này
+//        config.setAllowCredentials(true);                 // nếu dùng cookie/Authorization header
+//        config.setMaxAge(3600L);                          // cache preflight 1h
+//
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", config);
+//        return source;
+//    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
+//        http
                 // 2) BẬT CORS CHO SECURITY
-                .cors(c -> c.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+//                .cors(c -> c.configurationSource(corsConfigurationSource()))
+//                .csrf(csrf -> csrf.disable())
+//                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        http.csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(request -> {
+                    CorsConfiguration config = new CorsConfiguration();
+                    config.setAllowCredentials(true);
+                    config.addAllowedOriginPattern("*");
+                    config.addAllowedHeader("*");
+                    config.addAllowedMethod("*");
+                    config.setMaxAge(3600L);
+                    return config;
+                }))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // 3) PERMIT preflight
@@ -91,6 +101,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/testdrives/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/testdrives/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/testdrives/**").permitAll()
+
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())

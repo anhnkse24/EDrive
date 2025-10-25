@@ -7,8 +7,10 @@ import com.swp391.edrive.service.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,14 +19,19 @@ import java.util.UUID;
 public class RefreshTokenServiceImpl implements RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
 
-    @Value("${security.jwt.refresh-expiration-ms:604800000}") // 7 ngày mặc định
+    @Value("${security.jwt.refresh-expiration-ms:604800000}")
     private long refreshExpirationMs;
 
     @Override
+    @Transactional
     public RefreshToken createRefreshToken(User user) {
-        // Nếu policy là: mỗi user chỉ 1 refresh token
-        refreshTokenRepository.deleteByUser(user);
-
+//        refreshTokenRepository.deleteByUser(user);
+        RefreshToken refreshTokenOpt = refreshTokenRepository.findByUser(user);
+        if (Objects.nonNull(refreshTokenOpt)) {
+            refreshTokenOpt.setToken(UUID.randomUUID().toString());
+            refreshTokenOpt.setExpiryDate(Instant.now().plusMillis(refreshExpirationMs));
+            return refreshTokenRepository.save(refreshTokenOpt);
+        }
         RefreshToken rt = RefreshToken.builder()
                 .user(user)
                 .token(UUID.randomUUID().toString())
