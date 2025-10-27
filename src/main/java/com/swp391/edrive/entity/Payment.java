@@ -1,18 +1,19 @@
 package com.swp391.edrive.entity;
 
-import com.swp391.edrive.enums.PaymentMethod;
 import com.swp391.edrive.enums.PaymentStatus;
-import com.swp391.edrive.enums.PaymentType;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "payments")
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Payment {
 
     @Id
@@ -23,14 +24,8 @@ public class Payment {
     @JoinColumn(name = "order_id")
     private Order order;
 
-    private Double amount;
+    private BigDecimal amount;
     private LocalDate paymentDate;
-
-    @Enumerated(EnumType.STRING)
-    private PaymentType paymentType;
-
-    @Enumerated(EnumType.STRING)
-    private PaymentMethod method;
 
     @Column(name = "vnp_txn_ref")
     private String vnpTxnRef;

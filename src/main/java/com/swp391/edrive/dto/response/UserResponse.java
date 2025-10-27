@@ -1,6 +1,5 @@
 package com.swp391.edrive.dto.response;
 
-import com.swp391.edrive.enums.UserRole;
 import lombok.*;
 
 @Getter
@@ -9,11 +8,6 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class UserResponse {
-    private Long userId;
-    private String username;
-    private String fullName;
-    private String email;
-    private String phone;
-    private UserRole role;
-    private DealerResponse dealer;
+    public String token;
+    public String refreshToken;
 }

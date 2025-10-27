@@ -22,16 +22,9 @@ public class Quotation {
     private Dealer dealer;
 
     @ManyToOne
-    @JoinColumn(name = "customer_id")
-    private Customer customer;
-
-    @ManyToOne
     @JoinColumn(name = "vehicle_id")
     private Vehicle vehicle;
 
-    private LocalDate quotationDate;
     private Double quotedPrice;
 
-    @Enumerated(EnumType.STRING)
-    private QuotationStatus status;
 }

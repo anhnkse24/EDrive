@@ -14,9 +14,10 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RefreshToken {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
 
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "userId")
@@ -27,4 +28,5 @@ public class RefreshToken {
 
     @Column(nullable = false)
     private Instant expiryDate;
+
 }

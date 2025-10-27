@@ -4,6 +4,7 @@ import com.swp391.edrive.dto.request.UpdateProfileRequest;
 import com.swp391.edrive.dto.response.ProfileResponse;
 import com.swp391.edrive.service.ProfileService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/profile")
 @RequiredArgsConstructor
 @Tag(name = "Profile", description = "Quản lý thông tin hồ sơ người dùng")
+@SecurityRequirement(name = "api")
+
 public class ProfileController {
 
     private final ProfileService profileService;

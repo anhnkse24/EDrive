@@ -6,6 +6,7 @@ import com.swp391.edrive.dto.response.VehicleResponse;
 import com.swp391.edrive.enums.VehicleStatus;
 import com.swp391.edrive.service.VehicleService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -130,6 +131,8 @@ public class VehicleController {
 
     @Operation(summary = "Cập nhật thông tin xe")
     @PutMapping("/{id}")
+    @SecurityRequirement(name = "api")
+
     public ResponseEntity<ResponseObject> update(@PathVariable Long id, @Valid @RequestBody VehicleUpsertRequest req) {
         try {
             VehicleResponse updated = vehicleService.updateVehicle(id, req);
@@ -143,6 +146,8 @@ public class VehicleController {
     // ====== DELETE ======
     @Operation(summary = "Xoá xe")
     @DeleteMapping("/{id}")
+    @SecurityRequirement(name = "api")
+
     public ResponseEntity<ResponseObject> delete(@PathVariable Long id) {
         try {
             vehicleService.deleteVehicle(id);
@@ -154,6 +159,8 @@ public class VehicleController {
     }
 
     @PostMapping
+    @SecurityRequirement(name = "api")
+
     public ResponseEntity<ResponseObject> create(@Valid @RequestBody VehicleUpsertRequest req) {
         try {
             VehicleResponse created = vehicleService.createVehicle(req);

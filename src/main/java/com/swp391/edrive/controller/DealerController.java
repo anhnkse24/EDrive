@@ -5,6 +5,7 @@ import com.swp391.edrive.dto.response.DealerResponse;
 import com.swp391.edrive.dto.response.ResponseObject;
 import com.swp391.edrive.service.DealerService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,8 @@ import java.util.List;
 @RequestMapping("/api/dealers")
 @RequiredArgsConstructor
 @Tag(name = "Dealer Management", description = "Quản lý thông tin đại lý (Dealer CRUD)")
+@SecurityRequirement(name = "api")
+
 public class DealerController {
 
     private final DealerService dealerService;

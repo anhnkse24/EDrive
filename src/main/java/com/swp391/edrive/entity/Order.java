@@ -2,45 +2,63 @@ package com.swp391.edrive.entity;
 
 import com.swp391.edrive.enums.OrderStatus;
 import com.swp391.edrive.enums.PaymentStatus;
-import com.swp391.edrive.enums.PaymentType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
-
+import java.time.LocalDateTime;
+import java.util.List;
 @Entity
 @Table(name = "orders")
 @Getter
 @Setter
 public class Order {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long orderId;
-
-    @ManyToOne
-    @JoinColumn(name = "quotation_id")
-    private Quotation quotation;
+    private String orderId;
 
     @ManyToOne
     @JoinColumn(name = "dealer_id")
     private Dealer dealer;
 
-    @ManyToOne
-    @JoinColumn(name = "customer_id")
-    private Customer customer;
-
     private LocalDate orderDate;
-    private Double totalPrice;
+    private LocalDate desiredDeliveryDate;
+    private LocalDate actualDeliveryDate;
 
-    @Enumerated(EnumType.STRING)
-    private PaymentType paymentMethod;
+    // Các trường tính toán
+    private BigDecimal subtotal;
+    private BigDecimal totalDiscount;
+    private BigDecimal vatAmount;
+    private BigDecimal totalPrice; // Giữ nguyên để tương thích
 
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "payment_status", nullable = false)
-    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
+    private PaymentStatus paymentStatus;
+
+    private String deliveryAddress;
+    private String deliveryNote;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<OrderItem> orderItems;
+
+    @OneToMany(mappedBy = "order")
+    private List<Payment> payments;
+
+    @Column
+    private LocalDateTime paymentExpiryTime;
+
+    public boolean isPaymentExpired() {
+        return paymentExpiryTime != null && LocalDateTime.now().isAfter(paymentExpiryTime);
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        orderDate = LocalDate.now();
+        // Set payment expiry time to 10 minutes from creation
+        paymentExpiryTime = LocalDateTime.now().plusMinutes(10);
+
+    }
 }

@@ -25,6 +25,10 @@ public class Vehicle {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long vehicleId;
 
+    @ManyToOne
+    @JoinColumn(name = "manufacturer_id")
+    private Manufacturer manufacturer;
+
     private String modelName;
     private String version;
     private String color;
@@ -55,16 +59,19 @@ public class Vehicle {
     private VehicleStatus status;
 
     @OneToMany(mappedBy = "vehicle")
-    private List<Inventory> inventories;
-
-    @OneToMany(mappedBy = "vehicle")
-    private List<PricingPolicy> pricingPolicies;
-
-    @OneToMany(mappedBy = "vehicle")
     private List<TestDrive> testDrives;
 
     @OneToMany(mappedBy = "vehicle")
     private List<Quotation> quotations;
+
+    @OneToMany(mappedBy = "vehicle")
+    private List<ManufacturerInventory> manufacturerInventories;
+
+    @OneToMany(mappedBy = "vehicle")
+    private List<DealerInventory> dealerInventories;
+
+    @OneToMany(mappedBy = "vehicle")
+    private List<OrderItem> orderItems;
 
     @ManyToMany(mappedBy = "vehicles")
     private Set<Promotion> promotions = new HashSet<>();

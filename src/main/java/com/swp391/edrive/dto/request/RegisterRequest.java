@@ -1,6 +1,5 @@
 package com.swp391.edrive.dto.request;
 
-import com.swp391.edrive.validation.PasswordMatches;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -13,7 +12,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@PasswordMatches
+
 public class RegisterRequest {
 
     @NotBlank(message = "Full name is required")

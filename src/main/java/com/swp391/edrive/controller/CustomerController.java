@@ -5,6 +5,8 @@ import com.swp391.edrive.dto.response.CustomerResponse;
 import com.swp391.edrive.dto.response.ResponseObject;
 import com.swp391.edrive.service.CustomerService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/dealer/{dealerId}/customers")
 @RequiredArgsConstructor
 @Tag(name = "Customer", description = "API quản lý khách hàng theo Dealer")
+@SecurityRequirements
+@SecurityRequirement(name = "api")
+
 public class CustomerController {
 
     private final CustomerService customerService;

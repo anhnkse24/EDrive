@@ -1,120 +1,34 @@
 package com.swp391.edrive.config;
 
-import lombok.RequiredArgsConstructor;
+
+import com.swp391.edrive.service.AuthenticationService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.List;
+import org.springframework.web.cors.CorsUtils;
 
 @Configuration
-@EnableWebSecurity
-@EnableMethodSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final AuthenticationService authenticationService;
+    private final Filter filter;
 
-//    @Bean
-//    CorsConfigurationSource corsConfigurationSource() {
-//        CorsConfiguration config = new CorsConfiguration();
-//        // KHÔNG dùng allowedOrigins("*") khi allowCredentials = true
-//        config.setAllowedOriginPatterns(List.of(
-//                "http://localhost:5173",
-//                "http://127.0.0.1:5173",
-//                "http://localhost:3000",
-//                "http://127.0.0.1:3000"
-//        ));
-//        config.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
-//        config.setAllowedHeaders(List.of("*"));           // Content-Type, Authorization, ...
-//        config.setExposedHeaders(List.of("Location"));    // nếu FE cần đọc header này
-//        config.setAllowCredentials(true);                 // nếu dùng cookie/Authorization header
-//        config.setMaxAge(3600L);                          // cache preflight 1h
-//
-//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//        source.registerCorsConfiguration("/**", config);
-//        return source;
-//    }
-
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//        http
-                // 2) BẬT CORS CHO SECURITY
-//                .cors(c -> c.configurationSource(corsConfigurationSource()))
-//                .csrf(csrf -> csrf.disable())
-//                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-        http.csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(request -> {
-                    CorsConfiguration config = new CorsConfiguration();
-                    config.setAllowCredentials(true);
-                    config.addAllowedOriginPattern("*");
-                    config.addAllowedHeader("*");
-                    config.addAllowedMethod("*");
-                    config.setMaxAge(3600L);
-                    return config;
-                }))
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        // 3) PERMIT preflight
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        // Swagger
-                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/api-docs/**").permitAll()
-                        // Auth endpoints public
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/chat").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/vehicles/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/test-drive/available").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/test-drive/book").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/vehicles/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/vehicles/**").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/api/vehicles/**").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/api/vehicles/**").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/api/testdrives/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/dealers/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/dealers/**").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/api/dealers/**").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/api/dealers/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/dealers/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/dealers/**").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/api/dealers/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/inventories/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/inventories/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/orders/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/orders/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/payments/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/payments/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/testdrives/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/testdrives/**").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/api/testdrives/**").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/api/testdrives/**").permitAll()
-
-                        .anyRequest().authenticated()
-                )
-                .formLogin(form -> form.disable())
-                .httpBasic(basic -> basic.disable())
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
-        return http.build();
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration)
-            throws Exception {
-        return configuration.getAuthenticationManager();
+    @Lazy
+    @Autowired
+    public SecurityConfig(AuthenticationService authenticationService, Filter filter) {
+        this.authenticationService = authenticationService;
+        this.filter = filter;
     }
 
     @Bean
@@ -122,4 +36,54 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http
+          )
+            throws Exception {
+        return http.cors(Customizer.withDefaults())
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(auth -> auth
+
+                        // Cho phép truy cập các endpoint công khai
+                        .requestMatchers(CorsUtils::isPreFlightRequest)
+                        .permitAll() // Cho phép CORS pre-flight requests
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/api/auth/login",
+                                "/api/auth/register",
+                                "/api/auth/refresh-token",
+                                "/api/auth/google-login",
+                                "/api/auth/facebook-login",
+                                "/api/auth/reset-password",
+                                "/api/auth/forgot-password",
+                                "/api/auth/payments/vnpay-return",
+                                "/api/auth/verify",
+                                "/api/testdrives",
+                                "/api/vehicles/**",
+                                "/api/vehicles/search/**",
+                                "/chat",
+                                "/api/admin/unverified-accounts",
+                                "/api/admin/verify-account/*"
+
+                        )
+                        .permitAll() // Các endpoint không cần xác thực
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**")
+                        .permitAll() // Cho phép truy cập Swagger
+                        // Tất cả các request khác cần xác thực
+                        .anyRequest()
+                        .authenticated())
+                .userDetailsService(authenticationService)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class)
+                .build();
+    }
 }

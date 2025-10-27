@@ -67,7 +67,6 @@ public class ProfileServiceImpl implements ProfileService {
                 .phoneNumber(user.getPhone())
                 .agencyName(dealer != null ? dealer.getDealerName() : null)
                 .contactPerson(dealer != null ? dealer.getContactPerson() : null)
-                .agencyPhone(dealer != null ? dealer.getPhone() : null)
                 .streetAddress(dealer != null ? dealer.getHouseNumberAndStreet() : null)
                 .ward(dealer != null ? dealer.getWardOrCommune() : null)
                 .district(dealer != null ? dealer.getDistrict() : null)

@@ -39,8 +39,7 @@ public class Dealer {
     @Column(nullable = false, length = 100)
     private String contactPerson;
 
-    @Column(nullable = false, length = 20)
-    private String phone;
+
 
     @OneToMany(mappedBy = "dealer")
     @JsonIgnore
@@ -48,19 +47,7 @@ public class Dealer {
 
     @OneToMany(mappedBy = "dealer")
     @JsonIgnore
-    private List<Inventory> inventories;
-
-    @OneToMany(mappedBy = "dealer")
-    @JsonIgnore
-    private List<PricingPolicy> pricingPolicies;
-
-    @OneToMany(mappedBy = "dealer")
-    @JsonIgnore
     private List<TestDrive> testDrives;
-
-    @OneToMany(mappedBy = "dealer")
-    @JsonIgnore
-    private List<Quotation> quotations;
 
     @OneToMany(mappedBy = "dealer")
     @JsonIgnore
@@ -68,9 +55,9 @@ public class Dealer {
 
     @OneToMany(mappedBy = "dealer")
     @JsonIgnore
-    private List<Contract> contracts;
+    private List<DealerInventory> dealerInventories;
 
     @OneToMany(mappedBy = "dealer")
     @JsonIgnore
-    private List<DealerDebt> dealerDebts;
+    private List<Quotation> quotations;
 }

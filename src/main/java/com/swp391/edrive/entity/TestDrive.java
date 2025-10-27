@@ -33,6 +33,10 @@ public class TestDrive {
     @JoinColumn(name = "dealer_id")
     private Dealer dealer;
 
+    @ManyToOne
+    @JoinColumn(name = "dealer_inventory_id")
+    private DealerInventory dealerInventory;
+
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
 

@@ -5,6 +5,7 @@ import com.swp391.edrive.dto.response.PromotionResponse;
 import com.swp391.edrive.dto.response.ResponseObject;
 import com.swp391.edrive.service.PromotionService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,8 @@ import java.util.List;
 @RequestMapping("/api/promotions")
 @RequiredArgsConstructor
 @Tag(name = "Promotions", description = "API quản lý khuyến mãi (CRUD + Dealer)")
+@SecurityRequirement(name = "api")
+
 public class PromotionController {
 
     private final PromotionService promotionService;

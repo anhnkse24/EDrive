@@ -27,7 +27,6 @@ public class DealerServiceImpl implements DealerService {
         dealer.setDistrict(req.getDistrict());
         dealer.setProvinceOrCity(req.getProvinceOrCity());
         dealer.setContactPerson(req.getContactPerson());
-        dealer.setPhone(req.getPhone());
 
         Dealer saved = dealerRepository.save(dealer);
         return toResponse(saved);
@@ -45,7 +44,6 @@ public class DealerServiceImpl implements DealerService {
         dealer.setDistrict(req.getDistrict());
         dealer.setProvinceOrCity(req.getProvinceOrCity());
         dealer.setContactPerson(req.getContactPerson());
-        dealer.setPhone(req.getPhone());
 
         Dealer updated = dealerRepository.save(dealer);
         return toResponse(updated);
@@ -85,7 +83,6 @@ public class DealerServiceImpl implements DealerService {
                 .district(dealer.getDistrict())
                 .provinceOrCity(dealer.getProvinceOrCity())
                 .contactPerson(dealer.getContactPerson())
-                .phone(dealer.getPhone())
                 .build();
     }
 }

@@ -51,14 +51,6 @@
         @OneToMany(mappedBy = "customer")
         private List<Feedback> feedbacks;
 
-        @OneToMany(mappedBy = "customer")
-        private List<Quotation> quotations;
-
-        @OneToMany(mappedBy = "customer")
-        private List<Order> orders;
-
-        @OneToMany(mappedBy = "customer")
-        private List<CustomerDebt> customerDebts;
 
         @ManyToOne
         @JoinColumn(name = "dealer_id", nullable = false)

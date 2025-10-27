@@ -5,6 +5,7 @@ import com.swp391.edrive.dto.response.ResponseObject;
 import com.swp391.edrive.dto.response.TestDriveResponse;
 import com.swp391.edrive.service.TestDriveService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,8 @@ public class TestDriveController {
 
     @Operation(summary = "Cập nhật lịch lái thử theo ID")
     @PutMapping("/{id}")
+    @SecurityRequirement(name = "api")
+
     public ResponseEntity<ResponseObject> updateTestDrive(@PathVariable Long id,
                                                           @Valid @RequestBody TestDriveRequest request) {
         TestDriveResponse updated = testDriveService.updateTestDrive(id, request);
@@ -42,6 +45,8 @@ public class TestDriveController {
 
     @Operation(summary = "Xóa lịch lái thử theo ID")
     @DeleteMapping("/{id}")
+    @SecurityRequirement(name = "api")
+
     public ResponseEntity<ResponseObject> deleteTestDrive(@PathVariable Long id) {
         testDriveService.deleteTestDrive(id);
         return ResponseEntity.ok(new ResponseObject(200, "Xóa lịch lái thử thành công", null));
@@ -49,6 +54,8 @@ public class TestDriveController {
 
     @Operation(summary = "Lấy thông tin lịch lái thử theo ID")
     @GetMapping("/{id}")
+    @SecurityRequirement(name = "api")
+
     public ResponseEntity<ResponseObject> getTestDriveById(@PathVariable Long id) {
         TestDriveResponse response = testDriveService.getTestDriveById(id);
         return ResponseEntity.ok(new ResponseObject(200, "Lấy thông tin lịch lái thử thành công", response));
@@ -56,6 +63,8 @@ public class TestDriveController {
 
     @Operation(summary = "Lấy danh sách tất cả lịch lái thử")
     @GetMapping
+    @SecurityRequirement(name = "api")
+
     public ResponseEntity<ResponseObject> getAllTestDrives() {
         List<TestDriveResponse> list = testDriveService.getAllTestDrives();
         return ResponseEntity.ok(new ResponseObject(200, "Lấy danh sách lịch lái thử thành công", list));
@@ -67,6 +76,8 @@ public class TestDriveController {
 
     @Operation(summary = "Lấy danh sách lịch lái thử theo Dealer ID")
     @GetMapping("/dealer/{dealerId}")
+    @SecurityRequirement(name = "api")
+
     public ResponseEntity<ResponseObject> getTestDrivesByDealerId(@PathVariable Long dealerId) {
         List<TestDriveResponse> list = testDriveService.getTestDrivesByDealerId(dealerId);
         return ResponseEntity.ok(new ResponseObject(200, "Lấy danh sách lịch lái thử thành công theo Dealer ID", list));
@@ -74,6 +85,8 @@ public class TestDriveController {
 
     @Operation(summary = "Tạo mới lịch lái thử cho Dealer cụ thể")
     @PostMapping("/dealer/{dealerId}")
+    @SecurityRequirement(name = "api")
+
     public ResponseEntity<ResponseObject> createTestDriveByDealer(@PathVariable Long dealerId,
                                                                   @Valid @RequestBody TestDriveRequest request) {
         TestDriveResponse created = testDriveService.createTestDriveByDealer(dealerId, request);
@@ -82,6 +95,8 @@ public class TestDriveController {
 
     @Operation(summary = "Cập nhật lịch lái thử theo Dealer ID")
     @PutMapping("/dealer/{dealerId}/{testDriveId}")
+    @SecurityRequirement(name = "api")
+
     public ResponseEntity<ResponseObject> updateTestDriveByDealer(@PathVariable Long dealerId,
                                                                   @PathVariable Long testDriveId,
                                                                   @Valid @RequestBody TestDriveRequest request) {
@@ -91,6 +106,8 @@ public class TestDriveController {
 
     @Operation(summary = "Xóa lịch lái thử theo Dealer ID")
     @DeleteMapping("/dealer/{dealerId}/{testDriveId}")
+    @SecurityRequirement(name = "api")
+
     public ResponseEntity<ResponseObject> deleteTestDriveByDealer(@PathVariable Long dealerId,
                                                                   @PathVariable Long testDriveId) {
         testDriveService.deleteTestDriveByDealer(dealerId, testDriveId);
