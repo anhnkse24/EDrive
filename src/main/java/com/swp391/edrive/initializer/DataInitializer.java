@@ -377,6 +377,52 @@ public class DataInitializer implements CommandLineRunner {
             promotionRepository.saveAll(promotions);
             System.out.println("✅ Đã khởi tạo " + promotions.size() + " promotions");
         }
+        // =================== SEED CUSTOMERS ===================
+        if (customerRepository.count() == 0) {
+            List<Dealer> dealers = dealerRepository.findAll();
+            List<Customer> customers = new ArrayList<>();
+
+            if (!dealers.isEmpty()) {
+                Dealer dealer1 = dealers.get(0);
+                Dealer dealer2 = dealers.size() > 1 ? dealers.get(1) : dealer1;
+
+                Customer c1 = new Customer();
+                c1.setFullName("Nguyễn Văn Minh");
+                c1.setDob(LocalDate.of(1992, 3, 15));
+                c1.setGender("Nam");
+                c1.setEmail("minh.nguyen@example.com");
+                c1.setPhone("0905123456");
+                c1.setAddress("12 Nguyễn Trãi, Hà Nội");
+                c1.setIdCardNo("012345678912");
+                c1.setDealer(dealer1);
+
+                Customer c2 = new Customer();
+                c2.setFullName("Trần Thị Hồng");
+                c2.setDob(LocalDate.of(1996, 8, 25));
+                c2.setGender("Nữ");
+                c2.setEmail("hong.tran@example.com");
+                c2.setPhone("0906234567");
+                c2.setAddress("56 Lê Lợi, Quận 1, TP.HCM");
+                c2.setIdCardNo("123456789123");
+                c2.setDealer(dealer2);
+
+                Customer c3 = new Customer();
+                c3.setFullName("Lê Quốc Anh");
+                c3.setDob(LocalDate.of(1988, 11, 5));
+                c3.setGender("Nam");
+                c3.setEmail("anh.le@example.com");
+                c3.setPhone("0907345678");
+                c3.setAddress("89 Nguyễn Văn Linh, Đà Nẵng");
+                c3.setIdCardNo("234567891234");
+                c3.setDealer(dealer1);
+
+                customers.addAll(List.of(c1, c2, c3));
+                customerRepository.saveAll(customers);
+
+                System.out.println("✅ Đã khởi tạo " + customers.size() + " customers");
+            }
+        }
+
 // =================== SEED TEST DRIVES ===================
         if (testDriveRepository.count() == 0) {
             List<Dealer> dealers = dealerRepository.findAll();
