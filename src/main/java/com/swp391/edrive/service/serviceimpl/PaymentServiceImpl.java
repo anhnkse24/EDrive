@@ -62,6 +62,7 @@ public class PaymentServiceImpl implements PaymentService {
         // Check if payment is expired
         if (order.isPaymentExpired()) {
             order.setStatus(OrderStatus.CANCELLED);
+            order.setPaymentStatus(PaymentStatus.CANCELLED); // NEW
             orderRepository.save(order);
             throw new IllegalStateException("Payment time has expired");
         }
@@ -181,6 +182,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     private void handleExpiredBooking(Order order) {
         order.setStatus(OrderStatus.CANCELLED);
+        order.setPaymentStatus(PaymentStatus.CANCELLED); // NEW
         orderRepository.save(order);
     }
 

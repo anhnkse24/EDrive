@@ -71,4 +71,12 @@ public class OrderController {
                 .build();
     }
 
+    @PutMapping("/{orderId}/cancel")
+    public ResponseObject<OrderResponse> cancel(@PathVariable String orderId) {
+        OrderResponse result = orderService.cancelOrder(orderId);
+        return ResponseObject.<OrderResponse>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Order cancelled successfully")
+                .data(result).build();
+    }
 }
