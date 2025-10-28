@@ -81,6 +81,9 @@ public class VehicleUpsertRequest {
     @NotNull(message = "Trạng thái bắt buộc")
     private VehicleStatus status;
 
+    private String imageUrl;
+
+
     @NotNull(message = "Năm sản xuất bắt buộc")
     @Min(value = 1950, message = "Năm sản xuất không trước 1950")
     @Max(value = 2025, message = "Năm sản xuất không vượt quá 2025")

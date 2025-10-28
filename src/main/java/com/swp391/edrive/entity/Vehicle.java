@@ -47,6 +47,9 @@ public class Vehicle {
     private Integer widthMm;
     private Integer heightMm;
 
+    @Column(name = "image_url", length = 1024)
+    private String imageUrl;
+
     @NotNull
     @Digits(integer = 12, fraction = 2)
     @Column(precision = 12, scale = 2)

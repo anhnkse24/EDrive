@@ -28,4 +28,5 @@ public class VehicleResponse {
     private BigDecimal finalPrice;
     private String status;
     private Integer manufactureYear;
+    private String imageUrl;
 }

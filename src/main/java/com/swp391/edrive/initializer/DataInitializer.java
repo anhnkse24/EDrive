@@ -143,6 +143,7 @@ public class DataInitializer implements CommandLineRunner {
         vf8.setWidthMm(1934);
         vf8.setHeightMm(1667);
         vf8.setPriceRetail(new BigDecimal("1000"));
+        vf8.setImageUrl("https://vinfastquangninh.com.vn/wp-content/uploads/2023/07/tai-xuong-8-min.png");
         vf8.setManufactureYear(2024);
         vf8.setStatus(VehicleStatus.AVAILABLE);
 
@@ -163,6 +164,7 @@ public class DataInitializer implements CommandLineRunner {
         vf9.setHeightMm(1750);
         vf9.setPriceRetail(new BigDecimal("2000"));
         vf9.setManufactureYear(2024);
+        vf9.setImageUrl("https://vinfasthadong.com.vn/wp-content/uploads/2023/10/VinFast-VF3-mau-den-scaled-1.jpg");
         vf9.setStatus(VehicleStatus.AVAILABLE);
 
         Vehicle vfe34 = new Vehicle();
@@ -182,6 +184,7 @@ public class DataInitializer implements CommandLineRunner {
         vfe34.setHeightMm(1613);
         vfe34.setPriceRetail(new BigDecimal("3000"));
         vfe34.setManufactureYear(2023);
+        vfe34.setImageUrl("https://vinfasthadong.com.vn/wp-content/uploads/2023/10/VinFast-VF3-mau-trang-2-scaled-1.jpg");
         vfe34.setStatus(VehicleStatus.AVAILABLE);
 
         // Khởi tạo Vehicles cho Tesla
@@ -202,6 +205,7 @@ public class DataInitializer implements CommandLineRunner {
         model3.setHeightMm(1443);
         model3.setPriceRetail(new BigDecimal("1500000000"));
         model3.setManufactureYear(2024);
+        model3.setImageUrl("https://vinfasthadong.com.vn/wp-content/uploads/2023/10/VinFast-VF3-mau-xanh-lo-Cyan-scaled-1.jpg");
         model3.setStatus(VehicleStatus.AVAILABLE);
 
         Vehicle modelY = new Vehicle();
@@ -221,6 +225,7 @@ public class DataInitializer implements CommandLineRunner {
         modelY.setHeightMm(1624);
         modelY.setPriceRetail(new BigDecimal("1800000000"));
         modelY.setManufactureYear(2024);
+        modelY.setImageUrl("https://wuling-ev.vn/SEO/%C3%B4%20t%C3%B4%20%C4%91i%E1%BB%87n%20c%C5%A9%20gi%C3%A1%20r%E1%BA%BB/1834/image-thumb__1834___auto_697d1e38f8077a664d670954e166f84b/o-to-dien-cu-gia-re%20%281%29.70974c2f.jpg");
         modelY.setStatus(VehicleStatus.AVAILABLE);
 
         // Khởi tạo Vehicles cho BYD
@@ -241,6 +246,7 @@ public class DataInitializer implements CommandLineRunner {
         han.setHeightMm(1495);
         han.setPriceRetail(new BigDecimal("1400000000"));
         han.setManufactureYear(2024);
+        han.setImageUrl("https://vinfasthadong.com.vn/wp-content/uploads/2023/10/VinFast-VF3-mau-bac-1-scaled-1.jpg");
         han.setStatus(VehicleStatus.AVAILABLE);
 
         Vehicle atto3 = new Vehicle();
@@ -260,6 +266,7 @@ public class DataInitializer implements CommandLineRunner {
         atto3.setHeightMm(1615);
         atto3.setPriceRetail(new BigDecimal("850000000"));
         atto3.setManufactureYear(2024);
+        atto3.setImageUrl("https://giaxevinfast.net/wp-content/uploads/2024/04/VinFast-VF-3-mau-Xanh-duong-dam-.png");
         atto3.setStatus(VehicleStatus.AVAILABLE);
 
         List<Vehicle> vehicles = vehicleRepository.saveAll(

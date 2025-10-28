@@ -151,6 +151,7 @@ public class VehicleServiceImpl implements VehicleService {
         v.setHeightMm(r.getHeightMm());
         v.setPriceRetail(r.getPriceRetail());
         v.setStatus(r.getStatus());
+        v.setImageUrl(r.getImageUrl());
         v.setManufactureYear(r.getManufactureYear());
     }
 
@@ -171,6 +172,7 @@ public class VehicleServiceImpl implements VehicleService {
                 .widthMm(v.getWidthMm())
                 .heightMm(v.getHeightMm())
                 .priceRetail(v.getPriceRetail())
+                .imageUrl(v.getImageUrl())
                 .finalPrice(calculateDiscountedPrice(v))
                 .status(v.getStatus() != null ? v.getStatus().name() : null)
                 .manufactureYear(v.getManufactureYear())
