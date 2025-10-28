@@ -72,7 +72,9 @@ public class SecurityConfig {
                                 "/api/vehicles/search/**",
                                 "/chat",
                                 "/api/admin/unverified-accounts",
-                                "/api/admin/verify-account/*"
+                                "/api/admin/verify-account/*",
+                                "/api/dealers/**",
+                                "/api/manufacturer-inventory/**"
 
                         )
                         .permitAll() // Các endpoint không cần xác thực
