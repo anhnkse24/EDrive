@@ -1,6 +1,8 @@
 package com.swp391.edrive.initializer;
 
 import com.swp391.edrive.entity.*;
+import com.swp391.edrive.enums.DiscountType;
+import com.swp391.edrive.enums.PromoTarget;
 import com.swp391.edrive.enums.VehicleStatus;
 import com.swp391.edrive.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -23,6 +26,10 @@ public class DataInitializer implements CommandLineRunner {
     private final RoleRepository roleRepository;
     private final DealerRepository dealerRepository;
     private final PasswordEncoder passwordEncoder;
+    private final PromotionRepository promotionRepository;
+    private final TestDriveRepository testDriveRepository;
+    private final CustomerRepository customerRepository;
+
 
 
     @Override
@@ -316,6 +323,106 @@ public class DataInitializer implements CommandLineRunner {
                 Arrays.asList(inv1, inv2, inv3, inv4, inv5, inv6, inv7)
         );
         System.out.println("✅ Đã khởi tạo " + inventories.size() + " manufacturer inventories");
+// =================== SEED PROMOTIONS ===================
+        if (promotionRepository.count() == 0) {
+            List<Promotion> promotions = new ArrayList<>();
+
+            Promotion promo1 = new Promotion();
+            promo1.setTitle("Khuyến mãi đầu năm - VinFast VF 8");
+            promo1.setDescription("Giảm giá đặc biệt cho mẫu VF 8 trong tháng khai xuân! Nhận ngay 5% giảm giá khi đặt xe trước 30/3.");
+            promo1.setDiscountType(DiscountType.PERCENTAGE);
+            promo1.setDiscountValue(5.0);
+            promo1.setStartDate(LocalDate.now().minusDays(10));
+            promo1.setEndDate(LocalDate.now().plusDays(20));
+            promo1.setApplicableTo(PromoTarget.CUSTOMER);
+            promo1.setDealer(dealersInDb.get(0)); // Đại lý Hà Nội
+            promo1.getVehicles().add(vehicles.get(0)); // VF8
+
+            Promotion promo2 = new Promotion();
+            promo2.setTitle("Siêu ưu đãi Tesla Model 3");
+            promo2.setDescription("Tặng gói sạc nhanh và giảm 100 triệu cho khách hàng mua Tesla Model 3 trong tháng này.");
+            promo2.setDiscountType(DiscountType.PERCENTAGE);
+            promo2.setDiscountValue(100_000_000.0);
+            promo2.setStartDate(LocalDate.now().minusDays(5));
+            promo2.setEndDate(LocalDate.now().plusDays(25));
+            promo2.setApplicableTo(PromoTarget.CUSTOMER);
+            promo2.setDealer(dealersInDb.get(1)); // HCM
+            promo2.getVehicles().add(vehicles.get(3)); // Model 3
+
+            Promotion promo3 = new Promotion();
+            promo3.setTitle("Chương trình tri ân đại lý");
+            promo3.setDescription("Giảm 10% giá nhập xe VinFast cho tất cả đại lý trong hệ thống.");
+            promo3.setDiscountType(DiscountType.PERCENTAGE);
+            promo3.setDiscountValue(10.0);
+            promo3.setStartDate(LocalDate.now());
+            promo3.setEndDate(LocalDate.now().plusDays(45));
+            promo3.setApplicableTo(PromoTarget.DEALER);
+            promo3.setDealer(dealersInDb.get(2)); // Đà Nẵng
+            promo3.getVehicles().add(vehicles.get(0));
+            promo3.getVehicles().add(vehicles.get(1)); // VF8, VF9
+
+            Promotion promo4 = new Promotion();
+            promo4.setTitle("Toàn quốc - Mua xe BYD nhận quà");
+            promo4.setDescription("Áp dụng toàn quốc: Khách hàng mua xe BYD bất kỳ sẽ nhận phiếu quà tặng trị giá 20 triệu đồng.");
+            promo4.setDiscountType(DiscountType.FIXED_AMOUNT);
+            promo4.setDiscountValue(20_000_000.0);
+            promo4.setStartDate(LocalDate.now().minusDays(15));
+            promo4.setEndDate(LocalDate.now().plusDays(60));
+            promo4.setApplicableTo(PromoTarget.ALL);
+            promo4.setDealer(dealersInDb.get(4)); // Cần Thơ
+            promo4.getVehicles().add(vehicles.get(5)); // Han
+            promo4.getVehicles().add(vehicles.get(6)); // Atto 3
+
+            promotions.addAll(List.of(promo1, promo2, promo3, promo4));
+            promotionRepository.saveAll(promotions);
+            System.out.println("✅ Đã khởi tạo " + promotions.size() + " promotions");
+        }
+// =================== SEED TEST DRIVES ===================
+        if (testDriveRepository.count() == 0) {
+            List<Dealer> dealers = dealerRepository.findAll();
+            List<Customer> customers = customerRepository.findAll();
+
+            if (!dealers.isEmpty() && !vehicles.isEmpty() && !customers.isEmpty()) {
+                Dealer dealer1 = dealers.get(0);
+                Dealer dealer2 = dealers.size() > 1 ? dealers.get(1) : dealer1;
+
+                Customer customer1 = customers.get(0);
+                Customer customer2 = customers.size() > 1 ? customers.get(1) : customer1;
+
+                Vehicle vehicle1 = vehicles.get(0);
+                Vehicle vehicle2 = vehicles.size() > 1 ? vehicles.get(1) : vehicle1;
+
+                // TestDrive 1 — Pending
+                TestDrive td1 = new TestDrive();
+                td1.setCustomer(customer1);
+                td1.setDealer(dealer1);
+                td1.setVehicle(vehicle1);
+                td1.setScheduleDatetime(LocalDateTime.now().plusDays(2));
+                td1.setStatus(com.swp391.edrive.enums.TestDriveStatus.PENDING);
+
+                // TestDrive 2 — Completed
+                TestDrive td2 = new TestDrive();
+                td2.setCustomer(customer2);
+                td2.setDealer(dealer1);
+                td2.setVehicle(vehicle2);
+                td2.setScheduleDatetime(LocalDateTime.now().minusDays(1));
+                td2.setCompletedAt(LocalDateTime.now().minusHours(3));
+                td2.setStatus(com.swp391.edrive.enums.TestDriveStatus.COMPLETED);
+
+                // TestDrive 3 — Cancelled
+                TestDrive td3 = new TestDrive();
+                td3.setCustomer(customer1);
+                td3.setDealer(dealer2);
+                td3.setVehicle(vehicle2);
+                td3.setScheduleDatetime(LocalDateTime.now().plusDays(5));
+                td3.setStatus(com.swp391.edrive.enums.TestDriveStatus.CANCELLED);
+                td3.setCancelReason("Khách bận công tác, hủy lịch.");
+
+                testDriveRepository.saveAll(List.of(td1, td2, td3));
+                System.out.println("✅ Đã khởi tạo 3 test drives");
+            }
+        }
+
         System.out.println("🎉 Hoàn thành khởi tạo dữ liệu!");
     }
     private Dealer makeDealer(String name, String street, String ward, String district, String city, String contact, String phone) {
