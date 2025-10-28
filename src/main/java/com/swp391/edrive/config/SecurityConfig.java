@@ -72,7 +72,8 @@ public class SecurityConfig {
                                 "/api/vehicles/search/**",
                                 "/chat",
                                 "/api/admin/unverified-accounts",
-                                "/api/admin/verify-account/*"
+                                "/api/admin/verify-account/*",
+                                "/api/payments/vnpay-return"
 
                         )
                         .permitAll() // Các endpoint không cần xác thực
