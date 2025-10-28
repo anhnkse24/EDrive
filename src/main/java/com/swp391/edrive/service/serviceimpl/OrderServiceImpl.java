@@ -3,6 +3,7 @@ package com.swp391.edrive.service.serviceimpl;
 import com.swp391.edrive.dto.request.OrderCreateRequest;
 import com.swp391.edrive.dto.request.OrderItemRequest;
 import com.swp391.edrive.dto.response.OrderItemResponse;
+import com.swp391.edrive.dto.response.OrderResponse;
 import com.swp391.edrive.dto.response.OrderSummaryResponse;
 import com.swp391.edrive.entity.*;
 import com.swp391.edrive.enums.OrderStatus;
@@ -33,6 +34,68 @@ public class OrderServiceImpl implements OrderService {
 
     @Value("${edrive.vat-rate:0.1}")
     private BigDecimal vatRate;
+
+    @Override
+    public List<OrderResponse> getAllOrders() {
+        List<Order> orders = orderRepo.findAll();
+        return orders.stream()
+                .map(this::mapToOrderResponse)
+                .toList();
+    }
+
+    @Override
+    public OrderResponse getOrderById(String orderId) {
+        Order order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found with ID: " + orderId));
+        return mapToOrderResponse(order);
+    }
+
+    @Override
+    public List<OrderResponse> getOrdersByStatus(OrderStatus status) {
+        List<Order> orders = orderRepo.findByStatus(status);
+        return orders.stream()
+                .map(this::mapToOrderResponse)
+                .toList();
+    }
+
+    private OrderResponse mapToOrderResponse(Order order) {
+        OrderResponse res = new OrderResponse();
+        res.setOrderId(order.getOrderId());
+        res.setDealerId(order.getDealer().getDealerId());
+        res.setDealerName(order.getDealer().getDealerName());
+        res.setOrderDate(order.getOrderDate());
+        res.setDesiredDeliveryDate(order.getDesiredDeliveryDate());
+        res.setActualDeliveryDate(order.getActualDeliveryDate());
+        res.setSubtotal(order.getSubtotal());
+        res.setTotalDiscount(order.getTotalDiscount());
+        res.setVatAmount(order.getVatAmount());
+        res.setTotalPrice(order.getTotalPrice());
+        res.setOrderStatus(order.getStatus());
+        res.setPaymentStatus(order.getPaymentStatus());
+        res.setDeliveryAddress(order.getDeliveryAddress());
+        res.setDeliveryNote(order.getDeliveryNote());
+
+        if (order.getOrderItems() != null) {
+            res.setOrderItems(
+                    order.getOrderItems().stream().map(item -> {
+                        var itemRes = new com.swp391.edrive.dto.response.OrderItemResponse();
+                        itemRes.vehicleId = item.getVehicle().getVehicleId();
+                        itemRes.vehicleName = item.getVehicle().getModelName();
+                        itemRes.quantity = item.getQuantity();
+                        itemRes.unitPrice = item.getUnitPrice();
+                        itemRes.itemSubtotal = item.getUnitPrice().multiply(
+                                java.math.BigDecimal.valueOf(item.getQuantity())
+                        );
+                        itemRes.itemDiscount = item.getDiscountAmount();
+                        itemRes.itemTotal = item.getTotalPrice();
+                        return itemRes;
+                    }).toList()
+            );
+        }
+        return res;
+    }
+
+
 
     @Override
     @Transactional
