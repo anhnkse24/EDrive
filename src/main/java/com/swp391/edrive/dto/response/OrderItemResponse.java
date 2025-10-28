@@ -2,6 +2,7 @@ package com.swp391.edrive.dto.response;
 
 import java.math.BigDecimal;
 
+
 public class OrderItemResponse {
     public Long vehicleId;
     public String vehicleName;

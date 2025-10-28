@@ -73,6 +73,8 @@ public class SecurityConfig {
                                 "/chat",
                                 "/api/admin/unverified-accounts",
                                 "/api/admin/verify-account/*",
+                                "/api/payments/vnpay-return",
+                                "/api/admin/verify-account/*",
                                 "/api/dealers/**",
                                 "/api/manufacturer-inventory/**"
 
