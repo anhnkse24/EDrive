@@ -60,4 +60,15 @@ public class OrderController {
                 .data(result)
                 .build();
     }
+
+    @GetMapping("/dealer/{dealerId}")
+    public ResponseObject<List<OrderResponse>> getOrdersByDealerId(@PathVariable Long dealerId) {
+        List<OrderResponse> result = orderService.getOrdersByDealerId(dealerId);
+        return ResponseObject.<List<OrderResponse>>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Fetched orders by dealerId successfully")
+                .data(result)
+                .build();
+    }
+
 }

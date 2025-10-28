@@ -14,4 +14,5 @@ public interface OrderService {
     List<OrderResponse> getAllOrders();
     OrderResponse getOrderById(String orderId);
     List<OrderResponse> getOrdersByStatus(OrderStatus status);
+    List<OrderResponse> getOrdersByDealerId(Long dealerId);
 }

@@ -95,8 +95,18 @@ public class OrderServiceImpl implements OrderService {
         return res;
     }
 
+    @Override
+    public List<OrderResponse> getOrdersByDealerId(Long dealerId) {
+        // kiểm tra dealer tồn tại
+        Dealer dealer = dealerRepo.findById(dealerId)
+                .orElseThrow(() -> new IllegalArgumentException("Dealer not found with id: " + dealerId));
 
-
+        // lấy danh sách order theo dealer
+        List<Order> orders = orderRepo.findByDealer_DealerId(dealerId);
+        return orders.stream()
+                .map(this::mapToOrderResponse)
+                .toList();
+    }
     @Override
     @Transactional
     public OrderSummaryResponse createOrder(OrderCreateRequest req, Long dealerId) {
