@@ -22,45 +22,6 @@ public class TestDriveController {
 
     private final TestDriveService testDriveService;
 
-    // =====================================
-    // 🔹 CRUD CHUNG
-    // =====================================
-
-    @Operation(summary = "Tạo mới lịch lái thử")
-    @PostMapping
-    public ResponseEntity<ResponseObject> createTestDrive(@Valid @RequestBody TestDriveRequest request) {
-        TestDriveResponse created = testDriveService.createTestDrive(request);
-        return ResponseEntity.ok(new ResponseObject(200, "Tạo lịch lái thử thành công", created));
-    }
-
-    @Operation(summary = "Cập nhật lịch lái thử theo ID")
-    @PutMapping("/{id}")
-    @SecurityRequirement(name = "api")
-
-    public ResponseEntity<ResponseObject> updateTestDrive(@PathVariable Long id,
-                                                          @Valid @RequestBody TestDriveRequest request) {
-        TestDriveResponse updated = testDriveService.updateTestDrive(id, request);
-        return ResponseEntity.ok(new ResponseObject(200, "Cập nhật lịch lái thử thành công", updated));
-    }
-
-    @Operation(summary = "Xóa lịch lái thử theo ID")
-    @DeleteMapping("/{id}")
-    @SecurityRequirement(name = "api")
-
-    public ResponseEntity<ResponseObject> deleteTestDrive(@PathVariable Long id) {
-        testDriveService.deleteTestDrive(id);
-        return ResponseEntity.ok(new ResponseObject(200, "Xóa lịch lái thử thành công", null));
-    }
-
-    @Operation(summary = "Lấy thông tin lịch lái thử theo ID")
-    @GetMapping("/{id}")
-    @SecurityRequirement(name = "api")
-
-    public ResponseEntity<ResponseObject> getTestDriveById(@PathVariable Long id) {
-        TestDriveResponse response = testDriveService.getTestDriveById(id);
-        return ResponseEntity.ok(new ResponseObject(200, "Lấy thông tin lịch lái thử thành công", response));
-    }
-
     @Operation(summary = "Lấy danh sách tất cả lịch lái thử")
     @GetMapping
     @SecurityRequirement(name = "api")
@@ -70,9 +31,6 @@ public class TestDriveController {
         return ResponseEntity.ok(new ResponseObject(200, "Lấy danh sách lịch lái thử thành công", list));
     }
 
-    // =====================================
-    // 🔹 CRUD THEO DEALER ID
-    // =====================================
 
     @Operation(summary = "Lấy danh sách lịch lái thử theo Dealer ID")
     @GetMapping("/dealer/{dealerId}")
