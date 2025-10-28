@@ -39,7 +39,7 @@ public class Dealer {
     @Column(nullable = false, length = 100)
     private String contactPerson;
 
-
+    private String phone;
 
     @OneToMany(mappedBy = "dealer")
     @JsonIgnore

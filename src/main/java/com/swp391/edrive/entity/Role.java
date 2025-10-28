@@ -7,6 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -29,7 +30,8 @@ public class Role {
             name = "role_permissions",
             joinColumns = @JoinColumn(name = "role_name"),
             inverseJoinColumns = @JoinColumn(name = "permission_name"))
-    private Set<Permission> permissions;
+    @Builder.Default
+    private Set<Permission> permissions = new HashSet<>();
 
     @CreationTimestamp
     private LocalDateTime createdAt;

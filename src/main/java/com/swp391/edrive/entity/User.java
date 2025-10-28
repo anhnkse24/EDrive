@@ -49,6 +49,7 @@ public class User  implements UserDetails {
             name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_name"))
+    @Builder.Default
     private Set<Role> roles = new HashSet<>();
 
     public Set<String> getAllPermissions() {

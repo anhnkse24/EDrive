@@ -1,20 +1,16 @@
 package com.swp391.edrive.initializer;
 
-import com.swp391.edrive.entity.Manufacturer;
-import com.swp391.edrive.entity.ManufacturerInventory;
-import com.swp391.edrive.entity.Vehicle;
+import com.swp391.edrive.entity.*;
 import com.swp391.edrive.enums.VehicleStatus;
-import com.swp391.edrive.repository.ManufacturerInventoryRepository;
-import com.swp391.edrive.repository.ManufacturerRepository;
-import com.swp391.edrive.repository.VehicleRepository;
+import com.swp391.edrive.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Component
 @RequiredArgsConstructor
@@ -23,9 +19,80 @@ public class DataInitializer implements CommandLineRunner {
     private final ManufacturerInventoryRepository manufacturerInventoryRepository;
     private final ManufacturerRepository manufacturerRepository;
     private final VehicleRepository vehicleRepository;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final DealerRepository dealerRepository;
+    private final PasswordEncoder passwordEncoder;
+
 
     @Override
     public void run(String... args) throws Exception {
+        // ========== 1) SEED ROLES & USERS (chạy luôn, không phụ thuộc dữ liệu khác) ==========
+        // 1.1 Roles
+        Role adminRole = roleRepository.findById("ADMIN")
+                .orElseGet(() -> roleRepository.save(Role.builder().name("ADMIN").description("System Administrator").build()));
+        Role dealerRole = roleRepository.findById("DEALER")
+                .orElseGet(() -> roleRepository.save(Role.builder().name("DEALER").description("Dealer user").build()));
+
+        // 1.2 Admin user (nếu chưa có)
+        if (!userRepository.existsByUsername("admin")) {
+            User admin = User.builder()
+                    .username("admin")
+                    .password(passwordEncoder.encode("Admin@123")) // đổi sau khi đăng nhập
+                    .fullName("System Administrator")
+                    .email("admin@edrive.local")
+                    .phone("0000000000")
+                    .isVerify(true)
+                    .build();
+            // đảm bảo roles không null khi dùng builder
+            Set<Role> roles = new HashSet<>();
+            roles.add(adminRole);
+            admin.setRoles(roles);
+            userRepository.save(admin);
+            System.out.println("✅ Seeded admin: admin / Admin@123");
+        }
+
+        // 1.3 Dealers & Dealer users
+        // Nếu DB chưa có Dealer nào, tạo 10 Dealer mẫu
+        List<Dealer> dealersInDb = dealerRepository.findAll();
+        if (dealersInDb.isEmpty()) {
+            List<Dealer> seedDealers = new ArrayList<>();
+            seedDealers.add(makeDealer("E-Drive Hà Nội", "123 Trần Duy Hưng", "Trung Hòa", "Cầu Giấy", "Hà Nội", "Liên hệ 1", "0900000001"));
+            seedDealers.add(makeDealer("E-Drive Hồ Chí Minh", "45 Lê Lợi", "Bến Nghé", "Quận 1", "Hồ Chí Minh", "Liên hệ 2", "0900000002"));
+            seedDealers.add(makeDealer("E-Drive Đà Nẵng", "99 Nguyễn Văn Linh", "Hải Châu 1", "Hải Châu", "Đà Nẵng", "Liên hệ 3", "0900000003"));
+            seedDealers.add(makeDealer("E-Drive Hải Phòng", "12 Điện Biên Phủ", "Minh Khai", "Hồng Bàng", "Hải Phòng", "Liên hệ 4", "0900000004"));
+            seedDealers.add(makeDealer("E-Drive Cần Thơ", "8 Mậu Thân", "Xuân Khánh", "Ninh Kiều", "Cần Thơ", "Liên hệ 5", "0900000005"));
+            seedDealers.add(makeDealer("E-Drive Nha Trang", "27 Trần Phú", "Lộc Thọ", "Nha Trang", "Khánh Hòa", "Liên hệ 6", "0900000006"));
+            seedDealers.add(makeDealer("E-Drive Biên Hòa", "18 Phạm Văn Thuận", "Tân Tiến", "Biên Hòa", "Đồng Nai", "Liên hệ 7", "0900000007"));
+            seedDealers.add(makeDealer("E-Drive Vinh", "56 Trường Chinh", "Trung Đô", "Vinh", "Nghệ An", "Liên hệ 8", "0900000008"));
+            seedDealers.add(makeDealer("E-Drive Buôn Ma Thuột", "10 Nguyễn Tất Thành", "Tân Lợi", "Buôn Ma Thuột", "Đắk Lắk", "Liên hệ 9", "0900000009"));
+            seedDealers.add(makeDealer("E-Drive Thanh Hóa", "20 Hạc Thành", "Tân Sơn", "Thanh Hóa", "Thanh Hóa", "Liên hệ 10", "0900000010"));
+            dealersInDb = dealerRepository.saveAll(seedDealers);
+            System.out.println("✅ Đã khởi tạo " + dealersInDb.size() + " dealers");
+        }
+
+        // Tạo tài khoản dealer1..dealerN, gắn từng dealer
+        int dealerUsersToCreate = Math.min(10, Math.max(1, dealersInDb.size()));
+        for (int i = 1; i <= dealerUsersToCreate; i++) {
+            String username = "dealer" + i;
+            if (!userRepository.existsByUsername(username)) {
+                Dealer boundDealer = dealersInDb.get((i - 1) % dealersInDb.size());
+                User dealerUser = User.builder()
+                        .username(username)
+                        .password(passwordEncoder.encode("Dealer" + i + "@123")) // đổi sau khi đăng nhập
+                        .fullName(boundDealer.getDealerName() + " User")
+                        .email(username + "@edrive.local")
+                        .phone(boundDealer.getPhone() != null ? boundDealer.getPhone() : ("09" + String.format("%08d", i)))
+                        .dealer(boundDealer)
+                        .isVerify(true)
+                        .build();
+                Set<Role> roles = new HashSet<>();
+                roles.add(dealerRole);
+                dealerUser.setRoles(roles);
+                userRepository.save(dealerUser);
+                System.out.println("✅ Seeded dealer user: " + username + " / Dealer" + i + "@123 (dealer=" + boundDealer.getDealerName() + ")");
+            }
+        }
         if (manufacturerInventoryRepository.count() > 0) {
             return;
         }
@@ -251,5 +318,15 @@ public class DataInitializer implements CommandLineRunner {
         System.out.println("✅ Đã khởi tạo " + inventories.size() + " manufacturer inventories");
         System.out.println("🎉 Hoàn thành khởi tạo dữ liệu!");
     }
-
+    private Dealer makeDealer(String name, String street, String ward, String district, String city, String contact, String phone) {
+        Dealer d = new Dealer();
+        d.setDealerName(name);
+        d.setHouseNumberAndStreet(street);
+        d.setWardOrCommune(ward);
+        d.setDistrict(district);
+        d.setProvinceOrCity(city);
+        d.setContactPerson(contact);
+        d.setPhone(phone);
+        return d;
+    }
 }
