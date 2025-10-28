@@ -25,15 +25,6 @@ public class PromotionController {
 
     private final PromotionService promotionService;
 
-    // ------------------ CRUD CHUNG ------------------
-
-    @Operation(summary = "Tạo khuyến mãi mới")
-    @PostMapping
-    public ResponseEntity<ResponseObject> create(@Valid @RequestBody PromotionRequest req) {
-        PromotionResponse res = promotionService.createPromotion(req);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new ResponseObject(201, "Promotion created successfully", res));
-    }
 
     @Operation(summary = "Lấy danh sách tất cả khuyến mãi")
     @GetMapping
@@ -42,30 +33,6 @@ public class PromotionController {
         return ResponseEntity.ok(new ResponseObject(200, "Promotions retrieved successfully", list));
     }
 
-    @Operation(summary = "Lấy khuyến mãi theo ID")
-    @GetMapping("/{id}")
-    public ResponseEntity<ResponseObject> getById(@PathVariable Long id) {
-        PromotionResponse res = promotionService.getPromotionById(id);
-        return ResponseEntity.ok(new ResponseObject(200, "Promotion retrieved successfully", res));
-    }
-
-    @Operation(summary = "Cập nhật khuyến mãi theo ID")
-    @PutMapping("/{id}")
-    public ResponseEntity<ResponseObject> update(@PathVariable Long id,
-                                                 @Valid @RequestBody PromotionRequest req) {
-        PromotionResponse updated = promotionService.updatePromotion(id, req);
-        return ResponseEntity.ok(new ResponseObject(200, "Promotion updated successfully", updated));
-    }
-
-    @Operation(summary = "Xoá khuyến mãi theo ID")
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ResponseObject> delete(@PathVariable Long id) {
-        promotionService.deletePromotion(id);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT)
-                .body(new ResponseObject(204, "Promotion deleted successfully", null));
-    }
-
-    // ------------------ CRUD THEO DEALER ID ------------------
 
     @Operation(summary = "Lấy danh sách khuyến mãi theo Dealer ID")
     @GetMapping("/dealer/{dealerId}")
