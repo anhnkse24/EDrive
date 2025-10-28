@@ -1,13 +1,19 @@
 package com.swp391.edrive.service.serviceimpl;
 
+import com.swp391.edrive.dto.request.ManufacturerInventoryRequest;
 import com.swp391.edrive.dto.response.InventoryResponse;
+import com.swp391.edrive.entity.Manufacturer;
 import com.swp391.edrive.entity.ManufacturerInventory;
+import com.swp391.edrive.entity.Vehicle;
 import com.swp391.edrive.repository.ManufacturerInventoryRepository;
+import com.swp391.edrive.repository.ManufacturerRepository;
+import com.swp391.edrive.repository.VehicleRepository;
 import com.swp391.edrive.service.ManufacturerInventoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -15,7 +21,12 @@ import java.util.List;
 public class ManufacturerInventoryServiceImpl implements ManufacturerInventoryService {
 
     private final ManufacturerInventoryRepository manufacturerInventoryRepository;
+    private final ManufacturerRepository manufacturerRepository;
+    private final VehicleRepository vehicleRepository;
 
+    // =========================
+    // 🔹 Lấy dữ liệu
+    // =========================
     @Override
     @Transactional(readOnly = true)
     public List<InventoryResponse> getAllInventories() {
@@ -48,6 +59,53 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
                 .stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public InventoryResponse createInventory(ManufacturerInventoryRequest request) {
+        Manufacturer manufacturer = manufacturerRepository.findById(request.getManufacturerId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy Manufacturer với ID = " + request.getManufacturerId()));
+
+        Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy Vehicle với ID = " + request.getVehicleId()));
+
+        ManufacturerInventory inv = ManufacturerInventory.builder()
+                .manufacturer(manufacturer)
+                .vehicle(vehicle)
+                .quantity(request.getQuantity())
+                .lastUpdated(LocalDateTime.now())
+                .build();
+
+        ManufacturerInventory saved = manufacturerInventoryRepository.save(inv);
+        return toResponse(saved);
+    }
+
+    @Override
+    @Transactional
+    public InventoryResponse updateInventory(Long id, ManufacturerInventoryRequest request) {
+        ManufacturerInventory inv = manufacturerInventoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy kho sản xuất với ID = " + id));
+
+        if (request.getQuantity() != null) {
+            inv.setQuantity(request.getQuantity());
+        }
+
+        if (request.getManufacturerId() != null) {
+            Manufacturer manufacturer = manufacturerRepository.findById(request.getManufacturerId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy Manufacturer với ID = " + request.getManufacturerId()));
+            inv.setManufacturer(manufacturer);
+        }
+
+        if (request.getVehicleId() != null) {
+            Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy Vehicle với ID = " + request.getVehicleId()));
+            inv.setVehicle(vehicle);
+        }
+
+        inv.setLastUpdated(LocalDateTime.now());
+        ManufacturerInventory updated = manufacturerInventoryRepository.save(inv);
+        return toResponse(updated);
     }
 
     @Override

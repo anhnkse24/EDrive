@@ -1,10 +1,12 @@
 package com.swp391.edrive.controller;
 
+import com.swp391.edrive.dto.request.ManufacturerInventoryRequest;
 import com.swp391.edrive.dto.response.InventoryResponse;
 import com.swp391.edrive.service.ManufacturerInventoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,6 +45,23 @@ public class ManufacturerInventoryController {
     @GetMapping("/manufacturer/{manufacturerId}")
     public ResponseEntity<List<InventoryResponse>> getByManufacturer(@PathVariable Long manufacturerId) {
         return ResponseEntity.ok(manufacturerInventoryService.getByManufacturerId(manufacturerId));
+    }
+
+    @Operation(summary = "Tạo mới kho xe của nhà sản xuất")
+    @PostMapping
+    public ResponseEntity<InventoryResponse> createInventory(@RequestBody ManufacturerInventoryRequest request) {
+        InventoryResponse created = manufacturerInventoryService.createInventory(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    @Operation(summary = "Cập nhật kho xe của nhà sản xuất theo ID")
+    @PutMapping("/{id}")
+    public ResponseEntity<InventoryResponse> updateInventory(
+            @PathVariable Long id,
+            @RequestBody ManufacturerInventoryRequest request
+    ) {
+        InventoryResponse updated = manufacturerInventoryService.updateInventory(id, request);
+        return ResponseEntity.ok(updated);
     }
 
     @Operation(summary = "Xóa kho xe của nhà sản xuất theo ID")
