@@ -58,6 +58,28 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
     }
 
+    @Override
+    @Transactional
+    public OrderResponse cancelOrder(String orderId) {
+        Order order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
+
+        if (order.getStatus() == OrderStatus.DELIVERED) {
+            throw new IllegalStateException("Delivered order cannot be cancelled");
+        }
+        if (order.getPaymentStatus() == PaymentStatus.PAID) {
+            throw new IllegalStateException("Paid order cannot be cancelled");
+        }
+
+        order.setStatus(OrderStatus.CANCELLED);
+        order.setPaymentStatus(PaymentStatus.CANCELLED);
+        orderRepo.save(order);
+
+        // (tuỳ chọn) hoàn kho hãng nếu bạn muốn: duyệt order.getOrderItems() và cộng tồn lại.
+
+        return mapToOrderResponse(order);
+    }
+
     private OrderResponse mapToOrderResponse(Order order) {
         OrderResponse res = new OrderResponse();
         res.setOrderId(order.getOrderId());
