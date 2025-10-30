@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.*;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -182,4 +183,42 @@ public class QuotationServiceImpl implements QuotationService {
         if (quantity >= 1) return new BigDecimal("0.05");
         return BigDecimal.ZERO;
     }
+
+    @Override
+    public List<QuotationResponse> getAllQuotations() {
+        List<Quotation> quotations = quotationRepo.findAll();
+        return quotations.stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    private QuotationResponse toResponse(Quotation q) {
+        Vehicle v = q.getVehicle();
+
+        return QuotationResponse.builder()
+                .quotationId(q.getQuotationId())
+                .vehicleId(v.getVehicleId())
+                .vehicleModel(v.getModelName() + " - " + v.getVersion())
+                .vehicleImageUrl(v.getImageUrl())
+                .unitPrice(q.getUnitPrice())
+                .includeInsurancePercent(q.isIncludeInsurancePercent())
+                .includeWarrantyExtension(q.isIncludeWarrantyExtension())
+                .includeAccessories(q.isIncludeAccessories())
+                .discountRate(q.getDiscountRate())
+                .discountAmount(q.getDiscountAmount())
+                .vehicleSubtotal(q.getVehicleSubtotal())
+                .serviceTotal(q.getServiceTotal())
+                .subtotalAfterDiscount(q.getSubtotalAfterDiscount())
+                .taxableBase(q.getTaxableBase())
+                .vatRate(q.getVatRate())
+                .vatAmount(q.getVatAmount())
+                .grandTotal(q.getGrandTotal())
+                .customerFullName(q.getCustomerFullName())
+                .phone(q.getPhone())
+                .email(q.getEmail())
+                .fullAddress(q.getFullAddress())
+                .notes(q.getNotes())
+                .build();
+    }
+
 }

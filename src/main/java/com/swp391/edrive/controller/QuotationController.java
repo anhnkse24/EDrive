@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/quotations")
 @RequiredArgsConstructor
@@ -38,5 +40,11 @@ public class QuotationController {
     public ResponseEntity<ResponseObject<QuotationResponse>> get(@PathVariable Long id) {
         QuotationResponse res = quotationService.getQuotation(id);
         return ResponseEntity.ok(new ResponseObject<>(200, "Fetched", res));
+    }
+
+    @GetMapping
+    public ResponseEntity<ResponseObject<List<QuotationResponse>>> getAll() {
+        List<QuotationResponse> list = quotationService.getAllQuotations();
+        return ResponseEntity.ok(new ResponseObject<>(200, "Fetched all quotations", list));
     }
 }
