@@ -76,7 +76,8 @@ public class SecurityConfig {
                                 "/api/payments/vnpay-return",
                                 "/api/admin/verify-account/*",
                                 "/api/dealers/**",
-                                "/api/manufacturer-inventory/**"
+                                "/api/manufacturer-inventory/**",
+                                "/api/feedbacks/**"
                         )
                         .permitAll() // Các endpoint không cần xác thực
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**")
