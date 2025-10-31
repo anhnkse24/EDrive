@@ -76,6 +76,8 @@ public class SecurityConfig {
                                 "/api/payments/vnpay-return",
                                 "/api/admin/verify-account/*",
                                 "/api/dealers/**",
+                                "/api/manufacturer-inventory/**",
+                                "/api/feedbacks/**",
                                 "/api/customer-orders/**",
                                 "/api/manufacturer-inventory/**"
                         )

@@ -31,8 +31,7 @@ public class DataInitializer implements CommandLineRunner {
     private final CustomerRepository customerRepository;
     private final OrderCustomerRepository orderCustomerRepository;
     private final StatusOrderCustomerRepository statusOrderCustomerRepository;
-
-
+    private final FeedbackRepository feedbackRepository;
 
 
     @Override
@@ -607,8 +606,45 @@ public class DataInitializer implements CommandLineRunner {
             }
         }
 
+        // =================== SEED FEEDBACK (đăng ký/lái thử) ===================
+        if (feedbackRepository.count() == 0) {
+            List<Customer> customers = customerRepository.findAll();
+            List<Dealer> dealers = dealerRepository.findAll();
+
+            if (!customers.isEmpty() && !dealers.isEmpty()) {
+                // Feedback 1: Khách 1 – chấm điểm quy trình ĐĂNG KÝ lái thử
+                Feedback f1 = new Feedback();
+                f1.setCustomer(customers.get(0));
+                f1.setDealer(dealers.get(0));
+                f1.setRating(4); // CSAT 1-5
+                f1.setContent("Đăng ký lái thử khá nhanh, nhân viên gọi xác nhận trong 15 phút.");
+                f1.setCreatedAt(LocalDateTime.now().minusDays(1));
+
+                // Feedback 2: Khách 2 – chấm điểm sau LÁI THỬ (đã hoàn tất)
+                Feedback f2 = new Feedback();
+                f2.setCustomer(customers.size() > 1 ? customers.get(1) : customers.get(0));
+                f2.setDealer(dealers.get(0));
+                f2.setRating(5);
+                f2.setContent("Trải nghiệm lái thử tuyệt vời, xe êm và tăng tốc tốt. Nhân viên hướng dẫn kỹ.");
+                f2.setCreatedAt(LocalDateTime.now().minusHours(6));
+
+                // Feedback 3: Khách 3 – đăng ký nhưng HUỶ lịch (phản hồi lý do)
+                Feedback f3 = new Feedback();
+                f3.setCustomer(customers.size() > 2 ? customers.get(2) : customers.get(0));
+                f3.setDealer(dealers.size() > 1 ? dealers.get(1) : dealers.get(0));
+                f3.setRating(3);
+                f3.setContent("Tôi bận đột xuất nên huỷ lịch. Quy trình huỷ đơn giản, mong sắp xếp lại cuối tuần.");
+                f3.setCreatedAt(LocalDateTime.now().minusDays(2));
+
+                feedbackRepository.saveAll(List.of(f1, f2, f3));
+                System.out.println("✅ Đã khởi tạo 3 feedbacks cho khách hàng (đăng ký/lái thử)");
+            }
+        }
+
+
         System.out.println("🎉 Hoàn thành khởi tạo dữ liệu!");
     }
+
     private Dealer makeDealer(String name, String street, String ward, String district, String city, String contact, String phone) {
         Dealer d = new Dealer();
         d.setDealerName(name);
