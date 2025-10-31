@@ -29,6 +29,9 @@ public class DataInitializer implements CommandLineRunner {
     private final PromotionRepository promotionRepository;
     private final TestDriveRepository testDriveRepository;
     private final CustomerRepository customerRepository;
+    private final OrderCustomerRepository orderCustomerRepository;
+    private final StatusOrderCustomerRepository statusOrderCustomerRepository;
+
 
 
 
@@ -427,6 +430,134 @@ public class DataInitializer implements CommandLineRunner {
                 customerRepository.saveAll(customers);
 
                 System.out.println("✅ Đã khởi tạo " + customers.size() + " customers");
+            }
+        }
+        // =================== SEED ORDER CUSTOMERS ===================
+        if (orderCustomerRepository.count() == 0) {
+            List<Customer> customers = customerRepository.findAll();
+            List<Dealer> dealers = dealerRepository.findAll();
+
+            if (customers.size() >= 3 && dealers.size() >= 3 && vehicles.size() >= 5) {
+                Customer c1 = customers.get(0);
+                Customer c2 = customers.get(1);
+                Customer c3 = customers.get(2);
+
+
+                Dealer d1 = dealers.get(0);
+                Dealer d2 = dealers.get(1);
+                Dealer d3 = dealers.get(2);
+
+
+                Vehicle v1 = vehicles.get(0);
+                Vehicle v2 = vehicles.get(1);
+                Vehicle v3 = vehicles.get(2);
+                Vehicle v4 = vehicles.get(3);
+                Vehicle v5 = vehicles.get(4);
+                Vehicle v6 = vehicles.size() > 5 ? vehicles.get(5) : v1;
+
+                // 🟢 Các đơn hàng mẫu
+                OrderCustomer o1 = new OrderCustomer();
+                o1.setOrderCode("ORD-2025-001");
+                o1.setCustomer(c1);
+                o1.setDealer(d1);
+                o1.setVehicle(v1);
+
+                OrderCustomer o2 = new OrderCustomer();
+                o2.setOrderCode("ORD-2025-002");
+                o2.setCustomer(c2);
+                o2.setDealer(d2);
+                o2.setVehicle(v2);
+
+                OrderCustomer o3 = new OrderCustomer();
+                o3.setOrderCode("ORD-2025-003");
+                o3.setCustomer(c3);
+                o3.setDealer(d3);
+                o3.setVehicle(v3);
+
+                OrderCustomer o4 = new OrderCustomer();
+                o4.setOrderCode("ORD-2025-004");
+                o4.setCustomer(c1);
+                o4.setDealer(d2);
+                o4.setVehicle(v4);
+
+                OrderCustomer o5 = new OrderCustomer();
+                o5.setOrderCode("ORD-2025-005");
+                o5.setCustomer(c2);
+                o5.setDealer(d2);
+                o5.setVehicle(v5);
+
+                OrderCustomer o6 = new OrderCustomer();
+                o6.setOrderCode("ORD-2025-006");
+                o6.setCustomer(c1);
+                o6.setDealer(d1);
+                o6.setVehicle(v6);
+
+                OrderCustomer o7 = new OrderCustomer();
+                o7.setOrderCode("ORD-2025-007");
+                o7.setCustomer(c2);
+                o7.setDealer(d3);
+                o7.setVehicle(v2);
+
+                // Lưu trước order để có ID cho khóa ngoại
+                orderCustomerRepository.saveAll(List.of(o1, o2, o3, o4, o5, o6, o7));
+
+                // 🟡 Trạng thái cho từng order
+                StatusOrderCustomer s1 = new StatusOrderCustomer();
+                s1.setStatus("Đã phân bổ xe");
+                s1.setDeliveryDate("2025-11-10");
+                s1.setDeliveryLocation("TP. Hồ Chí Minh");
+                s1.setOrderCustomer(o1);
+
+                StatusOrderCustomer s2 = new StatusOrderCustomer();
+                s2.setStatus("Chờ xử lý");
+                s2.setDeliveryDate("Chưa hẹn");
+                s2.setDeliveryLocation("Hà Nội");
+                s2.setOrderCustomer(o2);
+
+                StatusOrderCustomer s3 = new StatusOrderCustomer();
+                s3.setStatus("Đang vận chuyển");
+                s3.setDeliveryDate("2025-11-15");
+                s3.setDeliveryLocation("Hà Nội");
+                s3.setOrderCustomer(o3);
+
+                StatusOrderCustomer s4 = new StatusOrderCustomer();
+                s4.setStatus("Đã giao hàng");
+                s4.setDeliveryDate("2025-10-28");
+                s4.setDeliveryLocation("Đà Nẵng");
+                s4.setOrderCustomer(o4);
+
+                StatusOrderCustomer s5 = new StatusOrderCustomer();
+                s5.setStatus("Hủy đơn");
+                s5.setDeliveryDate("Không có");
+                s5.setDeliveryLocation("Khánh Hòa");
+                s5.setOrderCustomer(o5);
+
+                StatusOrderCustomer s6 = new StatusOrderCustomer();
+                s6.setStatus("Đang chuẩn bị xe");
+                s6.setDeliveryDate("2025-11-12");
+                s6.setDeliveryLocation("TP.Hồ Chí Minh");
+                s6.setOrderCustomer(o6);
+
+                StatusOrderCustomer s7 = new StatusOrderCustomer();
+                s7.setStatus("Đang chờ xác nhận thanh toán");
+                s7.setDeliveryDate("Chưa xác định");
+                s7.setDeliveryLocation("Cam Ranh");
+                s7.setOrderCustomer(o7);
+
+                // Gắn 2 chiều
+                o1.setStatusOrderCustomer(s1);
+                o2.setStatusOrderCustomer(s2);
+                o3.setStatusOrderCustomer(s3);
+                o4.setStatusOrderCustomer(s4);
+                o5.setStatusOrderCustomer(s5);
+                o6.setStatusOrderCustomer(s6);
+                o7.setStatusOrderCustomer(s7);
+
+                // Lưu
+                statusOrderCustomerRepository.saveAll(List.of(s1, s2, s3, s4, s5, s6, s7));
+                orderCustomerRepository.saveAll(List.of(o1, o2, o3, o4, o5, o6, o7));
+
+                System.out.println("✅ Đã khởi tạo 7 đơn hàng mẫu (OrderCustomer + StatusOrderCustomer)");
             }
         }
 

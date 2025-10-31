@@ -10,6 +10,9 @@ import java.util.Optional;
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
     Optional<Customer> findByCustomerIdAndDealer_DealerId(Long customerId, Long dealerId);
-
+    Optional<Customer> findByPhone(String phone);
+    Optional<Customer> findByFullName(String fullName);
     List<Customer> findByDealer_DealerId(Long dealerId);
+    Optional<Customer> findByFullNameAndPhone(String fullName, String phone);
+
 }

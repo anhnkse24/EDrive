@@ -55,4 +55,6 @@
         @ManyToOne
         @JoinColumn(name = "dealer_id", nullable = false)
         private Dealer dealer;
+        @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+        private List<OrderCustomer> orderCustomers;
     }

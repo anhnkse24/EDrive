@@ -60,6 +60,7 @@ public class Filter extends OncePerRequestFilter {
             "/api/admin/unverified-accounts",
             "/api/admin/verify-account/*",
             "/api/manufacturer-inventory/**",
+            "/api/customer-orders/**",
             "/api/dealers/**"
             );
 

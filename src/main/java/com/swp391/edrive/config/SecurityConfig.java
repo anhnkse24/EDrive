@@ -76,6 +76,7 @@ public class SecurityConfig {
                                 "/api/payments/vnpay-return",
                                 "/api/admin/verify-account/*",
                                 "/api/dealers/**",
+                                "/api/customer-orders/**",
                                 "/api/manufacturer-inventory/**"
                         )
                         .permitAll() // Các endpoint không cần xác thực
