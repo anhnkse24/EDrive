@@ -1,16 +1,18 @@
 package com.swp391.edrive.service;
 
 import com.swp391.edrive.dto.request.ManufacturerInventoryRequest;
-import com.swp391.edrive.dto.response.InventoryResponse;
+import com.swp391.edrive.dto.response.ManufacturerInventoryResponse;
+import com.swp391.edrive.dto.response.ManufacturerInventorySummaryResponse;
 
 import java.util.List;
 
 public interface ManufacturerInventoryService {
-    List<InventoryResponse> getAllInventories();
-    InventoryResponse getById(Long id);
-    InventoryResponse getByVehicleId(Long vehicleId);
-    List<InventoryResponse> getByManufacturerId(Long manufacturerId);
-    InventoryResponse createInventory(ManufacturerInventoryRequest request);
-    InventoryResponse updateInventory(Long id, ManufacturerInventoryRequest request);
-    void deleteInventory(Long id);
+    List<ManufacturerInventoryResponse> getAll();
+    ManufacturerInventoryResponse getById(Long id);
+    ManufacturerInventoryResponse create(ManufacturerInventoryRequest request);
+    ManufacturerInventoryResponse update(Long id, ManufacturerInventoryRequest request);
+    void delete(Long id);
+
+    List<ManufacturerInventorySummaryResponse> getGroupedByManufacturer();
+
 }
