@@ -49,7 +49,7 @@ public class DataInitializer implements CommandLineRunner {
         if (!userRepository.existsByUsername("admin")) {
             User admin = User.builder()
                     .username("admin")
-                    .password(passwordEncoder.encode("admin123")) // đổi sau khi đăng nhập
+                    .password(passwordEncoder.encode("Admin@123")) // đổi sau khi đăng nhập
                     .fullName("System Administrator")
                     .email("admin@edrive.local")
                     .phone("0000000000")
@@ -90,7 +90,7 @@ public class DataInitializer implements CommandLineRunner {
                 Dealer boundDealer = dealersInDb.get((i - 1) % dealersInDb.size());
                 User dealerUser = User.builder()
                         .username(username)
-                        .password(passwordEncoder.encode("dealer123")) // đổi sau khi đăng nhập
+                        .password(passwordEncoder.encode("Dealer@123")) // đổi sau khi đăng nhập
                         .fullName(boundDealer.getDealerName() + " User")
                         .email(username + "@edrive.local")
                         .phone(boundDealer.getPhone() != null ? boundDealer.getPhone() : ("09" + String.format("%08d", i)))
