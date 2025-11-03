@@ -2,10 +2,12 @@ package com.swp391.edrive.service.serviceimpl;
 
 import com.swp391.edrive.dto.request.VehicleUpsertRequest;
 import com.swp391.edrive.dto.response.VehicleResponse;
+import com.swp391.edrive.entity.Color;
 import com.swp391.edrive.entity.Promotion;
 import com.swp391.edrive.entity.Vehicle;
 import com.swp391.edrive.enums.DiscountType;
 import com.swp391.edrive.enums.VehicleStatus;
+import com.swp391.edrive.repository.ColorRepository;
 import com.swp391.edrive.repository.VehicleRepository;
 import com.swp391.edrive.service.VehicleService;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class VehicleServiceImpl implements VehicleService {
     private final VehicleRepository vehicleRepository;
+    private final ColorRepository colorRepository;
 
     @Override
     public List<VehicleResponse> getAllVehicles(int page, int size) {
@@ -51,7 +54,7 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public List<VehicleResponse> findVehicleByColor(String color, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Vehicle> result = vehicleRepository.findByColorIgnoreCaseContaining(color, pageable);
+        Page<Vehicle> result = vehicleRepository.findByColor_ColorNameIgnoreCaseContaining(color, pageable);
         return result.stream().map(this::toResponse).toList();
     }
 
@@ -98,7 +101,7 @@ public class VehicleServiceImpl implements VehicleService {
     @Transactional
     public VehicleResponse createVehicle(VehicleUpsertRequest req) {
         boolean exists = vehicleRepository
-                .existsByModelNameIgnoreCaseAndVersionIgnoreCaseAndColorIgnoreCaseAndManufactureYear(
+                .existsByModelNameIgnoreCaseAndVersionIgnoreCaseAndColor_ColorNameIgnoreCaseAndManufactureYear(
                         req.getModelName().trim(),
                         req.getVersion().trim(),
                         req.getColor().trim(),
@@ -107,12 +110,12 @@ public class VehicleServiceImpl implements VehicleService {
         if (exists) {
             throw new IllegalArgumentException("Xe đã tồn tại (trùng model, phiên bản, màu, năm SX)");
         }
-
         Vehicle v = new Vehicle();
         apply(v, req);
         v = vehicleRepository.save(v);
         return toResponse(v);
     }
+
 
     // === UPDATE ===
     @Override
@@ -138,7 +141,21 @@ public class VehicleServiceImpl implements VehicleService {
     private void apply(Vehicle v, VehicleUpsertRequest r) {
         v.setModelName(r.getModelName());
         v.setVersion(r.getVersion());
-        v.setColor(r.getColor());
+
+        if (r.getColor() != null && !r.getColor().trim().isEmpty()) {
+            String colorName = r.getColor().trim();
+            Color color = colorRepository.findByColorNameIgnoreCase(colorName)
+                    .orElseGet(() -> {
+                        Color c = new Color();
+                        c.setColorName(colorName);
+                        // có thể set hexCode nếu request có (r.getColorHex()), tạm bỏ qua
+                        return colorRepository.save(c);
+                    });
+            v.setColor(color);
+        } else {
+            v.setColor(null);
+        }
+
         v.setBatteryCapacityKwh(r.getBatteryCapacityKwh());
         v.setRangeKm(r.getRangeKm());
         v.setMaxSpeedKmh(r.getMaxSpeedKmh());
@@ -160,7 +177,7 @@ public class VehicleServiceImpl implements VehicleService {
                 .vehicleId(v.getVehicleId())
                 .modelName(v.getModelName())
                 .version(v.getVersion())
-                .color(v.getColor())
+                .color(v.getColor() != null ? v.getColor().getColorName() : null)
                 .batteryCapacityKwh(v.getBatteryCapacityKwh())
                 .rangeKm(v.getRangeKm())
                 .maxSpeedKmh(v.getMaxSpeedKmh())
@@ -178,6 +195,7 @@ public class VehicleServiceImpl implements VehicleService {
                 .manufactureYear(v.getManufactureYear())
                 .build();
     }
+
     public BigDecimal calculateDiscountedPrice(Vehicle vehicle) {
         BigDecimal basePrice = vehicle.getPriceRetail();
         BigDecimal discountedPrice = basePrice;

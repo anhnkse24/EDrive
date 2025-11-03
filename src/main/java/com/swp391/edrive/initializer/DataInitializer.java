@@ -32,6 +32,8 @@ public class DataInitializer implements CommandLineRunner {
     private final OrderCustomerRepository orderCustomerRepository;
     private final StatusOrderCustomerRepository statusOrderCustomerRepository;
     private final FeedbackRepository feedbackRepository;
+    private final ColorRepository colorRepository;
+
 
 
     @Override
@@ -128,12 +130,21 @@ public class DataInitializer implements CommandLineRunner {
         List<Manufacturer> manufacturers = manufacturerRepository.saveAll(Arrays.asList(vinfast, tesla, byd));
         System.out.println("✅ Đã khởi tạo " + manufacturers.size() + " manufacturers");
 
-        // Khởi tạo Vehicles cho VinFast
+// ====== Seed Colors (dùng chung) ======
+        Color red    = upsertColor("Đỏ",      "#FF0000");
+        Color black  = upsertColor("Đen",     "#000000");
+        Color white  = upsertColor("Trắng",   "#FFFFFF");
+        Color blue   = upsertColor("Xanh",    "#0055FF");
+        Color silver = upsertColor("Bạc",     "#C0C0C0");
+        Color gray   = upsertColor("Xám",     "#808080");
+        Color cyan   = upsertColor("Xanh Lam","#1E90FF");
+
+// ====== Khởi tạo Vehicles cho VinFast ======
         Vehicle vf8 = new Vehicle();
         vf8.setManufacturer(vinfast);
         vf8.setModelName("VF 8");
         vf8.setVersion("Eco");
-        vf8.setColor("Đỏ");
+        vf8.setColor(red); // <— dùng entity Color
         vf8.setBatteryCapacityKwh(87);
         vf8.setRangeKm(420);
         vf8.setMaxSpeedKmh(160);
@@ -153,7 +164,7 @@ public class DataInitializer implements CommandLineRunner {
         vf9.setManufacturer(vinfast);
         vf9.setModelName("VF 9");
         vf9.setVersion("Plus");
-        vf9.setColor("Đen");
+        vf9.setColor(black);
         vf9.setBatteryCapacityKwh(123);
         vf9.setRangeKm(594);
         vf9.setMaxSpeedKmh(200);
@@ -173,7 +184,7 @@ public class DataInitializer implements CommandLineRunner {
         vfe34.setManufacturer(vinfast);
         vfe34.setModelName("VF e34");
         vfe34.setVersion("Standard");
-        vfe34.setColor("Trắng");
+        vfe34.setColor(white);
         vfe34.setBatteryCapacityKwh(42);
         vfe34.setRangeKm(285);
         vfe34.setMaxSpeedKmh(150);
@@ -189,12 +200,12 @@ public class DataInitializer implements CommandLineRunner {
         vfe34.setImageUrl("https://vinfasthadong.com.vn/wp-content/uploads/2023/10/VinFast-VF3-mau-trang-2-scaled-1.jpg");
         vfe34.setStatus(VehicleStatus.AVAILABLE);
 
-        // Khởi tạo Vehicles cho Tesla
+// ====== Khởi tạo Vehicles cho Tesla ======
         Vehicle model3 = new Vehicle();
         model3.setManufacturer(tesla);
         model3.setModelName("Model 3");
         model3.setVersion("Long Range");
-        model3.setColor("Xanh");
+        model3.setColor(cyan); // giữ “Xanh” nhưng có mã hex riêng
         model3.setBatteryCapacityKwh(82);
         model3.setRangeKm(602);
         model3.setMaxSpeedKmh(233);
@@ -214,7 +225,7 @@ public class DataInitializer implements CommandLineRunner {
         modelY.setManufacturer(tesla);
         modelY.setModelName("Model Y");
         modelY.setVersion("Performance");
-        modelY.setColor("Bạc");
+        modelY.setColor(silver);
         modelY.setBatteryCapacityKwh(75);
         modelY.setRangeKm(514);
         modelY.setMaxSpeedKmh(250);
@@ -230,12 +241,12 @@ public class DataInitializer implements CommandLineRunner {
         modelY.setImageUrl("https://wuling-ev.vn/SEO/%C3%B4%20t%C3%B4%20%C4%91i%E1%BB%87n%20c%C5%A9%20gi%C3%A1%20r%E1%BA%BB/1834/image-thumb__1834___auto_697d1e38f8077a664d670954e166f84b/o-to-dien-cu-gia-re%20%281%29.70974c2f.jpg");
         modelY.setStatus(VehicleStatus.AVAILABLE);
 
-        // Khởi tạo Vehicles cho BYD
+// ====== Khởi tạo Vehicles cho BYD ======
         Vehicle han = new Vehicle();
         han.setManufacturer(byd);
         han.setModelName("Han EV");
         han.setVersion("Premium");
-        han.setColor("Xám");
+        han.setColor(gray);
         han.setBatteryCapacityKwh(85);
         han.setRangeKm(605);
         han.setMaxSpeedKmh(185);
@@ -255,7 +266,7 @@ public class DataInitializer implements CommandLineRunner {
         atto3.setManufacturer(byd);
         atto3.setModelName("Atto 3");
         atto3.setVersion("Extended");
-        atto3.setColor("Xanh Lam");
+        atto3.setColor(blue);
         atto3.setBatteryCapacityKwh(60);
         atto3.setRangeKm(480);
         atto3.setMaxSpeedKmh(160);
@@ -656,4 +667,22 @@ public class DataInitializer implements CommandLineRunner {
         d.setPhone(phone);
         return d;
     }
+
+    private Color upsertColor(String colorName, String hexCode) {
+        return colorRepository.findByColorNameIgnoreCase(colorName)
+                .map(existing -> {
+                    if (hexCode != null && (existing.getHexCode() == null || !existing.getHexCode().equalsIgnoreCase(hexCode))) {
+                        existing.setHexCode(hexCode);
+                        return colorRepository.save(existing);
+                    }
+                    return existing;
+                })
+                .orElseGet(() -> {
+                    Color c = new Color();
+                    c.setColorName(colorName);
+                    c.setHexCode(hexCode);
+                    return colorRepository.save(c);
+                });
+    }
+
 }

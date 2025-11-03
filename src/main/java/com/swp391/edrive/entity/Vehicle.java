@@ -31,8 +31,6 @@ public class Vehicle {
 
     private String modelName;
     private String version;
-    private String color;
-
     private Integer batteryCapacityKwh;
     private Integer rangeKm;
     private Integer maxSpeedKmh;
@@ -78,4 +76,9 @@ public class Vehicle {
 
     @ManyToMany(mappedBy = "vehicles")
     private Set<Promotion> promotions = new HashSet<>();
+
+    @ManyToOne
+    @JoinColumn(name = "color_id")
+    private Color color;
+
 }

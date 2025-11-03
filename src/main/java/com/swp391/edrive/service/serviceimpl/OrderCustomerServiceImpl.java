@@ -3,6 +3,7 @@ package com.swp391.edrive.service.serviceimpl;
 import com.swp391.edrive.dto.request.OrderCustomerRequest;
 import com.swp391.edrive.dto.request.StatusOrderCustomerRequest;
 import com.swp391.edrive.dto.response.OrderCustomerResponse;
+import com.swp391.edrive.entity.Color;
 import com.swp391.edrive.entity.OrderCustomer;
 import com.swp391.edrive.entity.StatusOrderCustomer;
 import com.swp391.edrive.repository.*;
@@ -25,6 +26,7 @@ public class OrderCustomerServiceImpl implements OrderCustomerService {
     private final DealerRepository dealerRepository;
     private final VehicleRepository vehicleRepository;
     private final CustomerRepository customerRepository;
+    private final ColorRepository colorRepository;
 
     // 🔹 Lấy tất cả đơn hàng
     @Override
@@ -138,7 +140,8 @@ public class OrderCustomerServiceImpl implements OrderCustomerService {
 
         // Nếu chỉ muốn đổi màu (thuộc tính trong vehicle)
         if (req.getColor() != null && order.getVehicle() != null) {
-            order.getVehicle().setColor(req.getColor());
+            Color color = resolveColor(req.getColor());
+            order.getVehicle().setColor(color);
         }
 
         // 🔹 Cập nhật đại lý
@@ -225,7 +228,11 @@ public class OrderCustomerServiceImpl implements OrderCustomerService {
 
                 // 🔹 Lấy từ Vehicle
                 .vehicleName(order.getVehicle() != null ? order.getVehicle().getModelName() : null)
-                .color(order.getVehicle() != null ? order.getVehicle().getColor() : null)
+                .color(
+                        order.getVehicle() != null && order.getVehicle().getColor() != null
+                                ? order.getVehicle().getColor().getColorName()
+                                : null
+                )
                 // 🔹 Lấy từ Dealer
                 .dealerName(order.getDealer() != null ? order.getDealer().getDealerName() : null)
                 .dealerPhone(order.getDealer() != null ? order.getDealer().getPhone() : null)
@@ -236,5 +243,13 @@ public class OrderCustomerServiceImpl implements OrderCustomerService {
                 .deliveryLocation(order.getStatusOrderCustomer() != null ? order.getStatusOrderCustomer().getDeliveryLocation() : null)
 
                 .build();
+    }
+
+    private Color resolveColor(String colorNameOrNull) {
+        if (colorNameOrNull == null || colorNameOrNull.isBlank()) return null;
+        return colorRepository.findByColorNameIgnoreCase(colorNameOrNull.trim())
+                .orElseGet(() -> colorRepository.save(
+                        Color.builder().colorName(colorNameOrNull.trim()).build()
+                ));
     }
 }
