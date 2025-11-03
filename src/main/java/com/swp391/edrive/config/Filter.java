@@ -54,7 +54,6 @@ public class Filter extends OncePerRequestFilter {
             "/api/facebook-login",
             "/api/payments/vnpay-return",
             "/api/testdrives",
-            "/api/vehicles/**",
             "/api/vehicles/search/**",
             "/chat",
             "/api/admin/unverified-accounts",

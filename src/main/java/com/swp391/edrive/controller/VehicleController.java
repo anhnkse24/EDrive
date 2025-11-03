@@ -28,7 +28,6 @@ public class VehicleController {
         this.vehicleService = vehicleService;   
     }
 
-    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Lấy danh sách tất cả xe")
     @GetMapping
     public ResponseEntity<ResponseObject> getAllVehicles(
@@ -39,7 +38,6 @@ public class VehicleController {
         return ResponseEntity.ok(new ResponseObject(200, "Vehicle list retrieved successfully", vehicles));
     }
 
-    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Tìm xe theo ID")
     @GetMapping("/{id}")
     public ResponseEntity<ResponseObject> findById(@PathVariable Long id) {
@@ -53,7 +51,6 @@ public class VehicleController {
     }
 
 
-    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Tìm xe theo trạng thái")
     @GetMapping("/search/status")
     public ResponseEntity<ResponseObject> findByStatus(
@@ -73,7 +70,6 @@ public class VehicleController {
         return ResponseEntity.ok(new ResponseObject(200, "Vehicles by status retrieved", vehicles));
     }
 
-    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Tìm xe theo màu")
     @GetMapping("/search/color")
     public ResponseEntity<ResponseObject> findByColor(
@@ -90,7 +86,6 @@ public class VehicleController {
         return ResponseEntity.ok(new ResponseObject(200, "Vehicles by color retrieved", vehicles));
     }
 
-    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Tìm xe theo năm sản xuất (exact hoặc range)")
     @GetMapping("/search/year")
     public ResponseEntity<ResponseObject> findByYear(
@@ -119,7 +114,6 @@ public class VehicleController {
         }
     }
 
-    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Tìm xe theo giá (min/max hoặc khoảng)")
     @GetMapping("/search/price")
     public ResponseEntity<ResponseObject> findByPrice(
