@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,7 +26,7 @@ public class PromotionController {
 
     private final PromotionService promotionService;
 
-
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Lấy danh sách tất cả khuyến mãi")
     @GetMapping
     public ResponseEntity<ResponseObject> getAll() {
@@ -33,7 +34,7 @@ public class PromotionController {
         return ResponseEntity.ok(new ResponseObject(200, "Promotions retrieved successfully", list));
     }
 
-
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Lấy danh sách khuyến mãi theo Dealer ID")
     @GetMapping("/dealer/{dealerId}")
     public ResponseEntity<ResponseObject> getByDealerId(@PathVariable Long dealerId) {
@@ -42,6 +43,7 @@ public class PromotionController {
                 "Promotions retrieved successfully by dealer ID", list));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Lấy khuyến mãi cụ thể theo ID và Dealer ID")
     @GetMapping("/dealer/{dealerId}/{promotionId}")
     public ResponseEntity<ResponseObject> getByIdAndDealerId(@PathVariable Long dealerId,
@@ -51,6 +53,7 @@ public class PromotionController {
                 "Promotion retrieved successfully by dealer ID", res));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','EVM_STAFF','DEALER_MANAGER')")
     @Operation(summary = "Tạo khuyến mãi mới cho Dealer cụ thể")
     @PostMapping("/dealer/{dealerId}")
     public ResponseEntity<ResponseObject> createByDealer(@PathVariable Long dealerId,
@@ -61,6 +64,7 @@ public class PromotionController {
                         "Promotion created successfully for dealer", res));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','EVM_STAFF','DEALER_MANAGER')")
     @Operation(summary = "Cập nhật khuyến mãi theo ID và Dealer ID")
     @PutMapping("/dealer/{dealerId}/{promotionId}")
     public ResponseEntity<ResponseObject> updateByDealer(@PathVariable Long dealerId,
@@ -71,6 +75,7 @@ public class PromotionController {
                 "Promotion updated successfully for dealer", updated));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','EVM_STAFF','DEALER_MANAGER')")
     @Operation(summary = "Xoá khuyến mãi theo ID và Dealer ID")
     @DeleteMapping("/dealer/{dealerId}/{promotionId}")
     public ResponseEntity<ResponseObject> deleteByDealer(@PathVariable Long dealerId,

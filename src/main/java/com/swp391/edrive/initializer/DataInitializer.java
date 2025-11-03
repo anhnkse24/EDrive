@@ -1,5 +1,6 @@
 package com.swp391.edrive.initializer;
 
+import com.swp391.edrive.constant.PredefinedRole;
 import com.swp391.edrive.entity.*;
 import com.swp391.edrive.enums.DiscountType;
 import com.swp391.edrive.enums.PromoTarget;
@@ -40,14 +41,25 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         // ========== 1) SEED ROLES & USERS (chạy luôn, không phụ thuộc dữ liệu khác) ==========
         // 1.1 Roles
-        Role adminRole          = roleRepository.findById("ADMIN")
-                .orElseGet(() -> roleRepository.save(Role.builder().name("ADMIN").description("System Administrator").build()));
-        Role dealerManagerRole  = roleRepository.findById("DEALER_MANAGER")
-                .orElseGet(() -> roleRepository.save(Role.builder().name("DEALER_MANAGER").description("Dealer Manager").build()));
-        Role dealerStaffRole    = roleRepository.findById("DEALER_STAFF")
-                .orElseGet(() -> roleRepository.save(Role.builder().name("DEALER_STAFF").description("Dealer Staff").build()));
-        Role evmStaffRole       = roleRepository.findById("EVM_STAFF")
-                .orElseGet(() -> roleRepository.save(Role.builder().name("EVM_STAFF").description("E-Drive Manufacturer Staff").build()));
+        Role adminRole = roleRepository.findById(PredefinedRole.ADMIN_ROLE)
+                .orElseGet(() -> roleRepository.save(
+                        Role.builder().name(PredefinedRole.ADMIN_ROLE).description("System Administrator").build()
+                ));
+
+        Role dealerManagerRole = roleRepository.findById(PredefinedRole.DEALER_MANAGER_ROLE)
+                .orElseGet(() -> roleRepository.save(
+                        Role.builder().name(PredefinedRole.DEALER_MANAGER_ROLE).description("Dealer Manager").build()
+                ));
+
+        Role dealerStaffRole = roleRepository.findById(PredefinedRole.DEALER_STAFF_ROLE)
+                .orElseGet(() -> roleRepository.save(
+                        Role.builder().name(PredefinedRole.DEALER_STAFF_ROLE).description("Dealer Staff").build()
+                ));
+
+        Role evmStaffRole = roleRepository.findById(PredefinedRole.EVM_STAFF_ROLE)
+                .orElseGet(() -> roleRepository.save(
+                        Role.builder().name(PredefinedRole.EVM_STAFF_ROLE).description("E-Drive Manufacturer Staff").build()
+                ));
 
 
         // 1.2 Admin user (nếu chưa có)

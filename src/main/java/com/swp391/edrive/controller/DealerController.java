@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,7 +25,7 @@ public class DealerController {
 
     private final DealerService dealerService;
 
-    // 🟢 CREATE
+    @PreAuthorize("hasAnyRole('ADMIN','EVM_STAFF')")
     @Operation(summary = "Tạo mới đại lý")
     @PostMapping
     public ResponseEntity<ResponseObject> createDealer(@Valid @RequestBody DealerRequest request) {
@@ -34,7 +35,7 @@ public class DealerController {
         );
     }
 
-    // 🟡 UPDATE
+    @PreAuthorize("hasAnyRole('ADMIN','EVM_STAFF')")
     @Operation(summary = "Cập nhật thông tin đại lý")
     @PutMapping("/{dealerId}")
     public ResponseEntity<ResponseObject> updateDealer(
@@ -46,7 +47,7 @@ public class DealerController {
         );
     }
 
-    // 🔴 DELETE
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Xóa đại lý theo ID")
     @DeleteMapping("/{dealerId}")
     public ResponseEntity<ResponseObject> deleteDealer(@PathVariable Long dealerId) {
@@ -56,7 +57,7 @@ public class DealerController {
         );
     }
 
-    // 🔵 GET BY ID
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Lấy thông tin chi tiết đại lý theo ID")
     @GetMapping("/{dealerId}")
     public ResponseEntity<ResponseObject> getDealerById(@PathVariable Long dealerId) {
@@ -66,7 +67,7 @@ public class DealerController {
         );
     }
 
-    // 🟣 GET ALL
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Lấy danh sách tất cả đại lý")
     @GetMapping
     public ResponseEntity<ResponseObject> getAllDealers() {
