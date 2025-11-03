@@ -60,7 +60,7 @@ public class DataInitializer implements CommandLineRunner {
             roles.add(adminRole);
             admin.setRoles(roles);
             userRepository.save(admin);
-            System.out.println("✅ Seeded admin: admin / Admin@123");
+            System.out.println("✅ Seeded admin: admin / admin123");
         }
 
         // 1.3 Dealers & Dealer users
@@ -101,7 +101,7 @@ public class DataInitializer implements CommandLineRunner {
                 roles.add(dealerRole);
                 dealerUser.setRoles(roles);
                 userRepository.save(dealerUser);
-                System.out.println("✅ Seeded dealer user: " + username + " / Dealer" + i + "@123 (dealer=" + boundDealer.getDealerName() + ")");
+                System.out.println("✅ Seeded dealer user: " + username + " / dealer213)");
             }
         }
         if (manufacturerInventoryRepository.count() > 0) {
