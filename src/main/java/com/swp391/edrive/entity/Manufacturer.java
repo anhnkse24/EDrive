@@ -40,4 +40,8 @@ public class Manufacturer {
     @OneToMany(mappedBy = "manufacturer")
     @JsonIgnore
     private List<ManufacturerInventory> manufacturerInventories;
+
+    @OneToMany(mappedBy = "manufacturer")
+    @JsonIgnore
+    private List<Contract> contracts;
 }

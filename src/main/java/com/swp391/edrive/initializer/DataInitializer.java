@@ -49,7 +49,7 @@ public class DataInitializer implements CommandLineRunner {
         if (!userRepository.existsByUsername("admin")) {
             User admin = User.builder()
                     .username("admin")
-                    .password(passwordEncoder.encode("Admin@123")) // đổi sau khi đăng nhập
+                    .password(passwordEncoder.encode("admin123")) // đổi sau khi đăng nhập
                     .fullName("System Administrator")
                     .email("admin@edrive.local")
                     .phone("0000000000")
@@ -90,7 +90,7 @@ public class DataInitializer implements CommandLineRunner {
                 Dealer boundDealer = dealersInDb.get((i - 1) % dealersInDb.size());
                 User dealerUser = User.builder()
                         .username(username)
-                        .password(passwordEncoder.encode("Dealer" + i + "@123")) // đổi sau khi đăng nhập
+                        .password(passwordEncoder.encode("dealer123")) // đổi sau khi đăng nhập
                         .fullName(boundDealer.getDealerName() + " User")
                         .email(username + "@edrive.local")
                         .phone(boundDealer.getPhone() != null ? boundDealer.getPhone() : ("09" + String.format("%08d", i)))
@@ -109,25 +109,13 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         // Khởi tạo Manufacturers
-        Manufacturer vinfast = new Manufacturer();
-        vinfast.setManufacturerName("VinFast");
-        vinfast.setAddress("Khu Công nghệ cao Hòa Lạc, Huyện Thạch Thất, Hà Nội");
-        vinfast.setContactPerson("Nguyễn Văn A");
-        vinfast.setPhone("0243-123-4567");
+        Manufacturer edrive = new Manufacturer();
+        edrive.setManufacturerName("EDrive");
+        edrive.setAddress("Khu Công nghệ cao Hòa Lạc, Huyện Thạch Thất, Hà Nội");
+        edrive.setContactPerson("Nguyễn Văn A");
+        edrive.setPhone("0243-123-4567");
 
-        Manufacturer tesla = new Manufacturer();
-        tesla.setManufacturerName("Tesla");
-        tesla.setAddress("3500 Deer Creek Road, Palo Alto, CA 94304, USA");
-        tesla.setContactPerson("John Smith");
-        tesla.setPhone("+1-650-681-5000");
-
-        Manufacturer byd = new Manufacturer();
-        byd.setManufacturerName("BYD");
-        byd.setAddress("No. 3009 BYD Road, Pingshan, Shenzhen, China");
-        byd.setContactPerson("Li Wei");
-        byd.setPhone("+86-755-8988-8888");
-
-        List<Manufacturer> manufacturers = manufacturerRepository.saveAll(Arrays.asList(vinfast, tesla, byd));
+        List<Manufacturer> manufacturers = manufacturerRepository.saveAll(Arrays.asList(edrive));
         System.out.println("✅ Đã khởi tạo " + manufacturers.size() + " manufacturers");
 
 // ====== Seed Colors (dùng chung) ======
@@ -141,7 +129,7 @@ public class DataInitializer implements CommandLineRunner {
 
 // ====== Khởi tạo Vehicles cho VinFast ======
         Vehicle vf8 = new Vehicle();
-        vf8.setManufacturer(vinfast);
+        vf8.setManufacturer(edrive);
         vf8.setModelName("VF 8");
         vf8.setVersion("Eco");
         vf8.setColor(red); // <— dùng entity Color
@@ -161,7 +149,7 @@ public class DataInitializer implements CommandLineRunner {
         vf8.setStatus(VehicleStatus.AVAILABLE);
 
         Vehicle vf9 = new Vehicle();
-        vf9.setManufacturer(vinfast);
+        vf9.setManufacturer(edrive);
         vf9.setModelName("VF 9");
         vf9.setVersion("Plus");
         vf9.setColor(black);
@@ -181,7 +169,7 @@ public class DataInitializer implements CommandLineRunner {
         vf9.setStatus(VehicleStatus.AVAILABLE);
 
         Vehicle vfe34 = new Vehicle();
-        vfe34.setManufacturer(vinfast);
+        vfe34.setManufacturer(edrive);
         vfe34.setModelName("VF e34");
         vfe34.setVersion("Standard");
         vfe34.setColor(white);
@@ -202,7 +190,7 @@ public class DataInitializer implements CommandLineRunner {
 
 // ====== Khởi tạo Vehicles cho Tesla ======
         Vehicle model3 = new Vehicle();
-        model3.setManufacturer(tesla);
+        model3.setManufacturer(edrive);
         model3.setModelName("Model 3");
         model3.setVersion("Long Range");
         model3.setColor(cyan); // giữ “Xanh” nhưng có mã hex riêng
@@ -222,7 +210,7 @@ public class DataInitializer implements CommandLineRunner {
         model3.setStatus(VehicleStatus.AVAILABLE);
 
         Vehicle modelY = new Vehicle();
-        modelY.setManufacturer(tesla);
+        modelY.setManufacturer(edrive);
         modelY.setModelName("Model Y");
         modelY.setVersion("Performance");
         modelY.setColor(silver);
@@ -243,7 +231,7 @@ public class DataInitializer implements CommandLineRunner {
 
 // ====== Khởi tạo Vehicles cho BYD ======
         Vehicle han = new Vehicle();
-        han.setManufacturer(byd);
+        han.setManufacturer(edrive);
         han.setModelName("Han EV");
         han.setVersion("Premium");
         han.setColor(gray);
@@ -263,7 +251,7 @@ public class DataInitializer implements CommandLineRunner {
         han.setStatus(VehicleStatus.AVAILABLE);
 
         Vehicle atto3 = new Vehicle();
-        atto3.setManufacturer(byd);
+        atto3.setManufacturer(edrive);
         atto3.setModelName("Atto 3");
         atto3.setVersion("Extended");
         atto3.setColor(blue);
@@ -291,49 +279,49 @@ public class DataInitializer implements CommandLineRunner {
         LocalDateTime now = LocalDateTime.now();
 
         ManufacturerInventory inv1 = ManufacturerInventory.builder()
-                .manufacturer(vinfast)
+                .manufacturer(edrive)
                 .vehicle(vf8)
                 .quantity(50)
                 .lastUpdated(now)
                 .build();
 
         ManufacturerInventory inv2 = ManufacturerInventory.builder()
-                .manufacturer(vinfast)
+                .manufacturer(edrive)
                 .vehicle(vf9)
                 .quantity(30)
                 .lastUpdated(now)
                 .build();
 
         ManufacturerInventory inv3 = ManufacturerInventory.builder()
-                .manufacturer(vinfast)
+                .manufacturer(edrive)
                 .vehicle(vfe34)
                 .quantity(75)
                 .lastUpdated(now)
                 .build();
 
         ManufacturerInventory inv4 = ManufacturerInventory.builder()
-                .manufacturer(tesla)
+                .manufacturer(edrive)
                 .vehicle(model3)
                 .quantity(40)
                 .lastUpdated(now)
                 .build();
 
         ManufacturerInventory inv5 = ManufacturerInventory.builder()
-                .manufacturer(tesla)
+                .manufacturer(edrive)
                 .vehicle(modelY)
                 .quantity(35)
                 .lastUpdated(now)
                 .build();
 
         ManufacturerInventory inv6 = ManufacturerInventory.builder()
-                .manufacturer(byd)
+                .manufacturer(edrive)
                 .vehicle(han)
                 .quantity(45)
                 .lastUpdated(now)
                 .build();
 
         ManufacturerInventory inv7 = ManufacturerInventory.builder()
-                .manufacturer(byd)
+                .manufacturer(edrive)
                 .vehicle(atto3)
                 .quantity(60)
                 .lastUpdated(now)

@@ -60,4 +60,8 @@ public class Dealer {
     @OneToMany(mappedBy = "dealer")
     @JsonIgnore
     private List<Quotation> quotations;
+
+    @OneToMany(mappedBy = "dealer")
+    @JsonIgnore
+    private List<Contract> contracts;
 }
