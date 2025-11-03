@@ -40,10 +40,15 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         // ========== 1) SEED ROLES & USERS (chạy luôn, không phụ thuộc dữ liệu khác) ==========
         // 1.1 Roles
-        Role adminRole = roleRepository.findById("ADMIN")
+        Role adminRole          = roleRepository.findById("ADMIN")
                 .orElseGet(() -> roleRepository.save(Role.builder().name("ADMIN").description("System Administrator").build()));
-        Role dealerRole = roleRepository.findById("DEALER")
-                .orElseGet(() -> roleRepository.save(Role.builder().name("DEALER").description("Dealer user").build()));
+        Role dealerManagerRole  = roleRepository.findById("DEALER_MANAGER")
+                .orElseGet(() -> roleRepository.save(Role.builder().name("DEALER_MANAGER").description("Dealer Manager").build()));
+        Role dealerStaffRole    = roleRepository.findById("DEALER_STAFF")
+                .orElseGet(() -> roleRepository.save(Role.builder().name("DEALER_STAFF").description("Dealer Staff").build()));
+        Role evmStaffRole       = roleRepository.findById("EVM_STAFF")
+                .orElseGet(() -> roleRepository.save(Role.builder().name("EVM_STAFF").description("E-Drive Manufacturer Staff").build()));
+
 
         // 1.2 Admin user (nếu chưa có)
         if (!userRepository.existsByUsername("admin")) {
@@ -55,16 +60,27 @@ public class DataInitializer implements CommandLineRunner {
                     .phone("0000000000")
                     .isVerify(true)
                     .build();
-            // đảm bảo roles không null khi dùng builder
-            Set<Role> roles = new HashSet<>();
-            roles.add(adminRole);
-            admin.setRoles(roles);
+            admin.setRoles(new HashSet<>(Set.of(adminRole)));
             userRepository.save(admin);
-            System.out.println("✅ Seeded admin: admin / admin123");
+            System.out.println("✅ Seeded admin: admin / Admin@123");
+        }
+
+        // 1.3 EVM Staff (nhân viên hãng)
+        if (!userRepository.existsByUsername("evm1")) {
+            User evm1 = User.builder()
+                    .username("evm1")
+                    .password(passwordEncoder.encode("Evm@123")) // đổi sau khi đăng nhập
+                    .fullName("EVM Staff #1")
+                    .email("evm1@edrive.local")
+                    .phone("0900001001")
+                    .isVerify(true)
+                    .build();
+            evm1.setRoles(new HashSet<>(Set.of(evmStaffRole)));
+            userRepository.save(evm1);
+            System.out.println("✅ Seeded EVM staff: evm1 / Evm@123");
         }
 
         // 1.3 Dealers & Dealer users
-        // Nếu DB chưa có Dealer nào, tạo 10 Dealer mẫu
         List<Dealer> dealersInDb = dealerRepository.findAll();
         if (dealersInDb.isEmpty()) {
             List<Dealer> seedDealers = new ArrayList<>();
@@ -82,30 +98,41 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("✅ Đã khởi tạo " + dealersInDb.size() + " dealers");
         }
 
-        // Tạo tài khoản dealer1..dealerN, gắn từng dealer
-        int dealerUsersToCreate = Math.min(10, Math.max(1, dealersInDb.size()));
-        for (int i = 1; i <= dealerUsersToCreate; i++) {
-            String username = "dealer" + i;
-            if (!userRepository.existsByUsername(username)) {
-                Dealer boundDealer = dealersInDb.get((i - 1) % dealersInDb.size());
-                User dealerUser = User.builder()
-                        .username(username)
+        for (int i = 0; i < dealersInDb.size(); i++) {
+            Dealer d = dealersInDb.get(i);
+            String base = "d" + (i + 1); // d1, d2,...
+
+            String managerUsername = base + "_manager";
+            if (!userRepository.existsByUsername(managerUsername)) {
+                User manager = User.builder()
+                        .username(managerUsername)
                         .password(passwordEncoder.encode("Dealer@123")) // đổi sau khi đăng nhập
-                        .fullName(boundDealer.getDealerName() + " User")
-                        .email(username + "@edrive.local")
-                        .phone(boundDealer.getPhone() != null ? boundDealer.getPhone() : ("09" + String.format("%08d", i)))
-                        .dealer(boundDealer)
+                        .fullName(d.getDealerName() + " Manager")
+                        .email(managerUsername + "@edrive.local")
+                        .phone(d.getPhone() != null ? d.getPhone() : ("09" + String.format("%08d", i + 1)))
+                        .dealer(d)
                         .isVerify(true)
                         .build();
-                Set<Role> roles = new HashSet<>();
-                roles.add(dealerRole);
-                dealerUser.setRoles(roles);
-                userRepository.save(dealerUser);
-                System.out.println("✅ Seeded dealer user: " + username + " / dealer213)");
+                manager.setRoles(new HashSet<>(Set.of(dealerManagerRole)));
+                userRepository.save(manager);
+                System.out.println("✅ Seeded dealer manager: " + managerUsername + " / Dealer@123");
             }
-        }
-        if (manufacturerInventoryRepository.count() > 0) {
-            return;
+
+            String staffUsername = base + "_staff";
+            if (!userRepository.existsByUsername(staffUsername)) {
+                User staff = User.builder()
+                        .username(staffUsername)
+                        .password(passwordEncoder.encode("Dealer@123"))
+                        .fullName(d.getDealerName() + " Staff")
+                        .email(staffUsername + "@edrive.local")
+                        .phone("09" + String.format("%08d", 1000 + i))
+                        .dealer(d)
+                        .isVerify(true)
+                        .build();
+                staff.setRoles(new HashSet<>(Set.of(dealerStaffRole)));
+                userRepository.save(staff);
+                System.out.println("✅ Seeded dealer staff: " + staffUsername + " / Dealer@123");
+            }
         }
 
         // Khởi tạo Manufacturers
