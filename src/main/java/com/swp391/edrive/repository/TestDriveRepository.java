@@ -10,8 +10,6 @@ import java.util.List;
 
 @Repository
 public interface TestDriveRepository extends JpaRepository<TestDrive, Long> {
-    List<TestDrive> findByDealer(Dealer dealer);
-    List<TestDrive> findByCustomer(Customer customer);
     List<TestDrive> findByDealer_DealerId(Long dealerId);
 
 }

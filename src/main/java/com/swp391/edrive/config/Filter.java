@@ -62,7 +62,9 @@ public class Filter extends OncePerRequestFilter {
             "/api/manufacturer-inventory/**",
             "/api/customer-orders/**",
             "/api/dealers/**",
-            "/api/colors/**"
+            "/api/colors/**",
+            "/api/notifications/**",
+            "/api/testdrives/**"
             );
 
     // kiểm tra xem request có thuộc danh sách publicAPI
