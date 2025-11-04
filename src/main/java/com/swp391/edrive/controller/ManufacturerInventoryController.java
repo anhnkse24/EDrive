@@ -1,6 +1,7 @@
 package com.swp391.edrive.controller;
 
 import com.swp391.edrive.dto.request.ManufacturerInventoryRequest;
+import com.swp391.edrive.dto.request.ManufacturerInventoryUpdateRequest;
 import com.swp391.edrive.dto.response.ManufacturerInventoryResponse;
 import com.swp391.edrive.dto.response.ManufacturerInventorySummaryResponse;
 import com.swp391.edrive.service.ManufacturerInventoryService;
@@ -60,7 +61,7 @@ public class ManufacturerInventoryController {
     @PutMapping("/{id}")
     public ResponseEntity<ManufacturerInventoryResponse> update(
             @PathVariable Long id,
-            @RequestBody ManufacturerInventoryRequest request) {
+            @RequestBody ManufacturerInventoryUpdateRequest request) {
         return ResponseEntity.ok(manufacturerInventoryService.update(id, request));
     }
 

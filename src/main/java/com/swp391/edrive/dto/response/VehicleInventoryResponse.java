@@ -13,6 +13,8 @@ public class VehicleInventoryResponse {
     private Long manufacturerInventoryId;
     private Long vehicleId;
     private String vehicleName;
+    private String version;
+    private String color;
     private Integer quantity;
     private Integer exportedQuantity;
     private Integer inDeliveryQuantity;
