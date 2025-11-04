@@ -8,6 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class VehicleInventoryResponse {
+    private Long manufacturerInventoryId;
     private Long vehicleId;
     private String vehicleName;
     private Integer quantity;

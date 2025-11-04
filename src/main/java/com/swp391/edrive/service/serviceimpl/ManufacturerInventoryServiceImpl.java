@@ -42,8 +42,9 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
 
     @Override
     public ManufacturerInventoryResponse create(ManufacturerInventoryRequest request) {
-        Manufacturer manufacturer = manufacturerRepository.findById(request.getManufacturerId())
-                .orElseThrow(() -> new RuntimeException("Manufacturer not found"));
+        // 🟢 Tự động lấy manufacturer eDrive
+        Manufacturer manufacturer = manufacturerRepository.findByManufacturerName("EDrive")
+                .orElseThrow(() -> new RuntimeException("Manufacturer 'eDrive' not found"));
 
         Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
                 .orElseThrow(() -> new RuntimeException("Vehicle not found"));
@@ -59,13 +60,15 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
         return toResponse(inv);
     }
 
+
     @Override
     public ManufacturerInventoryResponse update(Long id, ManufacturerInventoryRequest request) {
         ManufacturerInventory inv = manufacturerInventoryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Inventory not found"));
 
-        Manufacturer manufacturer = manufacturerRepository.findById(request.getManufacturerId())
-                .orElseThrow(() -> new RuntimeException("Manufacturer not found"));
+        // 🟢 Tự động set manufacturer = eDrive
+        Manufacturer manufacturer = manufacturerRepository.findByManufacturerName("EDrive")
+                .orElseThrow(() -> new RuntimeException("Manufacturer 'eDrive' not found"));
 
         Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
                 .orElseThrow(() -> new RuntimeException("Vehicle not found"));
@@ -78,6 +81,7 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
         manufacturerInventoryRepository.save(inv);
         return toResponse(inv);
     }
+
 
     @Override
     public void delete(Long id) {
@@ -105,6 +109,7 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
 
                     List<VehicleInventoryResponse> vehicles = items.stream()
                             .map(inv -> VehicleInventoryResponse.builder()
+                                    .manufacturerInventoryId(inv.getManufacturerInventoryId())
                                     .vehicleId(inv.getVehicle().getVehicleId())
                                     .vehicleName(inv.getVehicle().getModelName())
                                     .quantity(inv.getQuantity())
@@ -119,6 +124,7 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
                 })
                 .toList();
     }
+
 
 
     private ManufacturerInventoryResponse toResponse(ManufacturerInventory inv) {

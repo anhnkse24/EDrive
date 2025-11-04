@@ -12,9 +12,6 @@ import lombok.Setter;
 @Setter
 public class ManufacturerInventoryRequest {
 
-    @NotNull(message = "manufacturerId không được để trống")
-    private Long manufacturerId;
-
     @NotNull(message = "vehicleId không được để trống")
     private Long vehicleId;
 
