@@ -108,9 +108,9 @@ public class ColorController {
 
     @Operation(summary = "Danh sách màu")
     @GetMapping
-    public ResponseEntity<ResponseObject<List<ColorResponse>>> list(@RequestParam(required = false) String q) {
+    public ResponseEntity<ResponseObject<List<ColorResponse>>> list() {
         try {
-            List<ColorResponse> colors = (q == null || q.isBlank()) ? colorService.getAll() : colorService.search(q);
+            List<ColorResponse> colors = colorService.getAll();
             ResponseObject<List<ColorResponse>> response = ResponseObject.<List<ColorResponse>>builder()
                     .statusCode(200)
                     .message("Color list retrieved")

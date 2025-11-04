@@ -29,6 +29,7 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
     boolean existsByModelNameIgnoreCaseAndVersionIgnoreCaseAndColor_ColorNameIgnoreCaseAndManufactureYear(
             String modelName, String version, String colorName, Integer manufactureYear
     );
+    boolean existsByVersionIgnoreCaseAndColor_ColorId(String version, Long colorId);
 
     long countByColor(Color color);
 

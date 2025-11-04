@@ -12,5 +12,4 @@ public interface ColorService {
 
     ColorResponse getById(Long id);
     List<ColorResponse> getAll();
-    List<ColorResponse> search(String q);// search theo tên màu
 }

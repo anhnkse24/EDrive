@@ -96,15 +96,6 @@ public class ColorServiceImpl implements ColorService {
                 .toList();
     }
 
-    @Override
-    public List<ColorResponse> search(String q) {
-        String keyword = q == null ? "" : q.trim();
-        return colorRepo.findByColorNameIgnoreCaseContaining(keyword)
-                .stream()
-                .map(c -> toResponse(c, vehicleRepo.countByColor(c) > 0))
-                .toList();
-    }
-
     // mapper
     private ColorResponse toResponse(Color c, boolean inUse) {
         return ColorResponse.builder()
