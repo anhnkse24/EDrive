@@ -153,210 +153,314 @@ public class DataInitializer implements CommandLineRunner {
         Color silver = upsertColor("Bạc",     "#C0C0C0");
         Color gray   = upsertColor("Xám",     "#808080");
         Color cyan   = upsertColor("Xanh Lam","#1E90FF");
+        Color green  = upsertColor("Xanh lá", "#24K07A");
 
 // ====== Khởi tạo Vehicles cho VinFast ======
-        Vehicle vf8 = new Vehicle();
-        vf8.setManufacturer(edrive);
-        vf8.setModelName("VF 8");
-        vf8.setVersion("Eco");
-        vf8.setColor(red); // <— dùng entity Color
-        vf8.setBatteryCapacityKwh(87);
-        vf8.setRangeKm(420);
-        vf8.setMaxSpeedKmh(160);
-        vf8.setChargingTimeHours(7.5f);
-        vf8.setSeatingCapacity(5);
-        vf8.setMotorPowerKw(260);
-        vf8.setWeightKg(2050);
-        vf8.setLengthMm(4750);
-        vf8.setWidthMm(1934);
-        vf8.setHeightMm(1667);
-        vf8.setPriceRetail(new BigDecimal("1000"));
-        vf8.setImageUrl("https://vinfastquangninh.com.vn/wp-content/uploads/2023/07/tai-xuong-8-min.png");
-        vf8.setManufactureYear(2024);
-        vf8.setStatus(VehicleStatus.AVAILABLE);
+        Vehicle vf8_silver = new Vehicle();
+        vf8_silver.setManufacturer(edrive);
+        vf8_silver.setModelName("VF 8");
+        vf8_silver.setVersion("Standard");
+        vf8_silver.setColor(silver);
+        vf8_silver.setBatteryCapacityKwh(40);
+        vf8_silver.setRangeKm(250);
+        vf8_silver.setMaxSpeedKmh(140);
+        vf8_silver.setChargingTimeHours(4.5f);
+        vf8_silver.setSeatingCapacity(5);
+        vf8_silver.setMotorPowerKw(100);
+        vf8_silver.setWeightKg(1600);
+        vf8_silver.setLengthMm(4200);
+        vf8_silver.setWidthMm(1800);
+        vf8_silver.setHeightMm(1500);
+        vf8_silver.setPriceRetail(new BigDecimal("2000000000"));
+        vf8_silver.setManufactureYear(2024);
+        vf8_silver.setImageUrl("https://vinfast-thaodien.com/wp-content/uploads/2025/02/vf8eco.webp");
+        vf8_silver.setStatus(VehicleStatus.AVAILABLE);
 
-        Vehicle vf9 = new Vehicle();
-        vf9.setManufacturer(edrive);
-        vf9.setModelName("VF 9");
-        vf9.setVersion("Plus");
-        vf9.setColor(black);
-        vf9.setBatteryCapacityKwh(123);
-        vf9.setRangeKm(594);
-        vf9.setMaxSpeedKmh(200);
-        vf9.setChargingTimeHours(9.0f);
-        vf9.setSeatingCapacity(7);
-        vf9.setMotorPowerKw(300);
-        vf9.setWeightKg(2400);
-        vf9.setLengthMm(5123);
-        vf9.setWidthMm(1976);
-        vf9.setHeightMm(1750);
-        vf9.setPriceRetail(new BigDecimal("2000"));
-        vf9.setManufactureYear(2024);
-        vf9.setImageUrl("https://vinfasthadong.com.vn/wp-content/uploads/2023/10/VinFast-VF3-mau-den-scaled-1.jpg");
-        vf9.setStatus(VehicleStatus.AVAILABLE);
+        Vehicle vf8_red = new Vehicle();
+        vf8_red.setManufacturer(edrive);
+        vf8_red.setModelName("VF 8");
+        vf8_red.setVersion("Standard");
+        vf8_red.setColor(red);
+        vf8_red.setBatteryCapacityKwh(40);
+        vf8_red.setRangeKm(250);
+        vf8_red.setMaxSpeedKmh(140);
+        vf8_red.setChargingTimeHours(4.5f);
+        vf8_red.setSeatingCapacity(5);
+        vf8_red.setMotorPowerKw(100);
+        vf8_red.setWeightKg(1600);
+        vf8_red.setLengthMm(4200);
+        vf8_red.setWidthMm(1800);
+        vf8_red.setHeightMm(1500);
+        vf8_red.setPriceRetail(new BigDecimal("2000000000"));
+        vf8_red.setManufactureYear(2024);
+        vf8_red.setImageUrl("https://vinfast-thaodien.com/wp-content/uploads/2025/02/vf8plus.webp");
+        vf8_red.setStatus(VehicleStatus.AVAILABLE);
 
-        Vehicle vfe34 = new Vehicle();
-        vfe34.setManufacturer(edrive);
-        vfe34.setModelName("VF e34");
-        vfe34.setVersion("Standard");
-        vfe34.setColor(white);
-        vfe34.setBatteryCapacityKwh(42);
-        vfe34.setRangeKm(285);
-        vfe34.setMaxSpeedKmh(150);
-        vfe34.setChargingTimeHours(5.5f);
-        vfe34.setSeatingCapacity(5);
-        vfe34.setMotorPowerKw(110);
-        vfe34.setWeightKg(1610);
-        vfe34.setLengthMm(4300);
-        vfe34.setWidthMm(1793);
-        vfe34.setHeightMm(1613);
-        vfe34.setPriceRetail(new BigDecimal("3000"));
-        vfe34.setManufactureYear(2023);
-        vfe34.setImageUrl("https://vinfasthadong.com.vn/wp-content/uploads/2023/10/VinFast-VF3-mau-trang-2-scaled-1.jpg");
-        vfe34.setStatus(VehicleStatus.AVAILABLE);
+        Vehicle vf9_blue = new Vehicle();
+        vf9_blue.setManufacturer(edrive);
+        vf9_blue.setModelName("VF 9");
+        vf9_blue.setVersion("Plus");
+        vf9_blue.setColor(blue);
+        vf9_blue.setBatteryCapacityKwh(123);
+        vf9_blue.setRangeKm(594);
+        vf9_blue.setMaxSpeedKmh(200);
+        vf9_blue.setChargingTimeHours(9.0f);
+        vf9_blue.setSeatingCapacity(7);
+        vf9_blue.setMotorPowerKw(300);
+        vf9_blue.setWeightKg(2400);
+        vf9_blue.setLengthMm(5123);
+        vf9_blue.setWidthMm(1976);
+        vf9_blue.setHeightMm(1750);
+        vf9_blue.setPriceRetail(new BigDecimal("2000"));
+        vf9_blue.setManufactureYear(2024);
+        vf9_blue.setImageUrl("https://vinfasthadong.com.vn/wp-content/uploads/2023/10/vinfast-vf9_blue-blue.jpg");
+        vf9_blue.setStatus(VehicleStatus.AVAILABLE);
+
+        Vehicle vf9_red = new Vehicle();
+        vf9_red.setManufacturer(edrive);
+        vf9_red.setModelName("VF 9");
+        vf9_red.setVersion("Standard");
+        vf9_red.setColor(white);
+        vf9_red.setBatteryCapacityKwh(42);
+        vf9_red.setRangeKm(285);
+        vf9_red.setMaxSpeedKmh(150);
+        vf9_red.setChargingTimeHours(5.5f);
+        vf9_red.setSeatingCapacity(5);
+        vf9_red.setMotorPowerKw(110);
+        vf9_red.setWeightKg(1610);
+        vf9_red.setLengthMm(4300);
+        vf9_red.setWidthMm(1793);
+        vf9_red.setHeightMm(1613);
+        vf9_red.setPriceRetail(new BigDecimal("3000"));
+        vf9_red.setManufactureYear(2023);
+        vf9_red.setImageUrl("https://vinfast-hcm.vn/wp-content/uploads/2022/12/4.png");
+        vf9_red.setStatus(VehicleStatus.AVAILABLE);
+
+        Vehicle vf9_white = new Vehicle();
+        vf9_white.setManufacturer(edrive);
+        vf9_white.setModelName("VF 9");
+        vf9_white.setVersion("Standard");
+        vf9_white.setColor(white);
+        vf9_white.setBatteryCapacityKwh(42);
+        vf9_white.setRangeKm(285);
+        vf9_white.setMaxSpeedKmh(150);
+        vf9_white.setChargingTimeHours(5.5f);
+        vf9_white.setSeatingCapacity(5);
+        vf9_white.setMotorPowerKw(110);
+        vf9_white.setWeightKg(1610);
+        vf9_white.setLengthMm(4300);
+        vf9_white.setWidthMm(1793);
+        vf9_white.setHeightMm(1613);
+        vf9_white.setPriceRetail(new BigDecimal("3000"));
+        vf9_white.setManufactureYear(2023);
+        vf9_white.setImageUrl("https://vinfastdienchau.com/wp-content/uploads/2013/08/VF-9-Plus_US-CA_21-inch_Brahminy-White_Mid.png");
+        vf9_white.setStatus(VehicleStatus.AVAILABLE);
 
 // ====== Khởi tạo Vehicles cho Tesla ======
-        Vehicle model3 = new Vehicle();
-        model3.setManufacturer(edrive);
-        model3.setModelName("Model 3");
-        model3.setVersion("Long Range");
-        model3.setColor(cyan); // giữ “Xanh” nhưng có mã hex riêng
-        model3.setBatteryCapacityKwh(82);
-        model3.setRangeKm(602);
-        model3.setMaxSpeedKmh(233);
-        model3.setChargingTimeHours(8.0f);
-        model3.setSeatingCapacity(5);
-        model3.setMotorPowerKw(283);
-        model3.setWeightKg(1844);
-        model3.setLengthMm(4694);
-        model3.setWidthMm(1849);
-        model3.setHeightMm(1443);
-        model3.setPriceRetail(new BigDecimal("1500000000"));
-        model3.setManufactureYear(2024);
-        model3.setImageUrl("https://vinfasthadong.com.vn/wp-content/uploads/2023/10/VinFast-VF3-mau-xanh-lo-Cyan-scaled-1.jpg");
-        model3.setStatus(VehicleStatus.AVAILABLE);
+        Vehicle vf3_yellow = new Vehicle();
+        vf3_yellow.setManufacturer(edrive);
+        vf3_yellow.setModelName("VF 3");
+        vf3_yellow.setVersion("Long Range");
+        vf3_yellow.setColor(cyan); // giữ “Xanh” nhưng có mã hex riêng
+        vf3_yellow.setBatteryCapacityKwh(82);
+        vf3_yellow.setRangeKm(602);
+        vf3_yellow.setMaxSpeedKmh(233);
+        vf3_yellow.setChargingTimeHours(8.0f);
+        vf3_yellow.setSeatingCapacity(5);
+        vf3_yellow.setMotorPowerKw(283);
+        vf3_yellow.setWeightKg(1844);
+        vf3_yellow.setLengthMm(4694);
+        vf3_yellow.setWidthMm(1849);
+        vf3_yellow.setHeightMm(1443);
+        vf3_yellow.setPriceRetail(new BigDecimal("1500000000"));
+        vf3_yellow.setManufactureYear(2024);
+        vf3_yellow.setImageUrl("https://vinfastotominhdao.vn/wp-content/uploads/vf3-3034-5-scaled.jpg");
+        vf3_yellow.setStatus(VehicleStatus.AVAILABLE);
 
-        Vehicle modelY = new Vehicle();
-        modelY.setManufacturer(edrive);
-        modelY.setModelName("Model Y");
-        modelY.setVersion("Performance");
-        modelY.setColor(silver);
-        modelY.setBatteryCapacityKwh(75);
-        modelY.setRangeKm(514);
-        modelY.setMaxSpeedKmh(250);
-        modelY.setChargingTimeHours(7.5f);
-        modelY.setSeatingCapacity(7);
-        modelY.setMotorPowerKw(340);
-        modelY.setWeightKg(2003);
-        modelY.setLengthMm(4751);
-        modelY.setWidthMm(1921);
-        modelY.setHeightMm(1624);
-        modelY.setPriceRetail(new BigDecimal("1800000000"));
-        modelY.setManufactureYear(2024);
-        modelY.setImageUrl("https://wuling-ev.vn/SEO/%C3%B4%20t%C3%B4%20%C4%91i%E1%BB%87n%20c%C5%A9%20gi%C3%A1%20r%E1%BA%BB/1834/image-thumb__1834___auto_697d1e38f8077a664d670954e166f84b/o-to-dien-cu-gia-re%20%281%29.70974c2f.jpg");
-        modelY.setStatus(VehicleStatus.AVAILABLE);
+        Vehicle vf3_red = new Vehicle();
+        vf3_red.setManufacturer(edrive);
+        vf3_red.setModelName("VF 3");
+        vf3_red.setVersion("Long Range");
+        vf3_red.setColor(cyan); // giữ “Xanh” nhưng có mã hex riêng
+        vf3_red.setBatteryCapacityKwh(82);
+        vf3_red.setRangeKm(602);
+        vf3_red.setMaxSpeedKmh(233);
+        vf3_red.setChargingTimeHours(8.0f);
+        vf3_red.setSeatingCapacity(5);
+        vf3_red.setMotorPowerKw(283);
+        vf3_red.setWeightKg(1844);
+        vf3_red.setLengthMm(4694);
+        vf3_red.setWidthMm(1849);
+        vf3_red.setHeightMm(1443);
+        vf3_red.setPriceRetail(new BigDecimal("1500000000"));
+        vf3_red.setManufactureYear(2024);
+        vf3_red.setImageUrl("https://vinfast-cars.vn/wp-content/uploads/2024/10/vinfast-vf3-do.png");
+        vf3_red.setStatus(VehicleStatus.AVAILABLE);
 
 // ====== Khởi tạo Vehicles cho BYD ======
-        Vehicle han = new Vehicle();
-        han.setManufacturer(edrive);
-        han.setModelName("Han EV");
-        han.setVersion("Premium");
-        han.setColor(gray);
-        han.setBatteryCapacityKwh(85);
-        han.setRangeKm(605);
-        han.setMaxSpeedKmh(185);
-        han.setChargingTimeHours(8.5f);
-        han.setSeatingCapacity(5);
-        han.setMotorPowerKw(380);
-        han.setWeightKg(2020);
-        han.setLengthMm(4980);
-        han.setWidthMm(1910);
-        han.setHeightMm(1495);
-        han.setPriceRetail(new BigDecimal("1400000000"));
-        han.setManufactureYear(2024);
-        han.setImageUrl("https://vinfasthadong.com.vn/wp-content/uploads/2023/10/VinFast-VF3-mau-bac-1-scaled-1.jpg");
-        han.setStatus(VehicleStatus.AVAILABLE);
+        Vehicle vf5_red = new Vehicle();
+        vf5_red.setManufacturer(edrive);
+        vf5_red.setModelName("VF 5");
+        vf5_red.setVersion("Long Range");
+        vf5_red.setColor(cyan); // giữ “Xanh” nhưng có mã hex riêng
+        vf5_red.setBatteryCapacityKwh(82);
+        vf5_red.setRangeKm(602);
+        vf5_red.setMaxSpeedKmh(233);
+        vf5_red.setChargingTimeHours(8.0f);
+        vf5_red.setSeatingCapacity(5);
+        vf5_red.setMotorPowerKw(283);
+        vf5_red.setWeightKg(1844);
+        vf5_red.setLengthMm(4694);
+        vf5_red.setWidthMm(1849);
+        vf5_red.setHeightMm(1443);
+        vf5_red.setPriceRetail(new BigDecimal("1500000000"));
+        vf5_red.setManufactureYear(2024);
+        vf5_red.setImageUrl("https://vinfasthadong.com.vn/wp-content/uploads/2023/10/vf5-2023.jpg");
+        vf5_red.setStatus(VehicleStatus.AVAILABLE);
 
-        Vehicle atto3 = new Vehicle();
-        atto3.setManufacturer(edrive);
-        atto3.setModelName("Atto 3");
-        atto3.setVersion("Extended");
-        atto3.setColor(blue);
-        atto3.setBatteryCapacityKwh(60);
-        atto3.setRangeKm(480);
-        atto3.setMaxSpeedKmh(160);
-        atto3.setChargingTimeHours(6.5f);
-        atto3.setSeatingCapacity(5);
-        atto3.setMotorPowerKw(150);
-        atto3.setWeightKg(1750);
-        atto3.setLengthMm(4455);
-        atto3.setWidthMm(1875);
-        atto3.setHeightMm(1615);
-        atto3.setPriceRetail(new BigDecimal("850000000"));
-        atto3.setManufactureYear(2024);
-        atto3.setImageUrl("https://giaxevinfast.net/wp-content/uploads/2024/04/VinFast-VF-3-mau-Xanh-duong-dam-.png");
-        atto3.setStatus(VehicleStatus.AVAILABLE);
+        Vehicle vf5_grey = new Vehicle();
+        vf5_grey.setManufacturer(edrive);
+        vf5_grey.setModelName("VF 5");
+        vf5_grey.setVersion("Long Range");
+        vf5_grey.setColor(gray); // giữ “Xanh” nhưng có mã hex riêng
+        vf5_grey.setBatteryCapacityKwh(82);
+        vf5_grey.setRangeKm(602);
+        vf5_grey.setMaxSpeedKmh(233);
+        vf5_grey.setChargingTimeHours(8.0f);
+        vf5_grey.setSeatingCapacity(5);
+        vf5_grey.setMotorPowerKw(283);
+        vf5_grey.setWeightKg(1844);
+        vf5_grey.setLengthMm(4694);
+        vf5_grey.setWidthMm(1849);
+        vf5_grey.setHeightMm(1443);
+        vf5_grey.setPriceRetail(new BigDecimal("1500000000"));
+        vf5_grey.setManufactureYear(2024);
+        vf5_grey.setImageUrl("https://vinfastgiare.vn/public/upload/images/vinfastgiare-9.jpg");
+        vf5_grey.setStatus(VehicleStatus.AVAILABLE);
+
+
+        Vehicle vf6_green = new Vehicle();
+        vf6_green.setManufacturer(edrive);
+        vf6_green.setModelName("VF 6");
+        vf6_green.setVersion("Long Range");
+        vf6_green.setColor(gray); // giữ “Xanh” nhưng có mã hex riêng
+        vf6_green.setBatteryCapacityKwh(82);
+        vf6_green.setRangeKm(602);
+        vf6_green.setMaxSpeedKmh(233);
+        vf6_green.setChargingTimeHours(8.0f);
+        vf6_green.setSeatingCapacity(5);
+        vf6_green.setMotorPowerKw(283);
+        vf6_green.setWeightKg(1844);
+        vf6_green.setLengthMm(4694);
+        vf6_green.setWidthMm(1849);
+        vf6_green.setHeightMm(1443);
+        vf6_green.setPriceRetail(new BigDecimal("1500000000"));
+        vf6_green.setManufactureYear(2024);
+        vf6_green.setImageUrl("https://vinfastcarhanoi.com/wp-content/uploads/2025/02/vinfast-vf6-3.png");
+        vf6_green.setStatus(VehicleStatus.AVAILABLE);
+
+        Vehicle vf6_red = new Vehicle();
+        vf6_red.setManufacturer(edrive);
+        vf6_red.setModelName("VF 6");
+        vf6_red.setVersion("Long Range");
+        vf6_red.setColor(gray); // giữ “Xanh” nhưng có mã hex riêng
+        vf6_red.setBatteryCapacityKwh(82);
+        vf6_red.setRangeKm(602);
+        vf6_red.setMaxSpeedKmh(233);
+        vf6_red.setChargingTimeHours(8.0f);
+        vf6_red.setSeatingCapacity(5);
+        vf6_red.setMotorPowerKw(283);
+        vf6_red.setWeightKg(1844);
+        vf6_red.setLengthMm(4694);
+        vf6_red.setWidthMm(1849);
+        vf6_red.setHeightMm(1443);
+        vf6_red.setPriceRetail(new BigDecimal("1500000000"));
+        vf6_red.setManufactureYear(2024);
+        vf6_red.setImageUrl("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRA__L11pM72Iq-5JNiaQ4VrzE4o4ox9MOxRA&s");
+        vf6_red.setStatus(VehicleStatus.AVAILABLE);
+
+
+        Vehicle vf7_white = new Vehicle();
+        vf7_white.setManufacturer(edrive);
+        vf7_white.setModelName("VF 7");
+        vf7_white.setVersion("Long Range");
+        vf7_white.setColor(white); // giữ “Xanh” nhưng có mã hex riêng
+        vf7_white.setBatteryCapacityKwh(82);
+        vf7_white.setRangeKm(602);
+        vf7_white.setMaxSpeedKmh(233);
+        vf7_white.setChargingTimeHours(8.0f);
+        vf7_white.setSeatingCapacity(5);
+        vf7_white.setMotorPowerKw(283);
+        vf7_white.setWeightKg(1844);
+        vf7_white.setLengthMm(4694);
+        vf7_white.setWidthMm(1849);
+        vf7_white.setHeightMm(1443);
+        vf7_white.setPriceRetail(new BigDecimal("1500000000"));
+        vf7_white.setManufactureYear(2024);
+        vf7_white.setImageUrl("https://www.vinfastmiennam.vn/images/bf432-vf7-plus.png");
+        vf7_white.setStatus(VehicleStatus.AVAILABLE);
+
+        Vehicle vf7_red = new Vehicle();
+        vf7_red.setManufacturer(edrive);
+        vf7_red.setModelName("VF 7");
+        vf7_red.setVersion("Long Range");
+        vf7_red.setColor(gray); // giữ “Xanh” nhưng có mã hex riêng
+        vf7_red.setBatteryCapacityKwh(82);
+        vf7_red.setRangeKm(602);
+        vf7_red.setMaxSpeedKmh(233);
+        vf7_red.setChargingTimeHours(8.0f);
+        vf7_red.setSeatingCapacity(5);
+        vf7_red.setMotorPowerKw(283);
+        vf7_red.setWeightKg(1844);
+        vf7_red.setLengthMm(4694);
+        vf7_red.setWidthMm(1849);
+        vf7_red.setHeightMm(1443);
+        vf7_red.setPriceRetail(new BigDecimal("1500000000"));
+        vf7_red.setManufactureYear(2024);
+        vf7_red.setImageUrl("https://img.tinxe.vn/crop/730x410/2024/01/01/0MQViQLm/vinfast-vf7-5-51ca.webp");
+        vf7_red.setStatus(VehicleStatus.AVAILABLE);
+
 
         List<Vehicle> vehicles = vehicleRepository.saveAll(
-                Arrays.asList(vf8, vf9, vfe34, model3, modelY, han, atto3)
+                Arrays.asList(
+                        vf8_silver, vf8_red,
+                        vf9_white, vf9_blue, vf9_red,
+                        vf3_yellow, vf3_red,
+                        vf5_red, vf5_grey,
+                        vf6_red, vf6_green,
+                        vf7_white, vf7_red
+                )
         );
         System.out.println("✅ Đã khởi tạo " + vehicles.size() + " vehicles");
 
         // Khởi tạo Manufacturer Inventories
         LocalDateTime now = LocalDateTime.now();
 
-        ManufacturerInventory inv1 = ManufacturerInventory.builder()
-                .manufacturer(edrive)
-                .vehicle(vf8)
-                .quantity(50)
-                .lastUpdated(now)
-                .build();
+        int defaultQty = 30;
+        Map<String, Integer> qtyByModel = new HashMap<>();
+        qtyByModel.put("VF 3", 45);
+        qtyByModel.put("VF 5", 60);
+        qtyByModel.put("VF 6", 40);
+        qtyByModel.put("VF 7", 35);
+        qtyByModel.put("VF 8", 50);
+        qtyByModel.put("VF 9", 30);
 
-        ManufacturerInventory inv2 = ManufacturerInventory.builder()
-                .manufacturer(edrive)
-                .vehicle(vf9)
-                .quantity(30)
-                .lastUpdated(now)
-                .build();
+        List<ManufacturerInventory> inventories = new ArrayList<>();
 
-        ManufacturerInventory inv3 = ManufacturerInventory.builder()
-                .manufacturer(edrive)
-                .vehicle(vfe34)
-                .quantity(75)
-                .lastUpdated(now)
-                .build();
+        for (Vehicle v : vehicles) {
+            int qty = qtyByModel.getOrDefault(v.getModelName(), defaultQty);
 
-        ManufacturerInventory inv4 = ManufacturerInventory.builder()
-                .manufacturer(edrive)
-                .vehicle(model3)
-                .quantity(40)
-                .lastUpdated(now)
-                .build();
+            ManufacturerInventory inv = ManufacturerInventory.builder()
+                    .manufacturer(edrive)   // 1 kho: luôn cùng manufacturer
+                    .vehicle(v)
+                    .quantity(qty)
+                    .lastUpdated(now)
+                    .build();
 
-        ManufacturerInventory inv5 = ManufacturerInventory.builder()
-                .manufacturer(edrive)
-                .vehicle(modelY)
-                .quantity(35)
-                .lastUpdated(now)
-                .build();
+            inventories.add(inv);
+        }
 
-        ManufacturerInventory inv6 = ManufacturerInventory.builder()
-                .manufacturer(edrive)
-                .vehicle(han)
-                .quantity(45)
-                .lastUpdated(now)
-                .build();
-
-        ManufacturerInventory inv7 = ManufacturerInventory.builder()
-                .manufacturer(edrive)
-                .vehicle(atto3)
-                .quantity(60)
-                .lastUpdated(now)
-                .build();
-
-        List<ManufacturerInventory> inventories = manufacturerInventoryRepository.saveAll(
-                Arrays.asList(inv1, inv2, inv3, inv4, inv5, inv6, inv7)
-        );
+        inventories = manufacturerInventoryRepository.saveAll(inventories);
         System.out.println("✅ Đã khởi tạo " + inventories.size() + " manufacturer inventories");
 // =================== SEED PROMOTIONS ===================
         if (promotionRepository.count() == 0) {
@@ -394,7 +498,7 @@ public class DataInitializer implements CommandLineRunner {
             promo3.setApplicableTo(PromoTarget.DEALER);
             promo3.setDealer(dealersInDb.get(2)); // Đà Nẵng
             promo3.getVehicles().add(vehicles.get(0));
-            promo3.getVehicles().add(vehicles.get(1)); // VF8, VF9
+            promo3.getVehicles().add(vehicles.get(1)); // VF8, vf9_blue
 
             Promotion promo4 = new Promotion();
             promo4.setTitle("Toàn quốc - Mua xe BYD nhận quà");
