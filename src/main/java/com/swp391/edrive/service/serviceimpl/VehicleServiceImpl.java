@@ -176,8 +176,6 @@ public class VehicleServiceImpl implements VehicleService {
         v.setManufactureYear(r.getManufactureYear());
     }
 
-
-
     private VehicleResponse toResponse(Vehicle v) {
         return VehicleResponse.builder()
                 .vehicleId(v.getVehicleId())

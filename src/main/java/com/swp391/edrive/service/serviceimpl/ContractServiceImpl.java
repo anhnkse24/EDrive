@@ -5,16 +5,14 @@ import com.swp391.edrive.dto.response.ContractResponse;
 import com.swp391.edrive.entity.*;
 import com.swp391.edrive.enums.ContractStatus;
 import com.swp391.edrive.mapper.contract.IContractMapper;
-import com.swp391.edrive.repository.ContractRepository;
-import com.swp391.edrive.repository.DealerRepository;
-import com.swp391.edrive.repository.ManufacturerRepository;
-import com.swp391.edrive.repository.VehicleRepository;
+import com.swp391.edrive.repository.*;
 import com.swp391.edrive.service.ContractService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -27,32 +25,47 @@ public class ContractServiceImpl implements ContractService {
     private final ManufacturerRepository manufacturerRepo;
     private final IContractMapper mapper;
     private final VehicleRepository vehicleRepo;
+    private final OrderRepository orderRepo;
 
     @Override
     @Transactional
     public ContractResponse create(ContractRequest req) {
+        // Lấy thông tin Dealer từ dealerId trong request
         Dealer dealer = dealerRepo.findById(req.getDealerId())
                 .orElseThrow(() -> new EntityNotFoundException("Dealer not found"));
 
-        Vehicle vehicle = vehicleRepo.findById(req.getVehicleId())
-                .orElseThrow(() -> new EntityNotFoundException("Vehicle not found"));
+        // Lấy thông tin Order từ orderId trong request
+        Order order = orderRepo.findById(req.getOrderId())
+                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
 
-        Manufacturer manufacturer = vehicle.getManufacturer();
+        // Lấy thông tin vehicle và tổng giá trị từ OrderItem
+        Vehicle vehicle = order.getOrderItems().get(0).getVehicle();  // Giả sử mỗi hợp đồng chỉ có một loại xe
+        BigDecimal totalPrice = order.getTotalPrice();  // Tổng giá của đơn hàng
+        BigDecimal discountRate = order.getTotalDiscount();  // Chiết khấu từ đơn hàng
+        BigDecimal subtotal = order.getSubtotal();  // Giá chưa giảm (subtotal)
+        BigDecimal vatAmount = order.getVatAmount();  // Lấy VAT từ đơn hàng
 
+        Manufacturer manufacturer = vehicle.getManufacturer();  // Lấy thông tin nhà sản xuất từ xe
+
+        // Tạo hợp đồng sử dụng builder
         Contract c = Contract.builder()
                 .dealer(dealer)
                 .manufacturer(manufacturer)
                 .vehicleModel(vehicle.getModelName())
                 .vehicleVersion(vehicle.getVersion())
-                .totalPrice(req.getTotalPrice())
-                .discountRate(req.getDiscountRate())
+                .totalPrice(totalPrice)  // Sử dụng tổng giá từ đơn hàng
+                .discountRate(discountRate)  // Dùng chiết khấu từ đơn hàng
                 .terms(req.getTerms())
-                .status(ContractStatus.DRAFT)
+                .status(ContractStatus.DRAFT)  // Trạng thái hợp đồng là draft khi mới tạo
                 .build();
 
-        return mapper.toResponse(contractRepo.save(c));
-    }
+        // Trả về phản hồi hợp đồng với vatAmount (phí VAT)
+        ContractResponse response = mapper.toResponse(contractRepo.save(c));
+        response.setSubtotal(subtotal);  // Trả về giá chưa giảm (subtotal)
+        response.setVatAmount(vatAmount);  // Trả về phí VAT tính từ đơn hàng
 
+        return response;
+    }
 
     @Override
     @Transactional

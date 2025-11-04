@@ -2,12 +2,16 @@ package com.swp391.edrive.dto.response;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
 @Builder
+@Getter
+@Setter
 public class ContractResponse {
     private Long id;
     private String contractCode;
@@ -19,6 +23,8 @@ public class ContractResponse {
 
     private String vehicleModel;
     private String vehicleVersion;
+    private BigDecimal subtotal;
+    private BigDecimal vatAmount;
 
     private BigDecimal totalPrice;
     private BigDecimal discountRate;

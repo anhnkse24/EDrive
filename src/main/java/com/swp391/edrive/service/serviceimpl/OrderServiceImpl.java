@@ -93,7 +93,6 @@ public class OrderServiceImpl implements OrderService {
         res.setVatAmount(order.getVatAmount());
         res.setTotalPrice(order.getTotalPrice());
         res.setOrderStatus(order.getStatus());
-        res.setPaymentStatus(order.getPaymentStatus());
         res.setDeliveryAddress(order.getDeliveryAddress());
         res.setDeliveryNote(order.getDeliveryNote());
 
@@ -132,23 +131,24 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderSummaryResponse createOrder(OrderCreateRequest req, Long dealerId) {
-        validate(req);
+        validate(req);  // Kiểm tra tính hợp lệ của dữ liệu đầu vào
 
+        // Lấy thông tin Dealer từ dealerId
         Dealer dealer = dealerRepo.findById(dealerId)
                 .orElseThrow(() -> new IllegalArgumentException("Dealer not found"));
 
-        // Tạo order mới
+        // Tạo đơn hàng mới
         Order order = new Order();
-        order.setOrderId(UUID.randomUUID().toString());
-        order.setOrderDate(LocalDate.now());
-        order.setDealer(dealer);
-        order.setStatus(OrderStatus.PENDING);
-        order.setPaymentStatus(PaymentStatus.PENDING);
-        order.setDesiredDeliveryDate(req.getDesiredDeliveryDate());
-        order.setDeliveryAddress(req.getDeliveryAddress());
-        order.setDeliveryNote(req.getDeliveryNote());
+        order.setOrderId(UUID.randomUUID().toString()); // Tạo ID ngẫu nhiên
+        order.setOrderDate(LocalDate.now());  // Ngày đặt hàng
+        order.setDealer(dealer);  // Đặt dealer từ đối tượng đã tìm thấy
+        order.setStatus(OrderStatus.PENDING);  // Trạng thái đơn hàng
 
-        // Xử lý từng item trong order
+        order.setDesiredDeliveryDate(req.getDesiredDeliveryDate());  // Ngày giao hàng mong muốn
+        order.setDeliveryAddress(req.getDeliveryAddress());  // Địa chỉ giao hàng
+        order.setDeliveryNote(req.getDeliveryNote());  // Ghi chú giao hàng
+
+        // Xử lý các item trong đơn hàng
         List<OrderItem> orderItems = new ArrayList<>();
         BigDecimal totalSubtotal = BigDecimal.ZERO;
         BigDecimal totalDiscount = BigDecimal.ZERO;
@@ -157,23 +157,22 @@ public class OrderServiceImpl implements OrderService {
             Vehicle vehicle = vehicleRepo.findById(itemReq.getVehicleId())
                     .orElseThrow(() -> new IllegalArgumentException("Vehicle not found: " + itemReq.getVehicleId()));
 
-            // Validate số lượng trong kho hãng
+            // Kiểm tra tồn kho của nhà sản xuất
             validateManufacturerInventory(vehicle, itemReq.getQuantity());
 
             BigDecimal unitPrice = vehicle.getPriceRetail();
             BigDecimal quantity = BigDecimal.valueOf(itemReq.getQuantity());
             BigDecimal itemSubtotal = unitPrice.multiply(quantity);
 
-            // Tính chiết khấu theo số lượng
+            // Tính chiết khấu
             BigDecimal discountRate = calculateDiscountRate(itemReq.getQuantity());
             BigDecimal itemDiscount = itemSubtotal.multiply(discountRate);
-
             BigDecimal itemTotal = itemSubtotal.subtract(itemDiscount);
 
             totalSubtotal = totalSubtotal.add(itemSubtotal);
             totalDiscount = totalDiscount.add(itemDiscount);
 
-            // Tạo order item
+            // Tạo item cho đơn hàng
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(order);
             orderItem.setVehicle(vehicle);
@@ -197,13 +196,14 @@ public class OrderServiceImpl implements OrderService {
         order.setVatAmount(vatAmount);
         order.setTotalPrice(grandTotal);
 
-        // Lưu order và order items
+        // Lưu đơn hàng và các item
         Order savedOrder = orderRepo.save(order);
         orderItemRepo.saveAll(orderItems);
 
-        // Tạo response
+        // Trả về thông tin chi tiết đơn hàng
         return buildOrderSummaryResponse(savedOrder, orderItems);
     }
+
 
     private void validate(OrderCreateRequest req) {
         if (req.getOrderItems() == null || req.getOrderItems().isEmpty()) {
@@ -260,8 +260,6 @@ public class OrderServiceImpl implements OrderService {
         response.deliveryAddress = order.getDeliveryAddress();
         response.deliveryNote = order.getDeliveryNote();
         response.orderStatus = order.getStatus().name();
-        response.paymentStatus = order.getPaymentStatus().name();
-
         // Build item details
         List<OrderItemResponse> itemResponses = new ArrayList<>();
         for (OrderItem item : orderItems) {
