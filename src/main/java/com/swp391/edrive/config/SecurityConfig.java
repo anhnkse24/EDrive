@@ -66,7 +66,8 @@ public class SecurityConfig {
                                 "/api/auth/forgot-password",
                                 "/api/auth/verify",
                                 "/api/payments/vnpay-return",
-                                "/chat"
+                                "/chat",
+                                "/api/manufacturer-inventory/**"
                         ).permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/api/vehicles/**").permitAll()
