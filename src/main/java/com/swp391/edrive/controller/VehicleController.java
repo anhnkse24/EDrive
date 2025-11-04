@@ -160,15 +160,20 @@ public class VehicleController {
 
     @PostMapping
     @SecurityRequirement(name = "api")
-
     public ResponseEntity<ResponseObject> create(@Valid @RequestBody VehicleUpsertRequest req) {
         try {
-            VehicleResponse created = vehicleService.createVehicle(req);
+            // Gọi service để tạo xe, nhận danh sách các xe đã tạo
+            List<VehicleResponse> createdVehicles = vehicleService.createVehicle(req);
+
+            // Trả về danh sách các xe đã tạo với mã trạng thái CREATED (201)
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(new ResponseObject(201, "Vehicle created", created));
+                    .body(new ResponseObject(201, "Vehicles created", createdVehicles));
+
         } catch (IllegalArgumentException ex) {
+            // Trả về lỗi nếu có
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(new ResponseObject(409, ex.getMessage(), null));
         }
     }
+
 }

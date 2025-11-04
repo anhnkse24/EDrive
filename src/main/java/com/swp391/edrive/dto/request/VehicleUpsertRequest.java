@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Getter @Setter
 public class VehicleUpsertRequest {
@@ -18,8 +19,8 @@ public class VehicleUpsertRequest {
     @Size(max = 100, message = "Phiên bản tối đa 100 ký tự")
     private String version;
 
-    @NotNull(message = "Mã màu không được để trống")
-    private Long colorId;
+    private List<Long> colorIds;
+
 
     @NotNull(message = "Dung lượng pin bắt buộc")
     @Min(value = 5, message = "Dung lượng pin tối thiểu 5 kWh")

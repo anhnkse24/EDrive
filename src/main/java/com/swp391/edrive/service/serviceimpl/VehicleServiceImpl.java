@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -99,34 +100,39 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     @Transactional
-    public VehicleResponse createVehicle(VehicleUpsertRequest req) {
-        // Kiểm tra xem màu sắc đã tồn tại cho phiên bản này chưa
-        boolean exists = vehicleRepository
-                .existsByVersionIgnoreCaseAndColor_ColorId(
-                        req.getVersion().trim(),
-                        req.getColorId()
-                );
-        if (exists) {
-            throw new IllegalArgumentException("Xe đã tồn tại (trùng màu cho phiên bản này)");
+    public List<VehicleResponse> createVehicle(VehicleUpsertRequest req) {
+        List<VehicleResponse> responses = new ArrayList<>();
+
+        // Lặp qua danh sách màu sắc
+        for (Long colorId : req.getColorIds()) {
+            // Kiểm tra xem xe với phiên bản và màu này đã tồn tại chưa
+            boolean exists = vehicleRepository.existsByVersionIgnoreCaseAndColor_ColorId(req.getVersion().trim(), colorId);
+            if (exists) {
+                throw new IllegalArgumentException("Xe đã tồn tại (trùng màu cho phiên bản này)");
+            }
+
+            // Tìm màu theo colorId
+            Color color = colorRepository.findById(colorId)
+                    .orElseThrow(() -> new IllegalArgumentException("Mã màu không tồn tại"));
+
+            // Tạo xe mới và áp dụng các thuộc tính từ req vào xe
+            Vehicle v = new Vehicle();
+            apply(v, req);
+
+            // Thiết lập màu cho xe
+            v.setColor(color);
+
+            // Lưu xe vào cơ sở dữ liệu
+            v = vehicleRepository.save(v);
+
+            // Thêm phản hồi xe đã tạo vào danh sách
+            responses.add(toResponse(v));
         }
 
-        // Tìm màu theo colorId
-        Color color = colorRepository.findById(req.getColorId())
-                .orElseThrow(() -> new IllegalArgumentException("Mã màu không tồn tại"));
-
-        // Tạo xe mới và áp dụng các thuộc tính từ req vào xe
-        Vehicle v = new Vehicle();
-        apply(v, req); // Giả sử phương thức `apply` sẽ sao chép thông tin từ req vào v
-
-        // Thiết lập màu cho xe
-        v.setColor(color);
-
-        // Lưu xe vào cơ sở dữ liệu
-        v = vehicleRepository.save(v);
-
-        // Trả về response cho xe mới được tạo
-        return toResponse(v);
+        // Trả về danh sách các xe đã tạo
+        return responses;
     }
+
 
     // === UPDATE ===
     @Override
@@ -153,20 +159,6 @@ public class VehicleServiceImpl implements VehicleService {
         v.setModelName(r.getModelName());
         v.setVersion(r.getVersion());
 
-        // Kiểm tra colorId và tìm màu sắc theo colorId thay vì tên màu
-        if (r.getColorId() != null) {
-            Color color = colorRepository.findById(r.getColorId())
-                    .orElseGet(() -> {
-                        // Nếu không tìm thấy màu theo colorId, có thể tạo màu mới hoặc xử lý theo cách khác
-                        Color c = new Color();
-                        // Tạo màu mới nếu cần thiết
-                        return colorRepository.save(c);
-                    });
-            v.setColor(color);
-        } else {
-            v.setColor(null);
-        }
-
         // Cập nhật các thuộc tính khác
         v.setBatteryCapacityKwh(r.getBatteryCapacityKwh());
         v.setRangeKm(r.getRangeKm());
@@ -183,6 +175,7 @@ public class VehicleServiceImpl implements VehicleService {
         v.setImageUrl(r.getImageUrl());
         v.setManufactureYear(r.getManufactureYear());
     }
+
 
 
     private VehicleResponse toResponse(Vehicle v) {

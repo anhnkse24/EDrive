@@ -24,7 +24,7 @@ public interface VehicleService {
 
     List<VehicleResponse> findVehicleByPrice(BigDecimal minPrice, BigDecimal maxPrice, int page, int size);
 
-    VehicleResponse createVehicle(VehicleUpsertRequest req);
+    List<VehicleResponse> createVehicle(VehicleUpsertRequest req);
 
     VehicleResponse updateVehicle(Long id, VehicleUpsertRequest req);
 
