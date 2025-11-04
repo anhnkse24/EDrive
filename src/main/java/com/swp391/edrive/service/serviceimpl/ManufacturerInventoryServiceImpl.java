@@ -1,10 +1,12 @@
 package com.swp391.edrive.service.serviceimpl;
 
 import com.swp391.edrive.dto.request.ManufacturerInventoryRequest;
+import com.swp391.edrive.dto.response.DealerQuantityResponse;
 import com.swp391.edrive.dto.response.ManufacturerInventoryResponse;
 import com.swp391.edrive.dto.response.ManufacturerInventorySummaryResponse;
 import com.swp391.edrive.dto.response.VehicleInventoryResponse;
 import com.swp391.edrive.entity.*;
+import com.swp391.edrive.enums.OrderStatus;
 import com.swp391.edrive.repository.*;
 import com.swp391.edrive.service.ManufacturerInventoryService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
     private final ManufacturerInventoryRepository manufacturerInventoryRepository;
     private final ManufacturerRepository manufacturerRepository;
     private final VehicleRepository vehicleRepository;
+    private final OrderItemRepository orderItemRepository;
 
     @Override
     public List<ManufacturerInventoryResponse> getAll() {
@@ -92,37 +95,72 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
     }
     public List<ManufacturerInventorySummaryResponse> getGroupedByManufacturer() {
         List<ManufacturerInventory> inventories = manufacturerInventoryRepository.findAll();
+        List<OrderItem> orderItems = orderItemRepository.findAll();
 
-        // Group theo manufacturer
-        Map<String, List<ManufacturerInventory>> grouped = inventories.stream()
-                .collect(Collectors.groupingBy(inv -> inv.getManufacturer().getManufacturerName()));
+        // Nhóm theo manufacturer
+        Map<Manufacturer, List<ManufacturerInventory>> grouped = inventories.stream()
+                .collect(Collectors.groupingBy(ManufacturerInventory::getManufacturer));
 
-        // Chuyển sang DTO
-        return grouped.entrySet().stream()
-                .map(entry -> {
-                    String manufacturerName = entry.getKey();
-                    List<ManufacturerInventory> items = entry.getValue();
+        return grouped.entrySet().stream().map(entry -> {
+            Manufacturer manufacturer = entry.getKey();
+            List<ManufacturerInventory> items = entry.getValue();
 
-                    int totalQuantity = items.stream()
-                            .mapToInt(ManufacturerInventory::getQuantity)
-                            .sum();
+            int totalQuantity = items.stream()
+                    .mapToInt(ManufacturerInventory::getQuantity)
+                    .sum();
 
-                    List<VehicleInventoryResponse> vehicles = items.stream()
-                            .map(inv -> VehicleInventoryResponse.builder()
-                                    .manufacturerInventoryId(inv.getManufacturerInventoryId())
-                                    .vehicleId(inv.getVehicle().getVehicleId())
-                                    .vehicleName(inv.getVehicle().getModelName())
-                                    .quantity(inv.getQuantity())
-                                    .build())
-                            .toList();
+            // Tạo danh sách VehicleInventoryResponse
+            List<VehicleInventoryResponse> vehicles = items.stream().map(inv -> {
+                Long vehicleId = inv.getVehicle().getVehicleId();
 
-                    return ManufacturerInventorySummaryResponse.builder()
-                            .manufacturerName(manufacturerName)
-                            .totalQuantity(totalQuantity)
-                            .vehicles(vehicles)
-                            .build();
-                })
-                .toList();
+                // Lấy các OrderItem có liên quan đến xe này
+                List<OrderItem> relatedOrderItems = orderItems.stream()
+                        .filter(oi -> oi.getVehicle().getVehicleId().equals(vehicleId))
+                        .toList();
+
+                // Đếm số lượng đã giao
+                int exportedQuantity = relatedOrderItems.stream()
+                        .filter(oi -> oi.getOrder().getStatus() == OrderStatus.DELIVERED)
+                        .mapToInt(OrderItem::getQuantity)
+                        .sum();
+
+                // Đếm số lượng đang điều phối
+                int inDeliveryQuantity = relatedOrderItems.stream()
+                        .filter(oi -> oi.getOrder().getStatus() == OrderStatus.PROCESSING)
+                        .mapToInt(OrderItem::getQuantity)
+                        .sum();
+
+                // Gom nhóm theo đại lý
+                Map<String, Integer> dealerMap = relatedOrderItems.stream()
+                        .collect(Collectors.groupingBy(
+                                oi -> oi.getOrder().getDealer().getDealerName(),
+                                Collectors.summingInt(OrderItem::getQuantity)
+                        ));
+
+                List<DealerQuantityResponse> dealers = dealerMap.entrySet().stream()
+                        .map(e -> DealerQuantityResponse.builder()
+                                .dealerName(e.getKey())
+                                .quantity(e.getValue())
+                                .build())
+                        .toList();
+
+                return VehicleInventoryResponse.builder()
+                        .manufacturerInventoryId(inv.getManufacturerInventoryId())
+                        .vehicleId(vehicleId)
+                        .vehicleName(inv.getVehicle().getModelName())
+                        .quantity(inv.getQuantity())
+                        .exportedQuantity(exportedQuantity)
+                        .inDeliveryQuantity(inDeliveryQuantity)
+                        .dealers(dealers)
+                        .build();
+            }).toList();
+
+            return ManufacturerInventorySummaryResponse.builder()
+                    .manufacturerName(manufacturer.getManufacturerName())
+                    .totalQuantity(totalQuantity)
+                    .vehicles(vehicles)
+                    .build();
+        }).toList();
     }
 
 
