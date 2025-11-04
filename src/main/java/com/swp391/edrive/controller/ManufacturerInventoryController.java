@@ -5,6 +5,7 @@ import com.swp391.edrive.dto.response.ManufacturerInventoryResponse;
 import com.swp391.edrive.dto.response.ManufacturerInventorySummaryResponse;
 import com.swp391.edrive.service.ManufacturerInventoryService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/manufacturer-inventory")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "api")
 @Tag(
         name = "Manufacturer Inventory",
         description = "Quản lý tồn kho của các hãng xe (Manufacturer Inventory CRUD + Summary)"
