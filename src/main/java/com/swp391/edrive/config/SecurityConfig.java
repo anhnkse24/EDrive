@@ -79,7 +79,8 @@ public class SecurityConfig {
                                 "/api/manufacturer-inventory/**",
                                 "/api/feedbacks/**",
                                 "/api/customer-orders/**",
-                                "/api/manufacturer-inventory/**"
+                                "/api/manufacturer-inventory/**",
+                                "/api/colors/**"
                         )
                         .permitAll() // Các endpoint không cần xác thực
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**")
