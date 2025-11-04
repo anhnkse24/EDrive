@@ -10,5 +10,6 @@ import java.util.Optional;
 public interface ColorRepository extends JpaRepository<Color, Long> {
     Optional<Color> findByColorNameIgnoreCase(String colorName);
     Optional<Color> findByHexCodeIgnoreCase(String hexCode);
-    List<Color> findByColorNameIgnoreCaseContaining(String keyword);
+    Optional<Color> findById(Long colorId);
+
 }

@@ -18,10 +18,8 @@ public class VehicleUpsertRequest {
     @Size(max = 100, message = "Phiên bản tối đa 100 ký tự")
     private String version;
 
-    @NotBlank(message = "Màu không được để trống")
-    @Size(max = 50, message = "Màu tối đa 50 ký tự")
-    @Pattern(regexp = "^[A-Za-zÀ-ỹ\\s]+$", message = "Màu chỉ được chứa chữ và khoảng trắng")
-    private String color;
+    @NotNull(message = "Mã màu không được để trống")
+    private Long colorId;
 
     @NotNull(message = "Dung lượng pin bắt buộc")
     @Min(value = 5, message = "Dung lượng pin tối thiểu 5 kWh")

@@ -100,22 +100,33 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     @Transactional
     public VehicleResponse createVehicle(VehicleUpsertRequest req) {
+        // Kiểm tra xem màu sắc đã tồn tại cho phiên bản này chưa
         boolean exists = vehicleRepository
-                .existsByModelNameIgnoreCaseAndVersionIgnoreCaseAndColor_ColorNameIgnoreCaseAndManufactureYear(
-                        req.getModelName().trim(),
+                .existsByVersionIgnoreCaseAndColor_ColorId(
                         req.getVersion().trim(),
-                        req.getColor().trim(),
-                        req.getManufactureYear()
+                        req.getColorId()
                 );
         if (exists) {
-            throw new IllegalArgumentException("Xe đã tồn tại (trùng model, phiên bản, màu, năm SX)");
+            throw new IllegalArgumentException("Xe đã tồn tại (trùng màu cho phiên bản này)");
         }
+
+        // Tìm màu theo colorId
+        Color color = colorRepository.findById(req.getColorId())
+                .orElseThrow(() -> new IllegalArgumentException("Mã màu không tồn tại"));
+
+        // Tạo xe mới và áp dụng các thuộc tính từ req vào xe
         Vehicle v = new Vehicle();
-        apply(v, req);
+        apply(v, req); // Giả sử phương thức `apply` sẽ sao chép thông tin từ req vào v
+
+        // Thiết lập màu cho xe
+        v.setColor(color);
+
+        // Lưu xe vào cơ sở dữ liệu
         v = vehicleRepository.save(v);
+
+        // Trả về response cho xe mới được tạo
         return toResponse(v);
     }
-
 
     // === UPDATE ===
     @Override
@@ -142,13 +153,13 @@ public class VehicleServiceImpl implements VehicleService {
         v.setModelName(r.getModelName());
         v.setVersion(r.getVersion());
 
-        if (r.getColor() != null && !r.getColor().trim().isEmpty()) {
-            String colorName = r.getColor().trim();
-            Color color = colorRepository.findByColorNameIgnoreCase(colorName)
+        // Kiểm tra colorId và tìm màu sắc theo colorId thay vì tên màu
+        if (r.getColorId() != null) {
+            Color color = colorRepository.findById(r.getColorId())
                     .orElseGet(() -> {
+                        // Nếu không tìm thấy màu theo colorId, có thể tạo màu mới hoặc xử lý theo cách khác
                         Color c = new Color();
-                        c.setColorName(colorName);
-                        // có thể set hexCode nếu request có (r.getColorHex()), tạm bỏ qua
+                        // Tạo màu mới nếu cần thiết
                         return colorRepository.save(c);
                     });
             v.setColor(color);
@@ -156,6 +167,7 @@ public class VehicleServiceImpl implements VehicleService {
             v.setColor(null);
         }
 
+        // Cập nhật các thuộc tính khác
         v.setBatteryCapacityKwh(r.getBatteryCapacityKwh());
         v.setRangeKm(r.getRangeKm());
         v.setMaxSpeedKmh(r.getMaxSpeedKmh());
@@ -171,6 +183,7 @@ public class VehicleServiceImpl implements VehicleService {
         v.setImageUrl(r.getImageUrl());
         v.setManufactureYear(r.getManufactureYear());
     }
+
 
     private VehicleResponse toResponse(Vehicle v) {
         return VehicleResponse.builder()
