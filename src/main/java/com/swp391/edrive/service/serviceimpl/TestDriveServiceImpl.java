@@ -22,68 +22,7 @@ public class TestDriveServiceImpl implements TestDriveService {
     private final CustomerRepository customerRepository;
     private final DealerRepository dealerRepository;
     private final VehicleRepository vehicleRepository;
-
-    // =====================================
-    // 🔹 CRUD CHUNG
-    // =====================================
-
-    @Override
-    public TestDriveResponse createTestDrive(TestDriveRequest request) {
-        Customer customer = customerRepository.findById(request.getCustomerId())
-                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy khách hàng"));
-        Dealer dealer = dealerRepository.findById(request.getDealerId())
-                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy đại lý"));
-        Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
-                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy xe"));
-
-        TestDrive testDrive = new TestDrive(
-                customer,
-                dealer,
-                vehicle,
-                request.getScheduleDatetime(),
-                request.getStatus() != null ? request.getStatus() : TestDriveStatus.PENDING
-        );
-
-        testDrive.setCancelReason(request.getCancelReason());
-        testDrive.setCompletedAt(null);
-
-        testDriveRepository.save(testDrive);
-        return mapToResponse(testDrive);
-    }
-
-    @Override
-    public TestDriveResponse updateTestDrive(Long id, TestDriveRequest request) {
-        TestDrive testDrive = testDriveRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy lịch lái thử"));
-
-        if (request.getScheduleDatetime() != null)
-            testDrive.setScheduleDatetime(request.getScheduleDatetime());
-        if (request.getStatus() != null)
-            testDrive.setStatus(request.getStatus());
-        if (request.getCancelReason() != null)
-            testDrive.setCancelReason(request.getCancelReason());
-
-        // Nếu đổi trạng thái sang COMPLETED => set thời gian hoàn tất
-        if (request.getStatus() == TestDriveStatus.COMPLETED)
-            testDrive.setCompletedAt(LocalDateTime.now());
-
-        testDriveRepository.save(testDrive);
-        return mapToResponse(testDrive);
-    }
-
-    @Override
-    public void deleteTestDrive(Long id) {
-        if (!testDriveRepository.existsById(id))
-            throw new EntityNotFoundException("Không tìm thấy lịch lái thử để xóa");
-        testDriveRepository.deleteById(id);
-    }
-
-    @Override
-    public TestDriveResponse getTestDriveById(Long id) {
-        TestDrive testDrive = testDriveRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy lịch lái thử"));
-        return mapToResponse(testDrive);
-    }
+    private final NotificationRepository notificationRepository;
 
     @Override
     public List<TestDriveResponse> getAllTestDrives() {
@@ -92,10 +31,6 @@ public class TestDriveServiceImpl implements TestDriveService {
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
-
-    // =====================================
-    // 🔹 CRUD THEO DEALER ID
-    // =====================================
 
     @Override
     public List<TestDriveResponse> getTestDrivesByDealerId(Long dealerId) {
@@ -128,6 +63,24 @@ public class TestDriveServiceImpl implements TestDriveService {
 
         testDrive.setCancelReason(request.getCancelReason());
         testDriveRepository.save(testDrive);
+        // ✅ Gửi notification cho dealer
+        String message = String.format(
+                "Khách hàng %s vừa đặt lịch lái thử xe %s vào lúc %s",
+                customer.getFullName(),
+                vehicle.getModelName(),
+                request.getScheduleDatetime()
+        );
+
+        Notification notification = Notification.builder()
+                .dealer(dealer)
+                .title("Lịch lái thử mới")
+                .message(message)
+                .isRead(false)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        notificationRepository.save(notification); // ✅ lưu thông báo vào DB
+
 
         return mapToResponse(testDrive);
     }
@@ -161,10 +114,6 @@ public class TestDriveServiceImpl implements TestDriveService {
 
         testDriveRepository.delete(testDrive);
     }
-
-    // =====================================
-    // 🔹 MAPPING ENTITY -> RESPONSE
-    // =====================================
 
     private TestDriveResponse mapToResponse(TestDrive testDrive) {
         return TestDriveResponse.builder()

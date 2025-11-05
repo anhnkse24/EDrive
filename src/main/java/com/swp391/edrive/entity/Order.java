@@ -30,7 +30,7 @@ public class Order {
     private BigDecimal subtotal;
     private BigDecimal totalDiscount;
     private BigDecimal vatAmount;
-    private BigDecimal totalPrice; // Giữ nguyên để tương thích
+    private BigDecimal totalPrice;
 
     @Enumerated(EnumType.STRING)
     private OrderStatus status;

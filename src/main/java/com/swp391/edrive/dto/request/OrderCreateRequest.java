@@ -9,7 +9,7 @@ import java.util.List;
 @Getter
 @Setter
 public class OrderCreateRequest {
-    public List<OrderItemRequest> orderItems;    // Danh sách các loại xe
+    public List<OrderItemRequest> orderItems;
     public LocalDate desiredDeliveryDate;
     public String deliveryNote;
     public String deliveryAddress;

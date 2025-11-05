@@ -5,6 +5,7 @@ import com.swp391.edrive.dto.response.DealerResponse;
 import com.swp391.edrive.entity.Dealer;
 import com.swp391.edrive.repository.DealerRepository;
 import com.swp391.edrive.service.DealerService;
+import com.swp391.edrive.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ import java.util.List;
 public class DealerServiceImpl implements DealerService {
 
     private final DealerRepository dealerRepository;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional
@@ -29,6 +31,8 @@ public class DealerServiceImpl implements DealerService {
         dealer.setContactPerson(req.getContactPerson());
 
         Dealer saved = dealerRepository.save(dealer);
+        notificationService.createAdminNotificationForDealerRequest(dealer.getDealerId());
+
         return toResponse(saved);
     }
 

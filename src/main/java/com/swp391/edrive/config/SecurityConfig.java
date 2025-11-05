@@ -80,7 +80,9 @@ public class SecurityConfig {
                                 "/api/feedbacks/**",
                                 "/api/customer-orders/**",
                                 "/api/manufacturer-inventory/**",
-                                "/api/colors/**"
+                                "/api/colors/**",
+                                "/api/notifications/**",
+                                "/api/testdrives/**"
                         )
                         .permitAll() // Các endpoint không cần xác thực
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**")
