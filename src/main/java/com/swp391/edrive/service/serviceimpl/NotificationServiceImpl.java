@@ -1,13 +1,19 @@
 package com.swp391.edrive.service.serviceimpl;
 
 import com.swp391.edrive.dto.response.NotificationResponse;
+import com.swp391.edrive.entity.Dealer;
 import com.swp391.edrive.entity.Notification;
+import com.swp391.edrive.entity.Order;
+import com.swp391.edrive.entity.OrderItem;
+import com.swp391.edrive.repository.DealerRepository;
 import com.swp391.edrive.repository.NotificationRepository;
+import com.swp391.edrive.repository.OrderRepository;
 import com.swp391.edrive.service.NotificationService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,6 +22,9 @@ import java.util.stream.Collectors;
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final DealerRepository dealerRepository;
+    private final OrderRepository orderRepository;
+
 
     @Override
     public List<NotificationResponse> getNotificationsByDealer(Long dealerId) {
@@ -36,6 +45,55 @@ public class NotificationServiceImpl implements NotificationService {
         notificationRepository.save(notification);
         return mapToResponse(notification);
     }
+
+    @Override
+    public List<NotificationResponse> getAllNotifications() {
+        return notificationRepository.findAll().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+    @Override
+    public void createAdminNotificationForDealerRequest(Long dealerId) {
+        Dealer dealer = dealerRepository.findById(dealerId)
+                .orElseThrow(() -> new RuntimeException("Dealer not found"));
+
+        Notification notification = Notification.builder()
+                .dealer(dealer)
+                .title("Yêu cầu đăng ký làm đại lý mới")
+                .message("Dealer " + dealer.getDealerName() + " vừa gửi yêu cầu đăng ký làm đại lý.")
+                .isRead(false)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        notificationRepository.save(notification);
+    }
+    @Override
+    public void createAdminNotificationForDealerOrder(String orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        Dealer dealer = order.getDealer();
+
+        // ✅ Kiểm tra null tránh lỗi NullPointerException
+        int totalQuantity = 0;
+        if (order.getOrderItems() != null && !order.getOrderItems().isEmpty()) {
+            totalQuantity = order.getOrderItems().stream()
+                    .mapToInt(OrderItem::getQuantity)
+                    .sum();
+        }
+
+        Notification notification = Notification.builder()
+                .dealer(dealer)
+                .title("Đơn hàng mới từ đại lý")
+                .message("Đại lý " + dealer.getDealerName() +
+                        " vừa đặt " + totalQuantity + " xe trong đơn " + order.getOrderId())
+                .isRead(false)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        notificationRepository.save(notification);
+    }
+
 
     private NotificationResponse mapToResponse(Notification notification) {
         return NotificationResponse.builder()

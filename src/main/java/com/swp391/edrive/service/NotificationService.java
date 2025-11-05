@@ -6,4 +6,8 @@ import java.util.List;
 public interface NotificationService {
     List<NotificationResponse> getNotificationsByDealer(Long dealerId);
     NotificationResponse markAsRead(Long notificationId);
+    List<NotificationResponse> getAllNotifications();
+    void createAdminNotificationForDealerRequest(Long dealerId);
+    void createAdminNotificationForDealerOrder(String orderId);
+
 }

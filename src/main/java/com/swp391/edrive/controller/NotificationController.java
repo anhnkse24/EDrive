@@ -28,4 +28,11 @@ public class NotificationController {
     public NotificationResponse markAsRead(@PathVariable Long notificationId) {
         return notificationService.markAsRead(notificationId);
     }
+
+    @Operation(summary = "Lấy tất cả thông báo cho Admin")
+    @GetMapping("/admin")
+    public List<NotificationResponse> getAdminNotifications() {
+        return notificationService.getAllNotifications();
+    }
+
 }

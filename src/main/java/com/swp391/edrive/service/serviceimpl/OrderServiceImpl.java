@@ -9,6 +9,7 @@ import com.swp391.edrive.entity.*;
 import com.swp391.edrive.enums.OrderStatus;
 import com.swp391.edrive.enums.PaymentStatus;
 import com.swp391.edrive.repository.*;
+import com.swp391.edrive.service.NotificationService;
 import com.swp391.edrive.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +32,7 @@ public class OrderServiceImpl implements OrderService {
     private final VehicleRepository vehicleRepo;
     private final OrderItemRepository orderItemRepo;
     private final ManufacturerInventoryRepository manufacturerInventoryRepo;
+    private final NotificationService notificationService;
 
     @Value("${edrive.vat-rate:0.1}")
     private BigDecimal vatRate;
@@ -199,6 +201,8 @@ public class OrderServiceImpl implements OrderService {
         // Lưu đơn hàng và các item
         Order savedOrder = orderRepo.save(order);
         orderItemRepo.saveAll(orderItems);
+
+        notificationService.createAdminNotificationForDealerOrder(order.getOrderId());
 
         // Trả về thông tin chi tiết đơn hàng
         return buildOrderSummaryResponse(savedOrder, orderItems);
