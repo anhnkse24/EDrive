@@ -53,14 +53,17 @@ public class ContractServiceImpl implements ContractService {
                 .manufacturer(manufacturer)
                 .vehicleModel(vehicle.getModelName())
                 .vehicleVersion(vehicle.getVersion())
-                .totalPrice(totalPrice)  // Sử dụng tổng giá từ đơn hàng
-                .discountRate(discountRate)  // Dùng chiết khấu từ đơn hàng
+                .totalPrice(totalPrice)
+                .discountRate(discountRate)
                 .terms(req.getTerms())
                 .status(ContractStatus.DRAFT)  // Trạng thái hợp đồng là draft khi mới tạo
                 .build();
 
-        // Trả về phản hồi hợp đồng với vatAmount (phí VAT)
-        ContractResponse response = mapper.toResponse(contractRepo.save(c));
+// Lưu hợp đồng vào cơ sở dữ liệu
+        Contract savedContract = contractRepo.save(c);
+
+// Trả về phản hồi hợp đồng
+        ContractResponse response = mapper.toResponse(savedContract);
         response.setSubtotal(subtotal);  // Trả về giá chưa giảm (subtotal)
         response.setVatAmount(vatAmount);  // Trả về phí VAT tính từ đơn hàng
 

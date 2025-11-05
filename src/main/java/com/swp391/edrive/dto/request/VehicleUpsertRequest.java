@@ -19,7 +19,9 @@ public class VehicleUpsertRequest {
     @Size(max = 100, message = "Phiên bản tối đa 100 ký tự")
     private String version;
 
-    private List<Long> colorIds;
+    @NotNull(message = "Danh sách màu và hình ảnh không được để trống")
+    @Size(min = 1, message = "Phải có ít nhất 1 màu")
+    private List<VehicleColorImageRequest> colors;
 
 
     @NotNull(message = "Dung lượng pin bắt buộc")
@@ -79,8 +81,6 @@ public class VehicleUpsertRequest {
 
     @NotNull(message = "Trạng thái bắt buộc")
     private VehicleStatus status;
-
-    private String imageUrl;
 
 
     @NotNull(message = "Năm sản xuất bắt buộc")

@@ -103,24 +103,32 @@ public class VehicleServiceImpl implements VehicleService {
     public List<VehicleResponse> createVehicle(VehicleUpsertRequest req) {
         List<VehicleResponse> responses = new ArrayList<>();
 
-        // Lặp qua danh sách màu sắc
-        for (Long colorId : req.getColorIds()) {
+        // Lặp qua danh sách màu sắc và hình ảnh
+        for (var colorImage : req.getColors()) {
             // Kiểm tra xem xe với phiên bản và màu này đã tồn tại chưa
-            boolean exists = vehicleRepository.existsByVersionIgnoreCaseAndColor_ColorId(req.getVersion().trim(), colorId);
+            boolean exists = vehicleRepository.existsByVersionIgnoreCaseAndColor_ColorId(
+                    req.getVersion().trim(),
+                    colorImage.getColorId()
+            );
             if (exists) {
-                throw new IllegalArgumentException("Xe đã tồn tại (trùng màu cho phiên bản này)");
+                throw new IllegalArgumentException(
+                    "Xe đã tồn tại với phiên bản '" + req.getVersion() + "' và màu ID " + colorImage.getColorId()
+                );
             }
 
             // Tìm màu theo colorId
-            Color color = colorRepository.findById(colorId)
-                    .orElseThrow(() -> new IllegalArgumentException("Mã màu không tồn tại"));
+            Color color = colorRepository.findById(colorImage.getColorId())
+                    .orElseThrow(() -> new IllegalArgumentException(
+                        "Mã màu không tồn tại: " + colorImage.getColorId()
+                    ));
 
             // Tạo xe mới và áp dụng các thuộc tính từ req vào xe
             Vehicle v = new Vehicle();
             apply(v, req);
 
-            // Thiết lập màu cho xe
+            // Thiết lập màu và hình ảnh cho xe
             v.setColor(color);
+            v.setImageUrl(colorImage.getImageUrl());
 
             // Lưu xe vào cơ sở dữ liệu
             v = vehicleRepository.save(v);
@@ -172,7 +180,6 @@ public class VehicleServiceImpl implements VehicleService {
         v.setHeightMm(r.getHeightMm());
         v.setPriceRetail(r.getPriceRetail());
         v.setStatus(r.getStatus());
-        v.setImageUrl(r.getImageUrl());
         v.setManufactureYear(r.getManufactureYear());
     }
 
