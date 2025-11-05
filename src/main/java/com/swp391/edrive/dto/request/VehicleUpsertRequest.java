@@ -44,7 +44,7 @@ public class VehicleUpsertRequest {
     private Float chargingTimeHours;
 
     @NotBlank(message = "Số chỗ ngồi bắt buộc")
-    @Pattern(regexp = "5|7", message = "Chỉ chấp nhận xe 5 chỗ hoặc 7 chỗ")
+    @Pattern(regexp = "^(?:[1-9]|1[0-2])$", message = "Chỉ chấp nhận xe dưới 12 chỗ")
     private String seatingCapacity;
 
     @NotNull(message = "Công suất mô tơ bắt buộc")
