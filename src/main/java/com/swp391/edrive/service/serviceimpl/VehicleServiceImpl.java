@@ -149,6 +149,15 @@ public class VehicleServiceImpl implements VehicleService {
         Vehicle v = vehicleRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Vehicle not found with id=" + id));
         apply(v, req);
+
+        if (req.getColors() != null && !req.getColors().isEmpty()) {
+            var colorImage = req.getColors().get(0); // lấy phần tử đầu tiên
+            Color color = colorRepository.findById(colorImage.getColorId())
+                    .orElseThrow(() -> new IllegalArgumentException("Mã màu không tồn tại: " + colorImage.getColorId()));
+            v.setColor(color);
+            v.setImageUrl(colorImage.getImageUrl());
+        }
+
         v = vehicleRepository.save(v);
         return toResponse(v);
     }
