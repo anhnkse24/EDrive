@@ -15,9 +15,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.file.Files;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +40,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Value("${edrive.vat-rate:0.1}")
     private BigDecimal vatRate;
+
+    @Value("${file.upload-dir:uploads}")
+    private String uploadDir;
 
     @Override
     public List<OrderResponse> getAllOrders() {
@@ -280,5 +287,113 @@ public class OrderServiceImpl implements OrderService {
 
         response.orderItems = itemResponses;
         return response;
+    }
+
+    @Override
+    @Transactional
+    public String uploadPaymentImage(String orderId, MultipartFile bill) {
+        Order order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found with ID: " + orderId));
+
+        if (bill.isEmpty()) {
+            throw new IllegalArgumentException("Bill file cannot be empty");
+        }
+
+        String originalFileName = bill.getOriginalFilename();
+        if (originalFileName == null || (!originalFileName.toLowerCase().endsWith(".jpg")
+                && !originalFileName.toLowerCase().endsWith(".jpeg")
+                && !originalFileName.toLowerCase().endsWith(".png")
+                && !originalFileName.toLowerCase().endsWith(".pdf"))) {
+            throw new IllegalArgumentException("Invalid bill file format. Only JPG, JPEG, PNG, or PDF allowed");
+        }
+
+        if (bill.getSize() > 10 * 1024 * 1024) {
+            throw new IllegalArgumentException("Bill file size exceeds maximum limit of 10MB");
+        }
+
+        try {
+            String fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
+            String uniqueFileName = "bill_" + orderId + "_" + UUID.randomUUID() + fileExtension;
+
+            String uploadDirPath;
+            if (uploadDir != null && !uploadDir.isEmpty() && !uploadDir.equals("uploads")) {
+                uploadDirPath = uploadDir;
+            } else {
+                String userHome = System.getProperty("user.home");
+                uploadDirPath = userHome + File.separator + "edrive_uploads" + File.separator + "bills";
+            }
+
+            File uploadDirFile = new File(uploadDirPath);
+
+            if (!uploadDirFile.exists()) {
+                boolean created = uploadDirFile.mkdirs();
+                if (!created) {
+                    throw new RuntimeException("Failed to create upload directory: " + uploadDirPath);
+                }
+            }
+
+            File uploadFile = new File(uploadDirFile, uniqueFileName);
+            bill.transferTo(uploadFile);
+
+            order.setPaymentImage(uploadFile.getAbsolutePath());
+            orderRepo.save(order);
+
+            return "Bill uploaded successfully. File: " + uploadFile.getAbsolutePath();
+        } catch (IOException e) {
+            throw new RuntimeException("Error while uploading bill file: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public byte[] getPaymentBillContent(String orderId) throws IOException {
+        Order order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
+
+        String paymentImagePath = order.getPaymentImage();
+        if (paymentImagePath == null || paymentImagePath.isEmpty()) {
+            throw new RuntimeException("No bill uploaded for this order");
+        }
+
+        File file = new File(paymentImagePath);
+        if (!file.exists()) {
+            throw new RuntimeException("Bill file not found at: " + paymentImagePath);
+        }
+
+        return Files.readAllBytes(file.toPath());
+    }
+
+    @Override
+    public String getPaymentBillContentType(String orderId) {
+        Order order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
+
+        String paymentImagePath = order.getPaymentImage();
+        if (paymentImagePath == null || paymentImagePath.isEmpty()) {
+            throw new RuntimeException("No bill uploaded for this order");
+        }
+
+        String lowerPath = paymentImagePath.toLowerCase();
+        if (lowerPath.endsWith(".pdf")) {
+            return "application/pdf";
+        } else if (lowerPath.endsWith(".jpg") || lowerPath.endsWith(".jpeg")) {
+            return "image/jpeg";
+        } else if (lowerPath.endsWith(".png")) {
+            return "image/png";
+        }
+        return "application/octet-stream";
+    }
+
+    @Override
+    public String getPaymentBillFileName(String orderId) {
+        Order order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
+
+        String paymentImagePath = order.getPaymentImage();
+        if (paymentImagePath == null || paymentImagePath.isEmpty()) {
+            throw new RuntimeException("No bill uploaded for this order");
+        }
+
+        File file = new File(paymentImagePath);
+        return file.getName();
     }
 }

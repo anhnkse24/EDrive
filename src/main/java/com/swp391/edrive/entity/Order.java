@@ -41,6 +41,9 @@ public class Order {
     private String deliveryAddress;
     private String deliveryNote;
 
+    @Column
+    private String paymentImage;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<OrderItem> orderItems;
 

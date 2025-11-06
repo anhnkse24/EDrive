@@ -7,12 +7,17 @@ import com.swp391.edrive.dto.response.ResponseObject;
 import com.swp391.edrive.entity.User;
 import com.swp391.edrive.enums.OrderStatus;
 import com.swp391.edrive.service.OrderService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -78,5 +83,50 @@ public class OrderController {
                 .statusCode(HttpStatus.OK.value())
                 .message("Order cancelled successfully")
                 .data(result).build();
+    }
+
+    @Operation(summary = "Upload payment bill after order payment", description = "Dealer uploads payment bill (invoice) after completing payment for the order")
+    @PostMapping(value = "/{orderId}/upload-bill", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseObject<String> uploadPaymentBill(@PathVariable String orderId,
+                                                    @RequestParam("bill") MultipartFile bill) {
+        String result = orderService.uploadPaymentImage(orderId, bill);
+        return ResponseObject.<String>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Payment bill uploaded successfully")
+                .data(result)
+                .build();
+    }
+
+    @Operation(summary = "View payment bill image", description = "View the payment bill as image/PDF in browser")
+    @GetMapping("/{orderId}/bill-preview")
+    public ResponseEntity<?> viewBill(@PathVariable String orderId) {
+        try {
+            byte[] fileContent = orderService.getPaymentBillContent(orderId);
+            String contentType = orderService.getPaymentBillContentType(orderId);
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .body(fileContent);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseObject<>(HttpStatus.NOT_FOUND.value(), "Bill not found: " + e.getMessage(), null));
+        }
+    }
+
+    @Operation(summary = "Download payment bill", description = "Download the payment bill file to local machine")
+    @GetMapping("/{orderId}/download-bill")
+    public ResponseEntity<?> downloadBill(@PathVariable String orderId) {
+        try {
+            byte[] fileContent = orderService.getPaymentBillContent(orderId);
+            String fileName = orderService.getPaymentBillFileName(orderId);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(fileContent);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseObject<>(HttpStatus.NOT_FOUND.value(), "Bill not found: " + e.getMessage(), null));
+        }
     }
 }
