@@ -27,15 +27,6 @@ public class ManufacturerInventoryController {
     private final ManufacturerInventoryService manufacturerInventoryService;
 
     @Operation(
-            summary = "Lấy danh sách toàn bộ tồn kho",
-            description = "Trả về tất cả các bản ghi tồn kho của các hãng xe trong hệ thống"
-    )
-    @GetMapping
-    public ResponseEntity<List<ManufacturerInventoryResponse>> getAll() {
-        return ResponseEntity.ok(manufacturerInventoryService.getAll());
-    }
-
-    @Operation(
             summary = "Lấy tồn kho theo ID",
             description = "Tìm và trả về thông tin tồn kho của một hãng theo ID cụ thể"
     )

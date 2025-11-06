@@ -29,13 +29,6 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
     private final VehicleRepository vehicleRepository;
     private final OrderItemRepository orderItemRepository;
 
-    @Override
-    public List<ManufacturerInventoryResponse> getAll() {
-        return manufacturerInventoryRepository.findAll()
-                .stream()
-                .map(this::toResponse)
-                .toList();
-    }
 
     @Override
     public ManufacturerInventoryResponse getById(Long id) {
@@ -52,11 +45,6 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
         Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
                 .orElseThrow(() -> new RuntimeException("Vehicle not found"));
 
-        boolean exists = manufacturerInventoryRepository.existsByVehicle_VehicleId(request.getVehicleId());
-        if (exists) {
-            throw new RuntimeException("Xe này đã tồn tại trong kho tổng, không thể thêm trùng!");
-        }
-
         ManufacturerInventory inv = ManufacturerInventory.builder()
                 .manufacturer(manufacturer)
                 .vehicle(vehicle)
@@ -67,7 +55,6 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
         manufacturerInventoryRepository.save(inv);
         return toResponse(inv);
     }
-
 
 
     @Override
@@ -116,12 +103,10 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
                         String vehicleName = modelEntry.getKey();
                         List<ManufacturerInventory> sameVehicles = modelEntry.getValue();
 
-                        // 🔹 Lấy OrderItem liên quan đến các vehicle cùng modelName
                         List<OrderItem> relatedOrderItems = orderItems.stream()
                                 .filter(oi -> oi.getVehicle().getModelName().equals(vehicleName))
                                 .toList();
 
-                        // Tính toán tổng xuất kho và đang giao
                         Map<Long, Integer> exportedMap = relatedOrderItems.stream()
                                 .filter(oi -> oi.getOrder().getStatus() == OrderStatus.DELIVERED)
                                 .collect(Collectors.groupingBy(
@@ -145,7 +130,6 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
                                     int exportedQuantity = exportedMap.getOrDefault(vehicleId, 0);
                                     int inDeliveryQuantity = inDeliveryMap.getOrDefault(vehicleId, 0);
 
-                                    // Gom nhóm theo đại lý
                                     Map<String, Integer> dealerMap = relatedOrderItems.stream()
                                             .filter(oi -> oi.getVehicle().getVehicleId().equals(vehicleId))
                                             .collect(Collectors.groupingBy(
