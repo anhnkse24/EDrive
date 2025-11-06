@@ -77,7 +77,6 @@ public class TokenServiceImpl implements TokenService {
                 .findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Account not found with username: " + username));
 
-        // Kiểm tra token version
         int tokenVersion = (int) claims.get("tokenVersion");
         if (tokenVersion != user.getTokenVersion()) {
             throw new ExpiredJwtException(null, claims, "Token has been invalidated");
