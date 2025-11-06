@@ -10,4 +10,5 @@ import java.util.Optional;
 @Repository
 public interface ManufacturerInventoryRepository extends JpaRepository<ManufacturerInventory, Long> {
     Optional<ManufacturerInventory> findByVehicle_VehicleId(Long vehicleId);
+    boolean existsByVehicle_VehicleId(Long vehicleId);
 }

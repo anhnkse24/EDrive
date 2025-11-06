@@ -52,7 +52,13 @@ public class Contract {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    private String manufacturerNote; // ghi chú của hãng khi duyệt
+    @Column(name = "pdf_url")
+    private String pdfUrl;
+
+    @Column(name = "pdf_uploaded_at")
+    private LocalDateTime pdfUploadedAt;
+
+    private String manufacturerNote;
 
     @PrePersist
     void onCreate() {

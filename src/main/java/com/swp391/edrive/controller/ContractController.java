@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -63,5 +64,13 @@ public class ContractController {
                 .build();
     }
 
+    @PostMapping("/{contractId}/upload-pdf")
+    public ResponseEntity<ContractResponse> uploadContractPdf(
+            @PathVariable Long contractId,
+            @RequestParam("file") MultipartFile file) {
+
+        ContractResponse response = service.uploadPdf(contractId, file);
+        return ResponseEntity.ok(response);
+    }
 
 }

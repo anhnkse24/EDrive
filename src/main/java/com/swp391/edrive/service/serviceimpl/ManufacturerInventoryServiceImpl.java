@@ -46,12 +46,16 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
 
     @Override
     public ManufacturerInventoryResponse create(ManufacturerInventoryRequest request) {
-        // 🟢 Tự động lấy manufacturer eDrive
         Manufacturer manufacturer = manufacturerRepository.findByManufacturerName("EDrive")
                 .orElseThrow(() -> new RuntimeException("Manufacturer 'eDrive' not found"));
 
         Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
                 .orElseThrow(() -> new RuntimeException("Vehicle not found"));
+
+        boolean exists = manufacturerInventoryRepository.existsByVehicle_VehicleId(request.getVehicleId());
+        if (exists) {
+            throw new RuntimeException("Xe này đã tồn tại trong kho tổng, không thể thêm trùng!");
+        }
 
         ManufacturerInventory inv = ManufacturerInventory.builder()
                 .manufacturer(manufacturer)
@@ -65,17 +69,15 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
     }
 
 
+
     @Override
     public ManufacturerInventoryResponse update(Long vehicleId, ManufacturerInventoryUpdateRequest request) {
-        // 🔍 Tìm inventory theo vehicleId
         ManufacturerInventory inv = manufacturerInventoryRepository.findByVehicle_VehicleId(vehicleId)
                 .orElseThrow(() -> new RuntimeException("Manufacturer inventory not found for vehicleId: " + vehicleId));
 
-        // 🕒 Cập nhật số lượng và thời gian
         inv.setQuantity(request.getQuantity());
         inv.setLastUpdated(LocalDateTime.now());
 
-        // 💾 Lưu lại
         manufacturerInventoryRepository.save(inv);
 
         return toResponse(inv);
@@ -95,7 +97,6 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
         List<ManufacturerInventory> inventories = manufacturerInventoryRepository.findAll();
         List<OrderItem> orderItems = orderItemRepository.findAll();
 
-        // Nhóm theo Manufacturer
         Map<Manufacturer, List<ManufacturerInventory>> groupedByManufacturer = inventories.stream()
                 .collect(Collectors.groupingBy(ManufacturerInventory::getManufacturer));
 
@@ -107,11 +108,9 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
                     .mapToInt(ManufacturerInventory::getQuantity)
                     .sum();
 
-            // ✅ Nhóm theo modelName
             Map<String, List<ManufacturerInventory>> groupedByModel = items.stream()
                     .collect(Collectors.groupingBy(inv -> inv.getVehicle().getModelName()));
 
-            // ✅ Duyệt từng nhóm modelName
             List<VehicleInventoryResponse> vehicles = groupedByModel.entrySet().stream()
                     .flatMap(modelEntry -> {
                         String vehicleName = modelEntry.getKey();
@@ -137,7 +136,6 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
                                         Collectors.summingInt(OrderItem::getQuantity)
                                 ));
 
-                        // ✅ Sắp xếp theo manufacturerInventoryId để đảm bảo thứ tự ổn định
                         return sameVehicles.stream()
                                 .sorted((a, b) -> a.getManufacturerInventoryId().compareTo(b.getManufacturerInventoryId()))
                                 .map(inv -> {
@@ -162,7 +160,6 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
                                                     .build())
                                             .toList();
 
-                                    // ✅ Giữ manufacturerInventoryId theo đúng ID thật
                                     return VehicleInventoryResponse.builder()
                                             .manufacturerInventoryId(inv.getManufacturerInventoryId())
                                             .vehicleId(vehicleId)

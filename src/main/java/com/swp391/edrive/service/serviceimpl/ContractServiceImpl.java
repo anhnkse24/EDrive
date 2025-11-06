@@ -11,8 +11,13 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,15 +45,12 @@ public class ContractServiceImpl implements ContractService {
     @Override
     @Transactional
     public ContractResponse create(ContractRequest req) {
-        // Lấy thông tin Dealer từ dealerId trong request
         Dealer dealer = dealerRepo.findById(req.getDealerId())
                 .orElseThrow(() -> new EntityNotFoundException("Dealer not found"));
 
-        // Lấy thông tin Order từ orderId trong request
         Order order = orderRepo.findById(req.getOrderId())
                 .orElseThrow(() -> new EntityNotFoundException("Order not found"));
 
-        // Lấy thông tin vehicle và tổng giá trị từ OrderItem
         Vehicle vehicle = order.getOrderItems().get(0).getVehicle();  // Giả sử mỗi hợp đồng chỉ có một loại xe
         BigDecimal totalPrice = order.getTotalPrice();  // Tổng giá của đơn hàng
         BigDecimal discountRate = order.getTotalDiscount();  // Chiết khấu từ đơn hàng
@@ -57,7 +59,6 @@ public class ContractServiceImpl implements ContractService {
 
         Manufacturer manufacturer = vehicle.getManufacturer();  // Lấy thông tin nhà sản xuất từ xe
 
-        // Tạo hợp đồng sử dụng builder
         Contract c = Contract.builder()
                 .dealer(dealer)
                 .manufacturer(manufacturer)
@@ -130,4 +131,38 @@ public class ContractServiceImpl implements ContractService {
         return contractRepo.findByDealer_DealerId(dealerId).stream().map(mapper::toResponse).toList();
     }
 
+    @Override
+    @Transactional
+    public ContractResponse uploadPdf(Long contractId, MultipartFile file) {
+        Contract contract = contractRepo.findById(contractId)
+                .orElseThrow(() -> new EntityNotFoundException("Contract not found"));
+
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("File cannot be empty");
+        }
+
+        try {
+            String uploadDir = "uploads/contracts/";
+            Files.createDirectories(Paths.get(uploadDir));
+
+            String filename = String.format("contract-%d-%s.pdf", contractId, java.time.LocalDate.now());
+            Path filepath = Paths.get(uploadDir, filename);
+
+            Files.write(filepath, file.getBytes());
+
+            String pdfUrl = "https://storage.edrive.com/contracts/" + filename;
+
+            contract.setPdfUrl(pdfUrl);
+            contract.setPdfUploadedAt(LocalDateTime.now());
+            contractRepo.save(contract);
+
+            ContractResponse res = mapper.toResponse(contract);
+            res.setPdfUrl(pdfUrl);
+            res.setPdfUploadedAt(contract.getPdfUploadedAt());
+            return res;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Upload PDF failed: " + e.getMessage(), e);
+        }
+    }
 }

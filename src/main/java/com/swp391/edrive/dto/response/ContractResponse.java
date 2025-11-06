@@ -30,9 +30,12 @@ public class ContractResponse {
     private BigDecimal discountRate;
     private String terms;
 
-    private String status;            // DRAFT, PENDING_MANUFACTURER, APPROVED, REJECTED
-    private String manufacturerNote;  // ghi chú từ hãng
+    private String status;
+    private String manufacturerNote;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    private String pdfUrl;
+    private LocalDateTime pdfUploadedAt;
 }
