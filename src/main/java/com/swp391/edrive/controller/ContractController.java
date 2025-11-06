@@ -2,9 +2,11 @@ package com.swp391.edrive.controller;
 
 import com.swp391.edrive.dto.request.ContractRequest;
 import com.swp391.edrive.dto.response.ContractResponse;
+import com.swp391.edrive.dto.response.ResponseObject;
 import com.swp391.edrive.service.ContractService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,5 +52,16 @@ public class ContractController {
     public ResponseEntity<List<ContractResponse>> listByDealer(@PathVariable Long dealerId) {
         return ResponseEntity.ok(service.getByDealer(dealerId));
     }
+
+    @GetMapping
+    public ResponseObject<List<ContractResponse>> getAllContracts() {
+        List<ContractResponse> result = service.getAllContracts(); // Gọi service để lấy danh sách hợp đồng
+        return ResponseObject.<List<ContractResponse>>builder()
+                .statusCode(HttpStatus.OK.value())  // Mã trạng thái HTTP
+                .message("Fetched all contracts successfully")  // Thông báo
+                .data(result)  // Dữ liệu là danh sách hợp đồng
+                .build();
+    }
+
 
 }

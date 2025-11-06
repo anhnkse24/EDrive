@@ -10,6 +10,7 @@ public interface ContractService {
     ContractResponse submitToManufacturer(Long contractId);
     ContractResponse approve(Long contractId, String note);
     ContractResponse reject(Long contractId, String note);
+    List<ContractResponse> getAllContracts(); // Thêm phương thức này
 
     ContractResponse getById(Long id);
     List<ContractResponse> getByDealer(Long dealerId);

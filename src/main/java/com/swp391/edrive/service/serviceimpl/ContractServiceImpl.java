@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +27,15 @@ public class ContractServiceImpl implements ContractService {
     private final IContractMapper mapper;
     private final VehicleRepository vehicleRepo;
     private final OrderRepository orderRepo;
+
+
+    @Override
+    public List<ContractResponse> getAllContracts() {
+        List<Contract> contracts = contractRepo.findAll(); // Lấy tất cả hợp đồng từ database
+        return contracts.stream()
+                .map(mapper::toResponse) // Chuyển đổi từ Contract sang ContractResponse
+                .collect(Collectors.toList());
+    }
 
     @Override
     @Transactional
