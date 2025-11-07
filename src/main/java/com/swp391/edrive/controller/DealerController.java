@@ -24,7 +24,6 @@ public class DealerController {
 
     private final DealerService dealerService;
 
-    // 🟢 CREATE
     @Operation(summary = "Tạo mới đại lý")
     @PostMapping
     public ResponseEntity<ResponseObject> createDealer(@Valid @RequestBody DealerRequest request) {
@@ -34,7 +33,6 @@ public class DealerController {
         );
     }
 
-    // 🟡 UPDATE
     @Operation(summary = "Cập nhật thông tin đại lý")
     @PutMapping("/{dealerId}")
     public ResponseEntity<ResponseObject> updateDealer(
@@ -46,7 +44,6 @@ public class DealerController {
         );
     }
 
-    // 🔴 DELETE
     @Operation(summary = "Xóa đại lý theo ID")
     @DeleteMapping("/{dealerId}")
     public ResponseEntity<ResponseObject> deleteDealer(@PathVariable Long dealerId) {
@@ -56,7 +53,6 @@ public class DealerController {
         );
     }
 
-    // 🔵 GET BY ID
     @Operation(summary = "Lấy thông tin chi tiết đại lý theo ID")
     @GetMapping("/{dealerId}")
     public ResponseEntity<ResponseObject> getDealerById(@PathVariable Long dealerId) {
@@ -66,7 +62,6 @@ public class DealerController {
         );
     }
 
-    // 🟣 GET ALL
     @Operation(summary = "Lấy danh sách tất cả đại lý")
     @GetMapping
     public ResponseEntity<ResponseObject> getAllDealers() {

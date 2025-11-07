@@ -32,7 +32,6 @@ public class DeliveryController {
             return ResponseEntity.ok(response);
 
         } catch (IllegalArgumentException e) {
-            // Không tìm thấy đơn hàng
             return ResponseEntity.status(404).body(
                     DeliveryResponse.builder()
                             .orderId(orderId)
@@ -42,7 +41,6 @@ public class DeliveryController {
                             .build()
             );
         } catch (IllegalStateException e) {
-            // Sai trạng thái đơn hàng, chưa thể giao
             return ResponseEntity.badRequest().body(
                     DeliveryResponse.builder()
                             .orderId(orderId)
@@ -52,7 +50,6 @@ public class DeliveryController {
                             .build()
             );
         } catch (Exception e) {
-            // Lỗi hệ thống khác
             return ResponseEntity.internalServerError().body(
                     DeliveryResponse.builder()
                             .orderId(orderId)
