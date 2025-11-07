@@ -9,11 +9,11 @@ import java.math.BigDecimal;
 @Setter
 public class CashPaymentResponse {
     public Long orderId;
-    public BigDecimal paidNow;         // số tiền khách đưa
-    public BigDecimal totalCollected;  // tổng tiền đã thu (tích lũy)
-    public BigDecimal grandTotal;      // tổng phải trả
-    public BigDecimal remaining;       // còn thiếu (0 nếu đủ hoặc dư)
-    public BigDecimal changeAmount;    // 💰 TIỀN THỐI LẠI (0 nếu không dư)
+    public BigDecimal paidNow;
+    public BigDecimal totalCollected;
+    public BigDecimal grandTotal;
+    public BigDecimal remaining;
+    public BigDecimal changeAmount;
 
     public String orderStatus;
     public String paymentStatus;

@@ -45,6 +45,11 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
         Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
                 .orElseThrow(() -> new RuntimeException("Vehicle not found"));
 
+        boolean exists = manufacturerInventoryRepository.existsByVehicle_VehicleId(request.getVehicleId());
+        if (exists) {
+            throw new RuntimeException("Kho cho vehicleId " + request.getVehicleId() + " đã tồn tại");
+        }
+
         ManufacturerInventory inv = ManufacturerInventory.builder()
                 .manufacturer(manufacturer)
                 .vehicle(vehicle)

@@ -129,7 +129,6 @@ public class VehicleServiceImpl implements VehicleService {
             v.setImageUrl(colorImage.getImageUrl());
 
             v = vehicleRepository.save(v);
-            createManufacturerInventoryForVehicle(v);
 
             responses.add(toResponse(v));
         }
@@ -137,19 +136,7 @@ public class VehicleServiceImpl implements VehicleService {
         return responses;
     }
 
-    private void createManufacturerInventoryForVehicle(Vehicle vehicle) {
-        Manufacturer manufacturer = manufacturerRepository.findByManufacturerName("EDrive")
-                .orElseThrow(() -> new RuntimeException("Manufacturer 'EDrive' not found"));
 
-        ManufacturerInventory inv = ManufacturerInventory.builder()
-                .manufacturer(manufacturer)
-                .vehicle(vehicle)
-                .quantity(1)
-                .lastUpdated(LocalDateTime.now())
-                .build();
-
-        manufacturerInventoryRepository.save(inv);
-    }
 
 
     // === UPDATE ===
