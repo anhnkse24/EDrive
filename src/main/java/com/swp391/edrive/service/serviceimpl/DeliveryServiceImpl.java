@@ -26,9 +26,9 @@ public class DeliveryServiceImpl implements DeliveryService {
         Order order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
 
-        // Chỉ xử lý orders đang ở trạng thái PROCESSING
-        if (order.getStatus() != OrderStatus.PROCESSING) {
-            throw new IllegalStateException("Only PROCESSING orders can be delivered");
+        // Chỉ xử lý orders đang ở trạng thái ĐÃ_XÁC_NHẬN
+        if (order.getStatus() != OrderStatus.ĐÃ_XÁC_NHẬN) {
+            throw new IllegalStateException("Only ĐÃ_XÁC_NHẬN orders can be delivered");
         }
 
         // Cập nhật số lượng kho cho từng item
@@ -37,7 +37,7 @@ public class DeliveryServiceImpl implements DeliveryService {
         }
 
         // Cập nhật trạng thái order
-        order.setStatus(OrderStatus.DELIVERED);
+        order.setStatus(OrderStatus.ĐÃ_GIAO);
         order.setActualDeliveryDate(LocalDate.now());
         orderRepo.save(order);
     }

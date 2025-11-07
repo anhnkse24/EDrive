@@ -74,15 +74,15 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
 
-        if (order.getStatus() == OrderStatus.DELIVERED) {
+        if (order.getStatus() == OrderStatus.ĐÃ_GIAO) {
             throw new IllegalStateException("Delivered order cannot be cancelled");
         }
-        if (order.getPaymentStatus() == PaymentStatus.PAID) {
+        if (order.getPaymentStatus() == PaymentStatus.ĐÃ_THANH_TOÁN) {
             throw new IllegalStateException("Paid order cannot be cancelled");
         }
 
-        order.setStatus(OrderStatus.CANCELLED);
-        order.setPaymentStatus(PaymentStatus.CANCELLED);
+        order.setStatus(OrderStatus.ĐÃ_HUỶ);
+        order.setPaymentStatus(PaymentStatus.ĐÃ_HUỶ);
         orderRepo.save(order);
 
         // (tuỳ chọn) hoàn kho hãng nếu bạn muốn: duyệt order.getOrderItems() và cộng tồn lại.
@@ -105,6 +105,7 @@ public class OrderServiceImpl implements OrderService {
         res.setOrderStatus(order.getStatus());
         res.setDeliveryAddress(order.getDeliveryAddress());
         res.setDeliveryNote(order.getDeliveryNote());
+        res.setPaymentStatus(order.getPaymentStatus());
 
         if (order.getOrderItems() != null) {
             res.setOrderItems(
@@ -152,7 +153,10 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderId(UUID.randomUUID().toString()); // Tạo ID ngẫu nhiên
         order.setOrderDate(LocalDate.now());  // Ngày đặt hàng
         order.setDealer(dealer);  // Đặt dealer từ đối tượng đã tìm thấy
-        order.setStatus(OrderStatus.PENDING);  // Trạng thái đơn hàng
+        order.setStatus(OrderStatus.CHỜ_DUYỆT);  // Trạng thái đơn hàng
+
+        // Ensure paymentStatus CHỜ_DUYỆT set by entity PrePersist, but set explicitly for clarity
+        order.setPaymentStatus(PaymentStatus.CHỜ_DUYỆT);
 
         order.setDesiredDeliveryDate(req.getDesiredDeliveryDate());  // Ngày giao hàng mong muốn
         order.setDeliveryAddress(req.getDeliveryAddress());  // Địa chỉ giao hàng
@@ -268,6 +272,7 @@ public class OrderServiceImpl implements OrderService {
         response.deliveryAddress = order.getDeliveryAddress();
         response.deliveryNote = order.getDeliveryNote();
         response.orderStatus = order.getStatus().name();
+        response.paymentStatus = order.getPaymentStatus().name();
         // Build item details
         List<OrderItemResponse> itemResponses = new ArrayList<>();
         for (OrderItem item : orderItems) {
@@ -333,6 +338,7 @@ public class OrderServiceImpl implements OrderService {
             bill.transferTo(uploadFile);
 
             order.setPaymentImage(uploadFile.getAbsolutePath());
+            // Do not set paymentStatus here; admin must confirm payment to set PAID
             orderRepo.save(order);
 
             return "Bill uploaded successfully. File: " + uploadFile.getAbsolutePath();
@@ -392,5 +398,27 @@ public class OrderServiceImpl implements OrderService {
 
         File file = new File(paymentImagePath);
         return file.getName();
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse markOrderAsPaid(String orderId) {
+        Order order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found with ID: " + orderId));
+
+        if (order.getPaymentImage() == null || order.getPaymentImage().isEmpty()) {
+            throw new IllegalStateException("Cannot mark as PAID: no bill uploaded");
+        }
+
+        if (order.getPaymentStatus() == PaymentStatus.ĐÃ_THANH_TOÁN) {
+            throw new IllegalStateException("Order is already marked as PAID");
+        }
+
+        // Chỉ thay đổi PaymentStatus sang PAID, OrderStatus giữ nguyên
+        order.setPaymentStatus(PaymentStatus.ĐÃ_THANH_TOÁN);
+
+        orderRepo.save(order);
+
+        return mapToOrderResponse(order);
     }
 }

@@ -73,7 +73,7 @@ public class Contract {
 
     @PrePersist
     void onCreate() {
-        if (status == null) status = ContractStatus.DRAFT;
+        if (status == null) status = ContractStatus.BẢN_NHÁP;
         if (contractCode == null) {
             contractCode = "CT-" + DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
                     .format(LocalDateTime.now()) + "-" + (int)(Math.random()*9000+1000);
