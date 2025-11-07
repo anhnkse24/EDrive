@@ -37,6 +37,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderItemRepository orderItemRepo;
     private final ManufacturerInventoryRepository manufacturerInventoryRepo;
     private final NotificationService notificationService;
+    private final DiscountPolicyRepository discountPolicyRepo;
 
     @Value("${edrive.vat-rate:0.1}")
     private BigDecimal vatRate;
@@ -250,14 +251,10 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private BigDecimal calculateDiscountRate(Integer quantity) {
-        if (quantity > 10) {
-            return new BigDecimal("0.15"); // 15%
-        } else if (quantity >= 6) {
-            return new BigDecimal("0.10"); // 10%
-        } else if (quantity >= 1) {
-            return new BigDecimal("0.05"); // 5%
-        }
-        return BigDecimal.ZERO;
+        // Tìm chính sách chiết khấu từ database dựa trên số lượng
+        return discountPolicyRepo.findByQuantityRange(quantity)
+                .map(DiscountPolicy::getDiscountRate)
+                .orElse(BigDecimal.ZERO); // Không có chiết khấu nếu không tìm thấy policy
     }
 
     private OrderSummaryResponse buildOrderSummaryResponse(Order order, List<OrderItem> orderItems) {
