@@ -149,11 +149,11 @@ public class DataInitializer implements CommandLineRunner {
         Color red    = upsertColor("Đỏ",      "#FF0000");
         Color black  = upsertColor("Đen",     "#000000");
         Color white  = upsertColor("Trắng",   "#FFFFFF");
-        Color blue   = upsertColor("Xanh",    "#0055FF");
+        Color blue   = upsertColor("Xanh",    "#0000FF");
         Color silver = upsertColor("Bạc",     "#C0C0C0");
         Color gray   = upsertColor("Xám",     "#808080");
         Color cyan   = upsertColor("Xanh Lam","#1E90FF");
-        Color green  = upsertColor("Xanh lá", "#24K07A");
+        Color green  = upsertColor("Xanh lá", "#008000");
         Color yellow  = upsertColor("Vàng", "#FDFD49");
 
 // ====== Khởi tạo Vehicles cho VinFast ======

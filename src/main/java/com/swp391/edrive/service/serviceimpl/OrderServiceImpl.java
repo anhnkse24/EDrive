@@ -417,7 +417,7 @@ public class OrderServiceImpl implements OrderService {
 
         // Chỉ thay đổi PaymentStatus sang PAID, OrderStatus giữ nguyên
         order.setPaymentStatus(PaymentStatus.ĐÃ_THANH_TOÁN);
-
+        order.setOrderStatus(OrderStatus.ĐÃ_XÁC_NHẬN);
         orderRepo.save(order);
 
         return mapToOrderResponse(order);
