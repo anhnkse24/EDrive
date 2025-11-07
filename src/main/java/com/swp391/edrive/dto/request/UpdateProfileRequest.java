@@ -10,7 +10,6 @@ import lombok.Setter;
 @Setter
 public class UpdateProfileRequest {
 
-    // ====== USER INFO ======
     @Size(max = 100, message = "Tên không được vượt quá 100 ký tự")
     private String fullName;
 
@@ -21,7 +20,6 @@ public class UpdateProfileRequest {
     @Pattern(regexp = "^(0[0-9]{9})$", message = "Số điện thoại không hợp lệ (phải có 10 chữ số và bắt đầu bằng 0)")
     private String phone;
 
-    // ====== DEALER INFO ======
     @Size(max = 100, message = "Tên đại lý không được vượt quá 100 ký tự")
     private String agencyName;
 

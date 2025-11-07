@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +28,7 @@ public class CustomerController {
     @PostMapping
     public ResponseEntity<ResponseObject> createCustomer(
             @PathVariable Long dealerId,
-            @RequestBody CustomerRequest request) {
+            @Valid @RequestBody CustomerRequest request) {
         var res = customerService.createCustomer(dealerId, request);
         return ResponseEntity.ok(new ResponseObject(200, "Customer created successfully", res));
     }
@@ -37,7 +38,7 @@ public class CustomerController {
     public ResponseEntity<ResponseObject> updateCustomer(
             @PathVariable Long dealerId,
             @PathVariable Long customerId,
-            @RequestBody CustomerRequest request) {
+            @Valid @RequestBody CustomerRequest request) {
         var res = customerService.updateCustomer(dealerId, customerId, request);
         return ResponseEntity.ok(new ResponseObject(200, "Customer updated successfully", res));
     }
