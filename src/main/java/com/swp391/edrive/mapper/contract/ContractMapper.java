@@ -16,6 +16,7 @@ public class ContractMapper implements IContractMapper {
                 : null;
 
         return ContractResponse.builder()
+                .orderId(c.getOrder() != null ? c.getOrder().getOrderId() : null)
                 .id(c.getId())
                 .contractCode(c.getContractCode())
                 .dealerId(c.getDealer() != null ? c.getDealer().getDealerId() : null)

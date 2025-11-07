@@ -7,12 +7,15 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @Builder
 @Getter
 @Setter
 public class ContractResponse {
+    private String orderId;
+
     private Long id;
     private String contractCode;
 

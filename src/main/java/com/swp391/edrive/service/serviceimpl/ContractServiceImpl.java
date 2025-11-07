@@ -29,17 +29,15 @@ public class ContractServiceImpl implements ContractService {
 
     private final ContractRepository contractRepo;
     private final DealerRepository dealerRepo;
-    private final ManufacturerRepository manufacturerRepo;
     private final IContractMapper mapper;
-    private final VehicleRepository vehicleRepo;
     private final OrderRepository orderRepo;
 
 
     @Override
     public List<ContractResponse> getAllContracts() {
-        List<Contract> contracts = contractRepo.findAll(); // Lấy tất cả hợp đồng từ database
+        List<Contract> contracts = contractRepo.findAll();
         return contracts.stream()
-                .map(mapper::toResponse) // Chuyển đổi từ Contract sang ContractResponse
+                .map(mapper::toResponse)
                 .collect(Collectors.toList());
     }
 
@@ -52,15 +50,16 @@ public class ContractServiceImpl implements ContractService {
         Order order = orderRepo.findById(req.getOrderId())
                 .orElseThrow(() -> new EntityNotFoundException("Order not found"));
 
-        Vehicle vehicle = order.getOrderItems().get(0).getVehicle();  // Giả sử mỗi hợp đồng chỉ có một loại xe
-        BigDecimal totalPrice = order.getTotalPrice();  // Tổng giá của đơn hàng
-        BigDecimal discountRate = order.getTotalDiscount();  // Chiết khấu từ đơn hàng
-        BigDecimal subtotal = order.getSubtotal();  // Giá chưa giảm (subtotal)
-        BigDecimal vatAmount = order.getVatAmount();  // Lấy VAT từ đơn hàng
+        Vehicle vehicle = order.getOrderItems().get(0).getVehicle();
+        BigDecimal totalPrice = order.getTotalPrice();
+        BigDecimal discountRate = order.getTotalDiscount();
+        BigDecimal subtotal = order.getSubtotal();
+        BigDecimal vatAmount = order.getVatAmount();
 
-        Manufacturer manufacturer = vehicle.getManufacturer();  // Lấy thông tin nhà sản xuất từ xe
+        Manufacturer manufacturer = vehicle.getManufacturer();
 
         Contract c = Contract.builder()
+                .order(order)
                 .dealer(dealer)
                 .manufacturer(manufacturer)
                 .vehicleModel(vehicle.getModelName())
@@ -68,16 +67,14 @@ public class ContractServiceImpl implements ContractService {
                 .totalPrice(totalPrice)
                 .discountRate(discountRate)
                 .terms(req.getTerms())
-                .status(ContractStatus.DRAFT)  // Trạng thái hợp đồng là draft khi mới tạo
+                .status(ContractStatus.DRAFT)
                 .build();
 
-// Lưu hợp đồng vào cơ sở dữ liệu
         Contract savedContract = contractRepo.save(c);
 
-// Trả về phản hồi hợp đồng
         ContractResponse response = mapper.toResponse(savedContract);
-        response.setSubtotal(subtotal);  // Trả về giá chưa giảm (subtotal)
-        response.setVatAmount(vatAmount);  // Trả về phí VAT tính từ đơn hàng
+        response.setSubtotal(subtotal);
+        response.setVatAmount(vatAmount);
 
         return response;
     }
