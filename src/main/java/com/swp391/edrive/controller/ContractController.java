@@ -7,8 +7,10 @@ import com.swp391.edrive.service.ContractService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -63,5 +65,15 @@ public class ContractController {
                 .build();
     }
 
+    @PostMapping(
+            value = "/{contractId}/upload-pdf",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )    public ResponseEntity<ContractResponse> uploadContractPdf(
+            @PathVariable Long contractId,
+            @RequestParam("file") MultipartFile file) {
+
+        ContractResponse response = service.uploadPdf(contractId, file);
+        return ResponseEntity.ok(response);
+    }
 
 }

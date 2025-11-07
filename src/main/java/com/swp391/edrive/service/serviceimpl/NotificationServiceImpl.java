@@ -74,7 +74,6 @@ public class NotificationServiceImpl implements NotificationService {
 
         Dealer dealer = order.getDealer();
 
-        // ✅ Kiểm tra null tránh lỗi NullPointerException
         int totalQuantity = 0;
         if (order.getOrderItems() != null && !order.getOrderItems().isEmpty()) {
             totalQuantity = order.getOrderItems().stream()

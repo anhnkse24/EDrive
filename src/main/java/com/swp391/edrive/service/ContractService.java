@@ -2,6 +2,7 @@ package com.swp391.edrive.service;
 
 import com.swp391.edrive.dto.request.ContractRequest;
 import com.swp391.edrive.dto.response.ContractResponse;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -14,4 +15,6 @@ public interface ContractService {
 
     ContractResponse getById(Long id);
     List<ContractResponse> getByDealer(Long dealerId);
+    ContractResponse uploadPdf(Long contractId, MultipartFile file);
+
 }

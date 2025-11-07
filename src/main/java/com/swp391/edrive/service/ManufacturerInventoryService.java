@@ -8,7 +8,6 @@ import com.swp391.edrive.dto.response.ManufacturerInventorySummaryResponse;
 import java.util.List;
 
 public interface ManufacturerInventoryService {
-    List<ManufacturerInventoryResponse> getAll();
     ManufacturerInventoryResponse getById(Long id);
     ManufacturerInventoryResponse create(ManufacturerInventoryRequest request);
     ManufacturerInventoryResponse update(Long id, ManufacturerInventoryUpdateRequest request);

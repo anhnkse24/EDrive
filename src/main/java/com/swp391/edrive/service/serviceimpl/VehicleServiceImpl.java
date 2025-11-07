@@ -2,12 +2,12 @@ package com.swp391.edrive.service.serviceimpl;
 
 import com.swp391.edrive.dto.request.VehicleUpsertRequest;
 import com.swp391.edrive.dto.response.VehicleResponse;
-import com.swp391.edrive.entity.Color;
-import com.swp391.edrive.entity.Promotion;
-import com.swp391.edrive.entity.Vehicle;
+import com.swp391.edrive.entity.*;
 import com.swp391.edrive.enums.DiscountType;
 import com.swp391.edrive.enums.VehicleStatus;
 import com.swp391.edrive.repository.ColorRepository;
+import com.swp391.edrive.repository.ManufacturerInventoryRepository;
+import com.swp391.edrive.repository.ManufacturerRepository;
 import com.swp391.edrive.repository.VehicleRepository;
 import com.swp391.edrive.service.VehicleService;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -30,6 +31,8 @@ import java.util.stream.Collectors;
 public class VehicleServiceImpl implements VehicleService {
     private final VehicleRepository vehicleRepository;
     private final ColorRepository colorRepository;
+    private final ManufacturerRepository manufacturerRepository;
+    private final ManufacturerInventoryRepository manufacturerInventoryRepository;
 
     @Override
     public List<VehicleResponse> getAllVehicles(int page, int size) {
@@ -91,7 +94,7 @@ public class VehicleServiceImpl implements VehicleService {
                 throw new IllegalArgumentException("minPrice must be <= maxPrice");
             result = vehicleRepository.findByPriceRetailBetween(minPrice, maxPrice, pageable);
         } else if (minPrice != null) {
-            result = vehicleRepository.findByPriceRetailGreaterThanEqual(   minPrice, pageable);
+            result = vehicleRepository.findByPriceRetailGreaterThanEqual(minPrice, pageable);
         } else {
             result = vehicleRepository.findByPriceRetailLessThanEqual(maxPrice, pageable);
         }
@@ -103,42 +106,49 @@ public class VehicleServiceImpl implements VehicleService {
     public List<VehicleResponse> createVehicle(VehicleUpsertRequest req) {
         List<VehicleResponse> responses = new ArrayList<>();
 
-        // Lặp qua danh sách màu sắc và hình ảnh
         for (var colorImage : req.getColors()) {
-            // Kiểm tra xem xe với phiên bản và màu này đã tồn tại chưa
             boolean exists = vehicleRepository.existsByVersionIgnoreCaseAndColor_ColorId(
                     req.getVersion().trim(),
                     colorImage.getColorId()
             );
             if (exists) {
                 throw new IllegalArgumentException(
-                    "Xe đã tồn tại với phiên bản '" + req.getVersion() + "' và màu ID " + colorImage.getColorId()
+                        "Xe đã tồn tại với phiên bản '" + req.getVersion() + "' và màu ID " + colorImage.getColorId()
                 );
             }
 
-            // Tìm màu theo colorId
             Color color = colorRepository.findById(colorImage.getColorId())
                     .orElseThrow(() -> new IllegalArgumentException(
-                        "Mã màu không tồn tại: " + colorImage.getColorId()
+                            "Mã màu không tồn tại: " + colorImage.getColorId()
                     ));
 
-            // Tạo xe mới và áp dụng các thuộc tính từ req vào xe
             Vehicle v = new Vehicle();
             apply(v, req);
 
-            // Thiết lập màu và hình ảnh cho xe
             v.setColor(color);
             v.setImageUrl(colorImage.getImageUrl());
 
-            // Lưu xe vào cơ sở dữ liệu
             v = vehicleRepository.save(v);
+            createManufacturerInventoryForVehicle(v);
 
-            // Thêm phản hồi xe đã tạo vào danh sách
             responses.add(toResponse(v));
         }
 
-        // Trả về danh sách các xe đã tạo
         return responses;
+    }
+
+    private void createManufacturerInventoryForVehicle(Vehicle vehicle) {
+        Manufacturer manufacturer = manufacturerRepository.findByManufacturerName("EDrive")
+                .orElseThrow(() -> new RuntimeException("Manufacturer 'EDrive' not found"));
+
+        ManufacturerInventory inv = ManufacturerInventory.builder()
+                .manufacturer(manufacturer)
+                .vehicle(vehicle)
+                .quantity(1)
+                .lastUpdated(LocalDateTime.now())
+                .build();
+
+        manufacturerInventoryRepository.save(inv);
     }
 
 
@@ -176,7 +186,6 @@ public class VehicleServiceImpl implements VehicleService {
         v.setModelName(r.getModelName());
         v.setVersion(r.getVersion());
 
-        // Cập nhật các thuộc tính khác
         v.setBatteryCapacityKwh(r.getBatteryCapacityKwh());
         v.setRangeKm(r.getRangeKm());
         v.setMaxSpeedKmh(r.getMaxSpeedKmh());

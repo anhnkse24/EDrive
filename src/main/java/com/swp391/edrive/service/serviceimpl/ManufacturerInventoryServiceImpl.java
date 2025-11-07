@@ -29,13 +29,6 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
     private final VehicleRepository vehicleRepository;
     private final OrderItemRepository orderItemRepository;
 
-    @Override
-    public List<ManufacturerInventoryResponse> getAll() {
-        return manufacturerInventoryRepository.findAll()
-                .stream()
-                .map(this::toResponse)
-                .toList();
-    }
 
     @Override
     public ManufacturerInventoryResponse getById(Long id) {
@@ -46,7 +39,6 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
 
     @Override
     public ManufacturerInventoryResponse create(ManufacturerInventoryRequest request) {
-        // 🟢 Tự động lấy manufacturer eDrive
         Manufacturer manufacturer = manufacturerRepository.findByManufacturerName("EDrive")
                 .orElseThrow(() -> new RuntimeException("Manufacturer 'eDrive' not found"));
 
@@ -67,15 +59,12 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
 
     @Override
     public ManufacturerInventoryResponse update(Long vehicleId, ManufacturerInventoryUpdateRequest request) {
-        // 🔍 Tìm inventory theo vehicleId
         ManufacturerInventory inv = manufacturerInventoryRepository.findByVehicle_VehicleId(vehicleId)
                 .orElseThrow(() -> new RuntimeException("Manufacturer inventory not found for vehicleId: " + vehicleId));
 
-        // 🕒 Cập nhật số lượng và thời gian
         inv.setQuantity(request.getQuantity());
         inv.setLastUpdated(LocalDateTime.now());
 
-        // 💾 Lưu lại
         manufacturerInventoryRepository.save(inv);
 
         return toResponse(inv);
@@ -95,7 +84,6 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
         List<ManufacturerInventory> inventories = manufacturerInventoryRepository.findAll();
         List<OrderItem> orderItems = orderItemRepository.findAll();
 
-        // Nhóm theo Manufacturer
         Map<Manufacturer, List<ManufacturerInventory>> groupedByManufacturer = inventories.stream()
                 .collect(Collectors.groupingBy(ManufacturerInventory::getManufacturer));
 
@@ -107,22 +95,18 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
                     .mapToInt(ManufacturerInventory::getQuantity)
                     .sum();
 
-            // ✅ Nhóm theo modelName
             Map<String, List<ManufacturerInventory>> groupedByModel = items.stream()
                     .collect(Collectors.groupingBy(inv -> inv.getVehicle().getModelName()));
 
-            // ✅ Duyệt từng nhóm modelName
             List<VehicleInventoryResponse> vehicles = groupedByModel.entrySet().stream()
                     .flatMap(modelEntry -> {
                         String vehicleName = modelEntry.getKey();
                         List<ManufacturerInventory> sameVehicles = modelEntry.getValue();
 
-                        // 🔹 Lấy OrderItem liên quan đến các vehicle cùng modelName
                         List<OrderItem> relatedOrderItems = orderItems.stream()
                                 .filter(oi -> oi.getVehicle().getModelName().equals(vehicleName))
                                 .toList();
 
-                        // Tính toán tổng xuất kho và đang giao
                         Map<Long, Integer> exportedMap = relatedOrderItems.stream()
                                 .filter(oi -> oi.getOrder().getStatus() == OrderStatus.DELIVERED)
                                 .collect(Collectors.groupingBy(
@@ -137,7 +121,6 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
                                         Collectors.summingInt(OrderItem::getQuantity)
                                 ));
 
-                        // ✅ Sắp xếp theo manufacturerInventoryId để đảm bảo thứ tự ổn định
                         return sameVehicles.stream()
                                 .sorted((a, b) -> a.getManufacturerInventoryId().compareTo(b.getManufacturerInventoryId()))
                                 .map(inv -> {
@@ -147,7 +130,6 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
                                     int exportedQuantity = exportedMap.getOrDefault(vehicleId, 0);
                                     int inDeliveryQuantity = inDeliveryMap.getOrDefault(vehicleId, 0);
 
-                                    // Gom nhóm theo đại lý
                                     Map<String, Integer> dealerMap = relatedOrderItems.stream()
                                             .filter(oi -> oi.getVehicle().getVehicleId().equals(vehicleId))
                                             .collect(Collectors.groupingBy(
@@ -162,7 +144,6 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
                                                     .build())
                                             .toList();
 
-                                    // ✅ Giữ manufacturerInventoryId theo đúng ID thật
                                     return VehicleInventoryResponse.builder()
                                             .manufacturerInventoryId(inv.getManufacturerInventoryId())
                                             .vehicleId(vehicleId)
