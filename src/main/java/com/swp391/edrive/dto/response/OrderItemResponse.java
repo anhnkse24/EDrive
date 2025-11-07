@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 public class OrderItemResponse {
     public Long vehicleId;
     public String vehicleName;
+    public String colorName;
     public Integer quantity;
     public BigDecimal unitPrice;
     public BigDecimal itemSubtotal;

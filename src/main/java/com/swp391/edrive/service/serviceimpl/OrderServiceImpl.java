@@ -113,6 +113,12 @@ public class OrderServiceImpl implements OrderService {
                         var itemRes = new com.swp391.edrive.dto.response.OrderItemResponse();
                         itemRes.vehicleId = item.getVehicle().getVehicleId();
                         itemRes.vehicleName = item.getVehicle().getModelName();
+
+                        // Thêm thông tin màu xe
+                        if (item.getVehicle().getColor() != null) {
+                            itemRes.colorName = item.getVehicle().getColor().getColorName();
+                        }
+
                         itemRes.quantity = item.getQuantity();
                         itemRes.unitPrice = item.getUnitPrice();
                         itemRes.itemSubtotal = item.getUnitPrice().multiply(
@@ -281,6 +287,12 @@ public class OrderServiceImpl implements OrderService {
             OrderItemResponse itemResponse = new OrderItemResponse();
             itemResponse.vehicleId = item.getVehicle().getVehicleId();
             itemResponse.vehicleName = item.getVehicle().getModelName();
+
+            // Thêm thông tin màu xe
+            if (item.getVehicle().getColor() != null) {
+                itemResponse.colorName = item.getVehicle().getColor().getColorName();
+            }
+
             itemResponse.quantity = item.getQuantity();
             itemResponse.unitPrice = item.getUnitPrice();
             itemResponse.itemSubtotal = item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
@@ -417,7 +429,7 @@ public class OrderServiceImpl implements OrderService {
 
         // Chỉ thay đổi PaymentStatus sang PAID, OrderStatus giữ nguyên
         order.setPaymentStatus(PaymentStatus.ĐÃ_THANH_TOÁN);
-        order.setOrderStatus(OrderStatus.ĐÃ_XÁC_NHẬN);
+        order.setStatus(OrderStatus.ĐÃ_XÁC_NHẬN);
         orderRepo.save(order);
 
         return mapToOrderResponse(order);

@@ -33,7 +33,7 @@ public class Order {
     private BigDecimal totalPrice;
 
     @Enumerated(EnumType.STRING)
-    private OrderStatus orderStatus;
+    private OrderStatus status;
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
