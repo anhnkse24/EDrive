@@ -108,14 +108,14 @@ public class ManufacturerInventoryServiceImpl implements ManufacturerInventorySe
                                 .toList();
 
                         Map<Long, Integer> exportedMap = relatedOrderItems.stream()
-                                .filter(oi -> oi.getOrder().getStatus() == OrderStatus.DELIVERED)
+                                .filter(oi -> oi.getOrder().getStatus() == OrderStatus.ĐÃ_GIAO)
                                 .collect(Collectors.groupingBy(
                                         oi -> oi.getVehicle().getVehicleId(),
                                         Collectors.summingInt(OrderItem::getQuantity)
                                 ));
 
                         Map<Long, Integer> inDeliveryMap = relatedOrderItems.stream()
-                                .filter(oi -> oi.getOrder().getStatus() == OrderStatus.PROCESSING)
+                                .filter(oi -> oi.getOrder().getStatus() == OrderStatus.ĐÃ_XÁC_NHẬN)
                                 .collect(Collectors.groupingBy(
                                         oi -> oi.getVehicle().getVehicleId(),
                                         Collectors.summingInt(OrderItem::getQuantity)
