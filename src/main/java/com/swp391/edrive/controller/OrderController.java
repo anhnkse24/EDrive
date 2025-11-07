@@ -129,15 +129,4 @@ public class OrderController {
                     .body(new ResponseObject<>(HttpStatus.NOT_FOUND.value(), "Bill not found: " + e.getMessage(), null));
         }
     }
-
-    @Operation(summary = "Admin confirm payment and mark order as PAID", description = "Admin endpoint to mark order payment status as PAID after verifying the uploaded bill")
-    @PutMapping("/{orderId}/mark-paid")
-    public ResponseObject<OrderResponse> markOrderAsPaid(@PathVariable String orderId) {
-        OrderResponse result = orderService.markOrderAsPaid(orderId);
-        return ResponseObject.<OrderResponse>builder()
-                .statusCode(HttpStatus.OK.value())
-                .message("Order marked as PAID successfully")
-                .data(result)
-                .build();
-    }
 }

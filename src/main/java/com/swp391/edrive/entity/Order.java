@@ -63,10 +63,5 @@ public class Order {
         // Set payment expiry time to 10 minutes from creation
         paymentExpiryTime = LocalDateTime.now().plusMinutes(10);
 
-        // Ensure new orders start with CHỜ_DUYỆT payment status by default
-        if (paymentStatus == null) {
-            paymentStatus = PaymentStatus.CHỜ_DUYỆT;
-        }
-
     }
 }

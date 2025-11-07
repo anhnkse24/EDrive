@@ -32,5 +32,5 @@ public class Payment {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private PaymentStatus status = PaymentStatus.CHỜ_DUYỆT;
+    private PaymentStatus status = PaymentStatus.PENDING;
 }

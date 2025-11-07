@@ -24,7 +24,4 @@ public interface OrderService {
     byte[] getPaymentBillContent(String orderId) throws IOException;
     String getPaymentBillContentType(String orderId);
     String getPaymentBillFileName(String orderId);
-
-    // Admin confirms payment
-    OrderResponse markOrderAsPaid(String orderId);
 }

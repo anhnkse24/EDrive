@@ -31,8 +31,6 @@ public class ContractServiceImpl implements ContractService {
     private final DealerRepository dealerRepo;
     private final IContractMapper mapper;
     private final OrderRepository orderRepo;
-    private final ManufacturerInventoryRepository manufacturerInventoryRepo;
-    private final DealerInventoryRepository dealerInventoryRepo;
 
 
     @Override
@@ -52,59 +50,14 @@ public class ContractServiceImpl implements ContractService {
         Order order = orderRepo.findById(req.getOrderId())
                 .orElseThrow(() -> new EntityNotFoundException("Order not found"));
 
-        Manufacturer manufacturer = null;
+        Vehicle vehicle = order.getOrderItems().get(0).getVehicle();
         BigDecimal totalPrice = order.getTotalPrice();
         BigDecimal discountRate = order.getTotalDiscount();
         BigDecimal subtotal = order.getSubtotal();
         BigDecimal vatAmount = order.getVatAmount();
 
-        // Process all items in order: transfer inventory & create contract
-        for (OrderItem orderItem : order.getOrderItems()) {
-            Vehicle vehicle = orderItem.getVehicle();
-            Integer quantity = orderItem.getQuantity();
+        Manufacturer manufacturer = vehicle.getManufacturer();
 
-            if (manufacturer == null) {
-                manufacturer = vehicle.getManufacturer();
-            }
-
-            // Trừ từ kho hãng
-            ManufacturerInventory manufacturerInventory = manufacturerInventoryRepo
-                    .findByVehicle_VehicleId(vehicle.getVehicleId())
-                    .orElseThrow(() -> new IllegalStateException(
-                            "Manufacturer inventory not found for vehicle: " + vehicle.getVehicleId()));
-
-            if (manufacturerInventory.getQuantity() < quantity) {
-                throw new IllegalStateException(
-                        "Insufficient manufacturer inventory for vehicle: " + vehicle.getModelName() +
-                                ". Available: " + manufacturerInventory.getQuantity() + ", Requested: " + quantity);
-            }
-
-            manufacturerInventory.setQuantity(manufacturerInventory.getQuantity() - quantity);
-            manufacturerInventory.setLastUpdated(LocalDateTime.now());
-            manufacturerInventoryRepo.save(manufacturerInventory);
-
-            // Cộng vào kho đại lý
-            DealerInventory dealerInventory = dealerInventoryRepo
-                    .findByDealer_DealerIdAndVehicle_VehicleId(dealer.getDealerId(), vehicle.getVehicleId())
-                    .orElse(null);
-
-            if (dealerInventory != null) {
-                dealerInventory.setQuantity(dealerInventory.getQuantity() + quantity);
-                dealerInventory.setLastUpdated(LocalDateTime.now());
-            } else {
-                dealerInventory = DealerInventory.builder()
-                        .dealer(dealer)
-                        .vehicle(vehicle)
-                        .quantity(quantity)
-                        .lastUpdated(LocalDateTime.now())
-                        .build();
-            }
-
-            dealerInventoryRepo.save(dealerInventory);
-        }
-
-        // Tạo contract với trạng thái ĐÃ_XÁC_NHẬN
-        Vehicle vehicle = order.getOrderItems().get(0).getVehicle();
         Contract c = Contract.builder()
                 .order(order)
                 .dealer(dealer)
@@ -114,7 +67,7 @@ public class ContractServiceImpl implements ContractService {
                 .totalPrice(totalPrice)
                 .discountRate(discountRate)
                 .terms(req.getTerms())
-                .status(ContractStatus.ĐÃ_XÁC_NHẬN)
+                .status(ContractStatus.DRAFT)
                 .build();
 
         Contract savedContract = contractRepo.save(c);
@@ -132,10 +85,10 @@ public class ContractServiceImpl implements ContractService {
         Contract c = contractRepo.findById(contractId)
                 .orElseThrow(() -> new EntityNotFoundException("Contract not found"));
 
-        if (c.getStatus() != ContractStatus.BẢN_NHÁP && c.getStatus() != ContractStatus.ĐÃ_TỪ_CHỐI) {
-            throw new IllegalStateException("Only BẢN_NHÁP/ĐÃ_TỪ_CHỐI contracts can be submitted");
+        if (c.getStatus() != ContractStatus.DRAFT && c.getStatus() != ContractStatus.REJECTED) {
+            throw new IllegalStateException("Only DRAFT/REJECTED contracts can be submitted");
         }
-        c.setStatus(ContractStatus.CHỜ_DUYỆT);
+        c.setStatus(ContractStatus.PENDING_MANUFACTURER);
         return mapper.toResponse(contractRepo.save(c));
     }
 
@@ -144,10 +97,10 @@ public class ContractServiceImpl implements ContractService {
     public ContractResponse approve(Long id, String note) {
         Contract c = contractRepo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Contract not found"));
-        if (c.getStatus() != ContractStatus.CHỜ_DUYỆT) {
-            throw new IllegalStateException("Only CHỜ_DUYỆT contracts can be approved");
+        if (c.getStatus() != ContractStatus.PENDING_MANUFACTURER) {
+            throw new IllegalStateException("Only PENDING_MANUFACTURER can be approved");
         }
-        c.setStatus(ContractStatus.ĐÃ_XÁC_NHẬN);
+        c.setStatus(ContractStatus.APPROVED);
         c.setManufacturerNote(note);
         return mapper.toResponse(contractRepo.save(c));
     }
@@ -157,10 +110,10 @@ public class ContractServiceImpl implements ContractService {
     public ContractResponse reject(Long id, String note) {
         Contract c = contractRepo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Contract not found"));
-        if (c.getStatus() != ContractStatus.CHỜ_DUYỆT) {
-            throw new IllegalStateException("Only CHỜ_DUYỆT contracts can be rejected");
+        if (c.getStatus() != ContractStatus.PENDING_MANUFACTURER) {
+            throw new IllegalStateException("Only PENDING_MANUFACTURER can be rejected");
         }
-        c.setStatus(ContractStatus.ĐÃ_TỪ_CHỐI);
+        c.setStatus(ContractStatus.REJECTED);
         c.setManufacturerNote(note);
         return mapper.toResponse(contractRepo.save(c));
     }
