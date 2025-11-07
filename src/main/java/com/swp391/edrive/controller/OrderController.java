@@ -51,7 +51,7 @@ public class OrderController {
         OrderResponse result = orderService.getOrderById(orderId);
         return ResponseObject.<OrderResponse>builder()
                 .statusCode(HttpStatus.OK.value())
-                .message("Fetched order successfully")
+                .message("Lấy thông tin đơn hàng thành công")
                 .data(result)
                 .build();
     }
@@ -61,7 +61,7 @@ public class OrderController {
         List<OrderResponse> result = orderService.getOrdersByStatus(status);
         return ResponseObject.<List<OrderResponse>>builder()
                 .statusCode(HttpStatus.OK.value())
-                .message("Fetched orders by status successfully")
+                .message("Lấy danh sách đơn hàng theo trạng thái thành công")
                 .data(result)
                 .build();
     }
@@ -71,7 +71,7 @@ public class OrderController {
         List<OrderResponse> result = orderService.getOrdersByDealerId(dealerId);
         return ResponseObject.<List<OrderResponse>>builder()
                 .statusCode(HttpStatus.OK.value())
-                .message("Fetched orders by dealerId successfully")
+                .message("Lấy danh sách đơn hàng theo đại lý thành công")
                 .data(result)
                 .build();
     }
@@ -81,7 +81,7 @@ public class OrderController {
         OrderResponse result = orderService.cancelOrder(orderId);
         return ResponseObject.<OrderResponse>builder()
                 .statusCode(HttpStatus.OK.value())
-                .message("Order cancelled successfully")
+                .message("Hủy đơn hàng thành công")
                 .data(result).build();
     }
 
@@ -92,7 +92,7 @@ public class OrderController {
         String result = orderService.uploadPaymentImage(orderId, bill);
         return ResponseObject.<String>builder()
                 .statusCode(HttpStatus.OK.value())
-                .message("Payment bill uploaded successfully")
+                .message("Tải lên hóa đơn thanh toán thành công")
                 .data(result)
                 .build();
     }
@@ -109,7 +109,7 @@ public class OrderController {
                     .body(fileContent);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ResponseObject<>(HttpStatus.NOT_FOUND.value(), "Bill not found: " + e.getMessage(), null));
+                    .body(new ResponseObject<>(HttpStatus.NOT_FOUND.value(), "Không tìm thấy hóa đơn: " + e.getMessage(), null));
         }
     }
 
@@ -126,7 +126,7 @@ public class OrderController {
                     .body(fileContent);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ResponseObject<>(HttpStatus.NOT_FOUND.value(), "Bill not found: " + e.getMessage(), null));
+                    .body(new ResponseObject<>(HttpStatus.NOT_FOUND.value(), "Không tìm thấy hóa đơn: " + e.getMessage(), null));
         }
     }
 
@@ -136,7 +136,7 @@ public class OrderController {
         OrderResponse result = orderService.markOrderAsPaid(orderId);
         return ResponseObject.<OrderResponse>builder()
                 .statusCode(HttpStatus.OK.value())
-                .message("Order marked as PAID successfully")
+                .message("Xác nhận thanh toán thành công")
                 .data(result)
                 .build();
     }

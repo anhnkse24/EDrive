@@ -66,7 +66,7 @@ public class ContractController {
         List<ContractResponse> result = service.getAllContracts();
         return ResponseObject.<List<ContractResponse>>builder()
                 .statusCode(HttpStatus.OK.value())
-                .message("Fetched all contracts successfully")
+                .message("Lấy danh sách hợp đồng thành công")
                 .data(result)
                 .build();
     }

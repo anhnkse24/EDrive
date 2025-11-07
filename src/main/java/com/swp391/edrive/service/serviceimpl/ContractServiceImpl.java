@@ -129,10 +129,10 @@ public class ContractServiceImpl implements ContractService {
     @Transactional
     public ContractResponse submitToManufacturer(Long contractId) {
         Contract c = contractRepo.findById(contractId)
-                .orElseThrow(() -> new EntityNotFoundException("Contract not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy hợp đồng"));
 
         if (c.getStatus() != ContractStatus.BẢN_NHÁP && c.getStatus() != ContractStatus.ĐÃ_TỪ_CHỐI) {
-            throw new IllegalStateException("Only BẢN_NHÁP/ĐÃ_TỪ_CHỐI contracts can be submitted");
+            throw new IllegalStateException("Chỉ có hợp đồng BẢN_NHÁP/ĐÃ_TỪ_CHỐI mới có thể gửi");
         }
         c.setStatus(ContractStatus.CHỜ_DUYỆT);
         return mapper.toResponse(contractRepo.save(c));
@@ -142,9 +142,9 @@ public class ContractServiceImpl implements ContractService {
     @Transactional
     public ContractResponse approve(Long id, String note) {
         Contract c = contractRepo.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Contract not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy hợp đồng"));
         if (c.getStatus() != ContractStatus.CHỜ_DUYỆT) {
-            throw new IllegalStateException("Only CHỜ_DUYỆT contracts can be rejected");
+            throw new IllegalStateException("Chỉ có hợp đồng CHỜ_DUYỆT mới có thể phê duyệt");
         }
         c.setStatus(ContractStatus.ĐÃ_XÁC_NHẬN);
         c.setManufacturerNote(note);
@@ -155,9 +155,9 @@ public class ContractServiceImpl implements ContractService {
     @Transactional
     public ContractResponse reject(Long id, String note) {
         Contract c = contractRepo.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Contract not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy hợp đồng"));
         if (c.getStatus() != ContractStatus.CHỜ_DUYỆT) {
-            throw new IllegalStateException("Only CHỜ_DUYỆT contracts can be rejected");
+            throw new IllegalStateException("Chỉ có hợp đồng CHỜ_DUYỆT mới có thể từ chối");
         }
        c.setStatus(ContractStatus.ĐÃ_TỪ_CHỐI);
         c.setManufacturerNote(note);
@@ -167,7 +167,7 @@ public class ContractServiceImpl implements ContractService {
     @Override
     public ContractResponse getById(Long id) {
         return mapper.toResponse(contractRepo.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Contract not found")));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy hợp đồng")));
     }
 
     @Override
@@ -179,10 +179,10 @@ public class ContractServiceImpl implements ContractService {
     @Transactional
     public ContractFileResponse uploadPdf(Long contractId, MultipartFile file) {
         Contract contract = contractRepo.findById(contractId)
-                .orElseThrow(() -> new EntityNotFoundException("Contract not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy hợp đồng"));
 
         if (file.isEmpty()) {
-            throw new IllegalArgumentException("File cannot be empty");
+            throw new IllegalArgumentException("Tệp không được để trống");
         }
 
         try {
@@ -207,13 +207,13 @@ public class ContractServiceImpl implements ContractService {
                     .build();
 
         } catch (Exception e) {
-            throw new RuntimeException("Upload PDF failed: " + e.getMessage(), e);
+            throw new RuntimeException("Tải lên PDF thất bại: " + e.getMessage(), e);
         }
     }
 
     @Override
     public Contract findEntityById(Long id) {
         return contractRepo.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Contract not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy hợp đồng"));
     }
 }

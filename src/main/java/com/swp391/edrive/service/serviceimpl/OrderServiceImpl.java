@@ -56,7 +56,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponse getOrderById(String orderId) {
         Order order = orderRepo.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Order not found with ID: " + orderId));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn hàng với ID: " + orderId));
         return mapToOrderResponse(order);
     }
 
@@ -72,13 +72,13 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderResponse cancelOrder(String orderId) {
         Order order = orderRepo.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn hàng: " + orderId));
 
         if (order.getStatus() == OrderStatus.ĐÃ_GIAO) {
-            throw new IllegalStateException("Delivered order cannot be cancelled");
+            throw new IllegalStateException("Đơn hàng đã giao không thể hủy");
         }
         if (order.getPaymentStatus() == PaymentStatus.ĐÃ_THANH_TOÁN) {
-            throw new IllegalStateException("Paid order cannot be cancelled");
+            throw new IllegalStateException("Đơn hàng đã thanh toán không thể hủy");
         }
 
         order.setStatus(OrderStatus.ĐÃ_HUỶ);
@@ -130,8 +130,8 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<OrderResponse> getOrdersByDealerId(Long dealerId) {
         // kiểm tra dealer tồn tại
-        Dealer dealer = dealerRepo.findById(dealerId)
-                .orElseThrow(() -> new IllegalArgumentException("Dealer not found with id: " + dealerId));
+        dealerRepo.findById(dealerId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đại lý với id: " + dealerId));
 
         // lấy danh sách order theo dealer
         List<Order> orders = orderRepo.findByDealer_DealerId(dealerId);
@@ -146,7 +146,7 @@ public class OrderServiceImpl implements OrderService {
 
         // Lấy thông tin Dealer từ dealerId
         Dealer dealer = dealerRepo.findById(dealerId)
-                .orElseThrow(() -> new IllegalArgumentException("Dealer not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đại lý"));
 
         // Tạo đơn hàng mới
         Order order = new Order();
@@ -169,7 +169,7 @@ public class OrderServiceImpl implements OrderService {
 
         for (OrderItemRequest itemReq : req.getOrderItems()) {
             Vehicle vehicle = vehicleRepo.findById(itemReq.getVehicleId())
-                    .orElseThrow(() -> new IllegalArgumentException("Vehicle not found: " + itemReq.getVehicleId()));
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy xe: " + itemReq.getVehicleId()));
 
             // Kiểm tra tồn kho của nhà sản xuất
             validateManufacturerInventory(vehicle, itemReq.getQuantity());
@@ -223,21 +223,21 @@ public class OrderServiceImpl implements OrderService {
 
     private void validate(OrderCreateRequest req) {
         if (req.getOrderItems() == null || req.getOrderItems().isEmpty()) {
-            throw new IllegalArgumentException("Order must contain at least one item");
+            throw new IllegalArgumentException("Đơn hàng phải chứa ít nhất một sản phẩm");
         }
 
         for (OrderItemRequest item : req.getOrderItems()) {
             if (item.getVehicleId() == null) {
-                throw new IllegalArgumentException("vehicleId is required for all items");
+                throw new IllegalArgumentException("vehicleId là bắt buộc cho tất cả sản phẩm");
             }
             if (item.getQuantity() == null || item.getQuantity() <= 0) {
-                throw new IllegalArgumentException("quantity must be > 0 for all items");
+                throw new IllegalArgumentException("Số lượng phải lớn hơn 0 cho tất cả sản phẩm");
             }
         }
 
         if (req.getDesiredDeliveryDate() != null &&
                 req.getDesiredDeliveryDate().isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("desiredDeliveryDate cannot be in the past");
+            throw new IllegalArgumentException("Ngày giao hàng mong muốn không thể là quá khứ");
         }
     }
 
@@ -245,12 +245,12 @@ public class OrderServiceImpl implements OrderService {
         ManufacturerInventory inventory = manufacturerInventoryRepo
                 .findByVehicle_VehicleId(vehicle.getVehicleId())
                 .orElseThrow(() -> new IllegalStateException(
-                        "Vehicle not available in manufacturer inventory: " + vehicle.getVehicleId()));
+                        "Xe không có sẵn trong kho nhà sản xuất: " + vehicle.getVehicleId()));
 
         if (inventory.getQuantity() < quantity) {
             throw new IllegalStateException(
-                    "Insufficient inventory for vehicle " + vehicle.getModelName() +
-                            ". Available: " + inventory.getQuantity() + ", Requested: " + quantity);
+                    "Không đủ tồn kho cho xe " + vehicle.getModelName() +
+                            ". Có sẵn: " + inventory.getQuantity() + ", Yêu cầu: " + quantity);
         }
     }
 
@@ -297,10 +297,10 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public String uploadPaymentImage(String orderId, MultipartFile bill) {
         Order order = orderRepo.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Order not found with ID: " + orderId));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn hàng với ID: " + orderId));
 
         if (bill.isEmpty()) {
-            throw new IllegalArgumentException("Bill file cannot be empty");
+            throw new IllegalArgumentException("Tệp hóa đơn không được để trống");
         }
 
         String originalFileName = bill.getOriginalFilename();
@@ -308,11 +308,11 @@ public class OrderServiceImpl implements OrderService {
                 && !originalFileName.toLowerCase().endsWith(".jpeg")
                 && !originalFileName.toLowerCase().endsWith(".png")
                 && !originalFileName.toLowerCase().endsWith(".pdf"))) {
-            throw new IllegalArgumentException("Invalid bill file format. Only JPG, JPEG, PNG, or PDF allowed");
+            throw new IllegalArgumentException("Định dạng tệp hóa đơn không hợp lệ. Chỉ chấp nhận JPG, JPEG, PNG hoặc PDF");
         }
 
         if (bill.getSize() > 10 * 1024 * 1024) {
-            throw new IllegalArgumentException("Bill file size exceeds maximum limit of 10MB");
+            throw new IllegalArgumentException("Kích thước tệp hóa đơn vượt quá giới hạn tối đa 10MB");
         }
 
         try {
@@ -332,7 +332,7 @@ public class OrderServiceImpl implements OrderService {
             if (!uploadDirFile.exists()) {
                 boolean created = uploadDirFile.mkdirs();
                 if (!created) {
-                    throw new RuntimeException("Failed to create upload directory: " + uploadDirPath);
+                    throw new RuntimeException("Không thể tạo thư mục upload: " + uploadDirPath);
                 }
             }
 
@@ -342,25 +342,25 @@ public class OrderServiceImpl implements OrderService {
             order.setPaymentImage(uploadFile.getAbsolutePath());
             orderRepo.save(order);
 
-            return "Bill uploaded successfully. File: " + uploadFile.getAbsolutePath();
+            return "Tải lên hóa đơn thành công. Tệp: " + uploadFile.getAbsolutePath();
         } catch (IOException e) {
-            throw new RuntimeException("Error while uploading bill file: " + e.getMessage(), e);
+            throw new RuntimeException("Lỗi khi tải lên tệp hóa đơn: " + e.getMessage(), e);
         }
     }
 
     @Override
     public byte[] getPaymentBillContent(String orderId) throws IOException {
         Order order = orderRepo.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng với ID: " + orderId));
 
         String paymentImagePath = order.getPaymentImage();
         if (paymentImagePath == null || paymentImagePath.isEmpty()) {
-            throw new RuntimeException("No bill uploaded for this order");
+            throw new RuntimeException("Chưa có hóa đơn được tải lên cho đơn hàng này");
         }
 
         File file = new File(paymentImagePath);
         if (!file.exists()) {
-            throw new RuntimeException("Bill file not found at: " + paymentImagePath);
+            throw new RuntimeException("Không tìm thấy tệp hóa đơn tại: " + paymentImagePath);
         }
 
         return Files.readAllBytes(file.toPath());
@@ -369,11 +369,11 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public String getPaymentBillContentType(String orderId) {
         Order order = orderRepo.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng với ID: " + orderId));
 
         String paymentImagePath = order.getPaymentImage();
         if (paymentImagePath == null || paymentImagePath.isEmpty()) {
-            throw new RuntimeException("No bill uploaded for this order");
+            throw new RuntimeException("Chưa có hóa đơn được tải lên cho đơn hàng này");
         }
 
         String lowerPath = paymentImagePath.toLowerCase();
@@ -390,11 +390,11 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public String getPaymentBillFileName(String orderId) {
         Order order = orderRepo.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng với ID: " + orderId));
 
         String paymentImagePath = order.getPaymentImage();
         if (paymentImagePath == null || paymentImagePath.isEmpty()) {
-            throw new RuntimeException("No bill uploaded for this order");
+            throw new RuntimeException("Chưa có hóa đơn được tải lên cho đơn hàng này");
         }
 
         File file = new File(paymentImagePath);
@@ -405,14 +405,14 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderResponse markOrderAsPaid(String orderId) {
         Order order = orderRepo.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Order not found with ID: " + orderId));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn hàng với ID: " + orderId));
 
         if (order.getPaymentImage() == null || order.getPaymentImage().isEmpty()) {
-            throw new IllegalStateException("Cannot mark as PAID: no bill uploaded");
+            throw new IllegalStateException("Không thể đánh dấu là ĐÃ THANH TOÁN: chưa có hóa đơn được tải lên");
         }
 
         if (order.getPaymentStatus() == PaymentStatus.ĐÃ_THANH_TOÁN) {
-            throw new IllegalStateException("Order is already marked as PAID");
+            throw new IllegalStateException("Đơn hàng đã được đánh dấu là ĐÃ THANH TOÁN");
         }
 
         // Chỉ thay đổi PaymentStatus sang PAID, OrderStatus giữ nguyên
