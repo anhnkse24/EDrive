@@ -154,6 +154,7 @@ public class DataInitializer implements CommandLineRunner {
         Color gray   = upsertColor("Xám",     "#808080");
         Color cyan   = upsertColor("Xanh Lam","#1E90FF");
         Color green  = upsertColor("Xanh lá", "#24K07A");
+        Color yellow  = upsertColor("Vàng", "#FDFD49");
 
 // ====== Khởi tạo Vehicles cho VinFast ======
         Vehicle vf8_silver = new Vehicle();
@@ -220,7 +221,7 @@ public class DataInitializer implements CommandLineRunner {
         vf9_red.setManufacturer(edrive);
         vf9_red.setModelName("VF 9");
         vf9_red.setVersion("Standard");
-        vf9_red.setColor(white);
+        vf9_red.setColor(red);
         vf9_red.setBatteryCapacityKwh(42);
         vf9_red.setRangeKm(285);
         vf9_red.setMaxSpeedKmh(150);
@@ -261,7 +262,7 @@ public class DataInitializer implements CommandLineRunner {
         vf3_yellow.setManufacturer(edrive);
         vf3_yellow.setModelName("VF 3");
         vf3_yellow.setVersion("Long Range");
-        vf3_yellow.setColor(cyan); // giữ “Xanh” nhưng có mã hex riêng
+        vf3_yellow.setColor(yellow); // giữ “Xanh” nhưng có mã hex riêng
         vf3_yellow.setBatteryCapacityKwh(82);
         vf3_yellow.setRangeKm(602);
         vf3_yellow.setMaxSpeedKmh(233);
@@ -281,7 +282,7 @@ public class DataInitializer implements CommandLineRunner {
         vf3_red.setManufacturer(edrive);
         vf3_red.setModelName("VF 3");
         vf3_red.setVersion("Long Range");
-        vf3_red.setColor(cyan); // giữ “Xanh” nhưng có mã hex riêng
+        vf3_red.setColor(red); // giữ “Xanh” nhưng có mã hex riêng
         vf3_red.setBatteryCapacityKwh(82);
         vf3_red.setRangeKm(602);
         vf3_red.setMaxSpeedKmh(233);
@@ -302,7 +303,7 @@ public class DataInitializer implements CommandLineRunner {
         vf5_red.setManufacturer(edrive);
         vf5_red.setModelName("VF 5");
         vf5_red.setVersion("Long Range");
-        vf5_red.setColor(cyan); // giữ “Xanh” nhưng có mã hex riêng
+        vf5_red.setColor(red); // giữ “Xanh” nhưng có mã hex riêng
         vf5_red.setBatteryCapacityKwh(82);
         vf5_red.setRangeKm(602);
         vf5_red.setMaxSpeedKmh(233);
@@ -343,7 +344,7 @@ public class DataInitializer implements CommandLineRunner {
         vf6_green.setManufacturer(edrive);
         vf6_green.setModelName("VF 6");
         vf6_green.setVersion("Long Range");
-        vf6_green.setColor(gray); // giữ “Xanh” nhưng có mã hex riêng
+        vf6_green.setColor(green); // giữ “Xanh” nhưng có mã hex riêng
         vf6_green.setBatteryCapacityKwh(82);
         vf6_green.setRangeKm(602);
         vf6_green.setMaxSpeedKmh(233);
@@ -363,7 +364,7 @@ public class DataInitializer implements CommandLineRunner {
         vf6_red.setManufacturer(edrive);
         vf6_red.setModelName("VF 6");
         vf6_red.setVersion("Long Range");
-        vf6_red.setColor(gray); // giữ “Xanh” nhưng có mã hex riêng
+        vf6_red.setColor(red); // giữ “Xanh” nhưng có mã hex riêng
         vf6_red.setBatteryCapacityKwh(82);
         vf6_red.setRangeKm(602);
         vf6_red.setMaxSpeedKmh(233);
@@ -404,7 +405,7 @@ public class DataInitializer implements CommandLineRunner {
         vf7_red.setManufacturer(edrive);
         vf7_red.setModelName("VF 7");
         vf7_red.setVersion("Long Range");
-        vf7_red.setColor(gray); // giữ “Xanh” nhưng có mã hex riêng
+        vf7_red.setColor(red); // giữ “Xanh” nhưng có mã hex riêng
         vf7_red.setBatteryCapacityKwh(82);
         vf7_red.setRangeKm(602);
         vf7_red.setMaxSpeedKmh(233);
