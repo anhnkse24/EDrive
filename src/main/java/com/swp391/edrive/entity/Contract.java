@@ -31,10 +31,10 @@ public class Contract {
     private Manufacturer manufacturer;
 
     @Column(nullable = false)
-    private String contractCode; // Mã hợp đồng (VD: CT2025-0001)
+    private String contractCode;
 
     @Enumerated(EnumType.STRING)
-    private ContractStatus status; // DRAFT, PENDING_MANUFACTURER, APPROVED, REJECTED
+    private ContractStatus status;
 
     @Column(nullable = false)
     private BigDecimal totalPrice;
@@ -42,7 +42,7 @@ public class Contract {
     private String vehicleModel;
     private String vehicleVersion;
     private BigDecimal discountRate;
-    private String terms; // điều khoản hợp đồng
+    private String terms;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -51,6 +51,13 @@ public class Contract {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Lob
+    @Column(name = "pdf_file")
+    private byte[] pdfFile;
+
+    @Column(name = "pdf_filename")
+    private String pdfFilename;
 
     @Column(name = "pdf_url")
     private String pdfUrl;

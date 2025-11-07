@@ -19,9 +19,6 @@ public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
     private final DealerRepository dealerRepository;
 
-    // =============================
-    // CREATE
-    // =============================
     @Override
     @Transactional
     public CustomerResponse createCustomer(Long dealerId, CustomerRequest req) {
@@ -41,9 +38,6 @@ public class CustomerServiceImpl implements CustomerService {
         return toResponse(customerRepository.save(c));
     }
 
-    // =============================
-    // UPDATE
-    // =============================
     @Override
     @Transactional
     public CustomerResponse updateCustomer(Long dealerId, Long customerId, CustomerRequest req) {
@@ -74,9 +68,6 @@ public class CustomerServiceImpl implements CustomerService {
         customerRepository.delete(c);
     }
 
-    // =============================
-    // GET BY ID
-    // =============================
     @Override
     @Transactional
     public CustomerResponse getCustomerById(Long dealerId, Long customerId) {
@@ -86,9 +77,6 @@ public class CustomerServiceImpl implements CustomerService {
         return toResponse(c);
     }
 
-    // =============================
-    // GET ALL BY DEALER
-    // =============================
     @Override
     @Transactional
     public List<CustomerResponse> getCustomersByDealer(Long dealerId) {
@@ -96,9 +84,6 @@ public class CustomerServiceImpl implements CustomerService {
         return customers.stream().map(this::toResponse).toList();
     }
 
-    // =============================
-    // Helper: convert entity
-    // =============================
     private CustomerResponse toResponse(Customer c) {
         return CustomerResponse.builder()
                 .customerId(c.getCustomerId())

@@ -1,6 +1,7 @@
 package com.swp391.edrive.service.serviceimpl;
 
 import com.swp391.edrive.dto.request.ContractRequest;
+import com.swp391.edrive.dto.response.ContractFileResponse;
 import com.swp391.edrive.dto.response.ContractResponse;
 import com.swp391.edrive.entity.*;
 import com.swp391.edrive.enums.ContractStatus;
@@ -133,7 +134,7 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     @Transactional
-    public ContractResponse uploadPdf(Long contractId, MultipartFile file) {
+    public ContractFileResponse uploadPdf(Long contractId, MultipartFile file) {
         Contract contract = contractRepo.findById(contractId)
                 .orElseThrow(() -> new EntityNotFoundException("Contract not found"));
 
@@ -145,24 +146,31 @@ public class ContractServiceImpl implements ContractService {
             String uploadDir = "uploads/contracts/";
             Files.createDirectories(Paths.get(uploadDir));
 
-            String filename = String.format("contract-%d-%s.pdf", contractId, java.time.LocalDate.now());
-            Path filepath = Paths.get(uploadDir, filename);
+            String filename = "contract_" + contractId + "_" + file.getOriginalFilename();
+            Path filePath = Paths.get(uploadDir, filename);
+            Files.write(filePath, file.getBytes());
 
-            Files.write(filepath, file.getBytes());
-
-            String pdfUrl = "https://storage.edrive.com/contracts/" + filename;
-
-            contract.setPdfUrl(pdfUrl);
+            contract.setPdfFilename(filename);
             contract.setPdfUploadedAt(LocalDateTime.now());
             contractRepo.save(contract);
 
-            ContractResponse res = mapper.toResponse(contract);
-            res.setPdfUrl(pdfUrl);
-            res.setPdfUploadedAt(contract.getPdfUploadedAt());
-            return res;
+            String fileUrl = "http://localhost:8080/uploads/contracts/" + filename;
+
+            return ContractFileResponse.builder()
+                    .contractId(contractId)
+                    .pdfFilename(filename)
+                    .uploadedAt(contract.getPdfUploadedAt())
+                    .downloadUrl(fileUrl)
+                    .build();
 
         } catch (Exception e) {
             throw new RuntimeException("Upload PDF failed: " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public Contract findEntityById(Long id) {
+        return contractRepo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Contract not found"));
     }
 }
