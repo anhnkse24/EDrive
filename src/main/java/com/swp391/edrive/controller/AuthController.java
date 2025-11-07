@@ -39,6 +39,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "api")
 public class AuthController {
 
     private static final String ACCOUNT_LOCKED_MESSAGE = "Account has been locked!";

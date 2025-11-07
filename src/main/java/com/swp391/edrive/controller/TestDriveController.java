@@ -17,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/testdrives")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "api")
 @Tag(name = "Test Drive Management", description = "Quản lý lịch lái thử xe (CRUD)")
 public class TestDriveController {
 

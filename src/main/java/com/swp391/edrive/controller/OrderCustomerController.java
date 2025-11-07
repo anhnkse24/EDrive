@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/customer-orders")
 @RequiredArgsConstructor
-@SecurityRequirement(name = "api") // 🔒 nếu bạn dùng JWT / OpenAPI
+@SecurityRequirement(name = "api")
 public class OrderCustomerController {
 
     private final OrderCustomerService orderCustomerService;

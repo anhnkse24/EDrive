@@ -18,6 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/vehicles")
+@SecurityRequirement(name = "api")
 @Tag(name = "Vehicles", description = "API quản lý danh sách xe")
 public class VehicleController {
 

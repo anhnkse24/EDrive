@@ -3,6 +3,7 @@ package com.swp391.edrive.controller;
 import com.swp391.edrive.dto.response.NotificationResponse;
 import com.swp391.edrive.service.NotificationService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/notifications")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "api")
 @Tag(name = "Notification", description = "Quản lý thông báo của Dealer sau khi customer đặt lịch lái thử")
 public class NotificationController {
 

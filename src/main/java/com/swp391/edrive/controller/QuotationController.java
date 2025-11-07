@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/quotations")
 @RequiredArgsConstructor
-@SecurityRequirement(name = "api") // Nếu API public thì có thể bỏ
+@SecurityRequirement(name = "api")
 public class QuotationController {
 
     private final QuotationService quotationService;
