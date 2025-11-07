@@ -41,6 +41,16 @@ public class FeedbackController {
         return ResponseEntity.ok(feedbackService.getByCustomerId(customerId, page, size));
     }
 
+    // GET /api/feedbacks/by-dealer/{dealerId}?page=0&size=10
+    @GetMapping("/by-dealer/{dealerId}")
+    public ResponseEntity<Page<FeedbackResponse>> getByDealerId(
+            @PathVariable Long dealerId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(feedbackService.getByDealerId(dealerId, page, size));
+    }
+
     // DELETE /api/feedbacks/{id}
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {

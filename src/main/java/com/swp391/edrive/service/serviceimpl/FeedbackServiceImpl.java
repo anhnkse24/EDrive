@@ -50,6 +50,13 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
 
     @Override
+    public Page<FeedbackResponse> getByDealerId(Long dealerId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt", "feedbackId"));
+        Page<Feedback> p = feedbackRepo.findByDealer_DealerId(dealerId, pageable);
+        return p.map(this::toDto);
+    }
+
+    @Override
     @Transactional
     public void deleteById(Long id) {
         if (!feedbackRepo.existsById(id)) {

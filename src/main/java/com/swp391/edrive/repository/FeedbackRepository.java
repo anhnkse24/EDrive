@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
     Page<Feedback> findByCustomer_CustomerId(Long customerId, Pageable pageable);
+    Page<Feedback> findByDealer_DealerId(Long dealerId, Pageable pageable);
 
 }
 
