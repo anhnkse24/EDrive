@@ -62,6 +62,9 @@ public class Order {
         orderDate = LocalDate.now();
         // Set payment expiry time to 10 minutes from creation
         paymentExpiryTime = LocalDateTime.now().plusMinutes(10);
+        if (paymentStatus == null) {
+            paymentStatus = PaymentStatus.CHỜ_DUYỆT;
+        }
 
     }
 }
