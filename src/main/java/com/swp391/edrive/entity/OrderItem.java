@@ -27,15 +27,15 @@ public class OrderItem {
     @Column(nullable = false)
     private Integer quantity;
 
-    @Column(nullable = false, precision = 12, scale = 2)
+    @Column(nullable = false, precision = 20, scale = 2)
     private BigDecimal unitPrice;
 
     @Column(precision = 5, scale = 4)
     private BigDecimal discountRate;
 
-    @Column(precision = 12, scale = 2)
+    @Column(precision = 20, scale = 2)
     private BigDecimal discountAmount;
 
-    @Column(precision = 12, scale = 2)
+    @Column(precision = 20, scale = 2)
     private BigDecimal totalPrice;
 }
