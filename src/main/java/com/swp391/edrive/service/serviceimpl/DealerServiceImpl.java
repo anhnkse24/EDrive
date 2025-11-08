@@ -3,7 +3,7 @@ package com.swp391.edrive.service.serviceimpl;
 import com.swp391.edrive.dto.request.DealerRequest;
 import com.swp391.edrive.dto.response.DealerResponse;
 import com.swp391.edrive.entity.Dealer;
-import com.swp391.edrive.repository.DealerRepository;
+import com.swp391.edrive.repository.*;
 import com.swp391.edrive.service.DealerService;
 import com.swp391.edrive.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +18,17 @@ public class DealerServiceImpl implements DealerService {
 
     private final DealerRepository dealerRepository;
     private final NotificationService notificationService;
+    private final UserRepository userRepository;
+    private final OrderRepository orderRepository;
+    private final ContractRepository contractRepository;
+    private final DealerInventoryRepository dealerInventoryRepository;
+    private final TestDriveRepository testDriveRepository;
+    private final QuotationRepository quotationRepository;
+    private final NotificationRepository notificationRepository;
+    private final ProfileRepository profileRepository;
+    private final PromotionRepository promotionRepository;
+    private final FeedbackRepository feedbackRepository;
+    private final CustomerRepository customerRepository;
 
     @Override
     @Transactional
@@ -58,6 +69,84 @@ public class DealerServiceImpl implements DealerService {
     public void deleteDealer(Long dealerId) {
         Dealer dealer = dealerRepository.findById(dealerId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đại lý với ID = " + dealerId));
+
+        // Kiểm tra TẤT CẢ các ràng buộc bằng cách query trực tiếp từ repository
+
+        // 1. Kiểm tra Users
+        long userCount = userRepository.findAll().stream()
+                .filter(u -> u.getDealer() != null && u.getDealer().getDealerId().equals(dealerId))
+                .count();
+        if (userCount > 0) {
+            throw new IllegalStateException("Không thể xóa đại lý vì còn " + userCount + " người dùng liên kết.");
+        }
+
+        // 2. Kiểm tra Orders
+        List<?> orders = orderRepository.findByDealer_DealerId(dealerId);
+        if (orders != null && !orders.isEmpty()) {
+            throw new IllegalStateException("Không thể xóa đại lý vì còn " + orders.size() + " đơn hàng liên kết.");
+        }
+
+        // 3. Kiểm tra Contracts
+        List<?> contracts = contractRepository.findByDealer_DealerId(dealerId);
+        if (contracts != null && !contracts.isEmpty()) {
+            throw new IllegalStateException("Không thể xóa đại lý vì còn " + contracts.size() + " hợp đồng liên kết.");
+        }
+
+        // 4. Kiểm tra DealerInventories
+        List<?> inventories = dealerInventoryRepository.findAll().stream()
+                .filter(inv -> inv.getDealer() != null && inv.getDealer().getDealerId().equals(dealerId))
+                .toList();
+        if (!inventories.isEmpty()) {
+            throw new IllegalStateException("Không thể xóa đại lý vì còn " + inventories.size() + " tồn kho liên kết.");
+        }
+
+        // 5. Kiểm tra TestDrives
+        List<?> testDrives = testDriveRepository.findByDealer_DealerId(dealerId);
+        if (testDrives != null && !testDrives.isEmpty()) {
+            throw new IllegalStateException("Không thể xóa đại lý vì còn " + testDrives.size() + " lịch sử lái thử liên kết.");
+        }
+
+        // 6. Kiểm tra Quotations
+        List<?> quotations = quotationRepository.findAll().stream()
+                .filter(q -> q.getDealer() != null && q.getDealer().getDealerId().equals(dealerId))
+                .toList();
+        if (!quotations.isEmpty()) {
+            throw new IllegalStateException("Không thể xóa đại lý vì còn " + quotations.size() + " báo giá liên kết.");
+        }
+
+        // 7. Kiểm tra Notifications (QUAN TRỌNG - nullable=false trong DB!)
+        List<?> notifications = notificationRepository.findByDealer_DealerIdOrderByCreatedAtDesc(dealerId);
+        if (notifications != null && !notifications.isEmpty()) {
+            throw new IllegalStateException("Không thể xóa đại lý vì còn " + notifications.size() + " thông báo liên kết. Vui lòng xóa thông báo trước.");
+        }
+
+        // 8. Kiểm tra Profiles
+        List<?> profiles = profileRepository.findByDealer_DealerId(dealerId);
+        if (profiles != null && !profiles.isEmpty()) {
+            throw new IllegalStateException("Không thể xóa đại lý vì còn " + profiles.size() + " hồ sơ liên kết.");
+        }
+
+        // 9. Kiểm tra Promotions
+        List<?> promotions = promotionRepository.findByDealer_DealerId(dealerId);
+        if (promotions != null && !promotions.isEmpty()) {
+            throw new IllegalStateException("Không thể xóa đại lý vì còn " + promotions.size() + " chương trình khuyến mãi liên kết.");
+        }
+
+        // 10. Kiểm tra Feedbacks
+        long feedbackCount = feedbackRepository.findAll().stream()
+                .filter(f -> f.getDealer() != null && f.getDealer().getDealerId().equals(dealerId))
+                .count();
+        if (feedbackCount > 0) {
+            throw new IllegalStateException("Không thể xóa đại lý vì còn " + feedbackCount + " phản hồi liên kết.");
+        }
+
+        // 11. Kiểm tra Customers
+        List<?> customers = customerRepository.findByDealer_DealerId(dealerId);
+        if (customers != null && !customers.isEmpty()) {
+            throw new IllegalStateException("Không thể xóa đại lý vì còn " + customers.size() + " khách hàng liên kết.");
+        }
+
+        // Nếu tất cả kiểm tra đều pass, xóa dealer
         dealerRepository.delete(dealer);
     }
 
