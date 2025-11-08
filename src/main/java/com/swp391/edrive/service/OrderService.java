@@ -4,6 +4,7 @@ import com.swp391.edrive.dto.request.OrderCreateRequest;
 import com.swp391.edrive.dto.response.OrderResponse;
 import com.swp391.edrive.dto.response.OrderSummaryResponse;
 import com.swp391.edrive.entity.Order;
+import com.swp391.edrive.entity.User;
 import com.swp391.edrive.enums.OrderStatus;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -11,7 +12,7 @@ import java.io.IOException;
 import java.util.List;
 
 public interface OrderService {
-    OrderSummaryResponse createOrder(OrderCreateRequest req, Long dealerId);
+    OrderSummaryResponse createOrder(OrderCreateRequest req, Long dealerId, User createdBy);
 
     List<OrderResponse> getAllOrders();
     OrderResponse getOrderById(String orderId);

@@ -21,11 +21,13 @@ public class ContractResponse {
 
     private Long dealerId;
     private String dealerName;
+    private String userFullName;
 
     private String manufacturerName;
 
     private String vehicleModel;
     private String vehicleVersion;
+    private String colorName;
     private BigDecimal subtotal;
     private BigDecimal vatAmount;
 

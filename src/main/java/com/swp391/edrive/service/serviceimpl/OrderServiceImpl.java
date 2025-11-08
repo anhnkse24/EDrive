@@ -147,7 +147,7 @@ public class OrderServiceImpl implements OrderService {
     }
     @Override
     @Transactional
-    public OrderSummaryResponse createOrder(OrderCreateRequest req, Long dealerId) {
+    public OrderSummaryResponse createOrder(OrderCreateRequest req, Long dealerId, User createdBy) {
         validate(req);  // Kiểm tra tính hợp lệ của dữ liệu đầu vào
 
         // Lấy thông tin Dealer từ dealerId
@@ -159,6 +159,7 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderId(UUID.randomUUID().toString()); // Tạo ID ngẫu nhiên
         order.setOrderDate(LocalDate.now());  // Ngày đặt hàng
         order.setDealer(dealer);  // Đặt dealer từ đối tượng đã tìm thấy
+        order.setCreatedBy(createdBy);  // Lưu user tạo order
         order.setStatus(OrderStatus.CHỜ_DUYỆT);  // Trạng thái đơn hàng
 
         // Ensure paymentStatus CHỜ_DUYỆT set by entity PrePersist, but set explicitly for clarity

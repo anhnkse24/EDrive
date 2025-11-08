@@ -34,7 +34,7 @@ public class OrderController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) authentication.getPrincipal();
         Long dealerId = user.getDealer().getDealerId();
-        return orderService.createOrder(req, dealerId);
+        return orderService.createOrder(req, dealerId, user);
     }
     @GetMapping
     public ResponseObject<List<OrderResponse>> getAllOrders() {

@@ -22,6 +22,10 @@ public class Order {
     @JoinColumn(name = "dealer_id")
     private Dealer dealer;
 
+    @ManyToOne
+    @JoinColumn(name = "created_by")
+    private User createdBy;
+
     private LocalDate orderDate;
     private LocalDate desiredDeliveryDate;
     private LocalDate actualDeliveryDate;

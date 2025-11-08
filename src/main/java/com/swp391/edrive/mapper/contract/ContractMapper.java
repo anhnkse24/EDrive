@@ -15,15 +15,22 @@ public class ContractMapper implements IContractMapper {
                 ? "http://localhost:8888/uploads/contracts/" + c.getPdfFilename()
                 : null;
 
+        String userFullName = null;
+        if (c.getOrder() != null && c.getOrder().getCreatedBy() != null) {
+            userFullName = c.getOrder().getCreatedBy().getFullName();
+        }
+
         return ContractResponse.builder()
                 .orderId(c.getOrder() != null ? c.getOrder().getOrderId() : null)
                 .id(c.getId())
                 .contractCode(c.getContractCode())
                 .dealerId(c.getDealer() != null ? c.getDealer().getDealerId() : null)
                 .dealerName(c.getDealer() != null ? c.getDealer().getDealerName() : null)
+                .userFullName(userFullName)
                 .manufacturerName(c.getManufacturer() != null ? c.getManufacturer().getManufacturerName() : null)
                 .vehicleModel(c.getVehicleModel())
                 .vehicleVersion(c.getVehicleVersion())
+                .colorName(c.getColorName())
                 .totalPrice(c.getTotalPrice())
                 .discountRate(c.getDiscountRate())
                 .terms(c.getTerms())

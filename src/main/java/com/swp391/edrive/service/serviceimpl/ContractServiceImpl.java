@@ -103,6 +103,7 @@ public class ContractServiceImpl implements ContractService {
 
         // Tạo contract với trạng thái ĐÃ_XÁC_NHẬN
         Vehicle vehicle = order.getOrderItems().get(0).getVehicle();
+        String colorName = (vehicle.getColor() != null) ? vehicle.getColor().getColorName() : null;
 
         Contract c = Contract.builder()
                 .order(order)
@@ -110,6 +111,7 @@ public class ContractServiceImpl implements ContractService {
                 .manufacturer(manufacturer)
                 .vehicleModel(vehicle.getModelName())
                 .vehicleVersion(vehicle.getVersion())
+                .colorName(colorName)
                 .totalPrice(totalPrice)
                 .discountRate(discountRate)
                 .terms(req.getTerms())

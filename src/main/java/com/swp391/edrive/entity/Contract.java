@@ -45,6 +45,7 @@ public class Contract {
 
     private String vehicleModel;
     private String vehicleVersion;
+    private String colorName;
     private BigDecimal discountRate;
     private String terms;
 
