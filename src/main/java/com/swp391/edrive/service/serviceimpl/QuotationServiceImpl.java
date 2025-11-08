@@ -26,10 +26,8 @@ public class QuotationServiceImpl implements QuotationService {
     @Value("${edrive.vat-rate:0.10}")          // nếu muốn inject từ config
     private BigDecimal vatRate;
 
-    // Bậc chiết khấu giống Order: quantity = 1 ⇒ 5%
     private static final BigDecimal DISCOUNT_RATE_FOR_ONE = new BigDecimal("0.05");
 
-    // Trong QuotationServiceImpl.java
     @Override
     public QuotationResponse previewQuotation(QuotationCreateRequest r) {
         var v = vehicleRepo.findById(r.getVehicleId())
@@ -53,7 +51,6 @@ public class QuotationServiceImpl implements QuotationService {
         BigDecimal vatAmount = taxableBase.multiply(vatRate).setScale(0, RoundingMode.HALF_UP);
         BigDecimal grandTotal = taxableBase.add(vatAmount);
 
-        // ✅ Ghép địa chỉ chi tiết thành 1 chuỗi đầy đủ
         String fullAddress = String.join(", ",
                 r.getStreet(), r.getWard(), r.getDistrict(), r.getCity()
         );

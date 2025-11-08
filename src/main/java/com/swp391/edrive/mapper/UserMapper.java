@@ -27,8 +27,7 @@ public class UserMapper {
                    .houseNumberAndStreet(user.getDealer().getHouseNumberAndStreet())
                    .wardOrCommune(user.getDealer().getWardOrCommune())
                    .district(user.getDealer().getDistrict())
-                   .provinceOrCity(user.getDealer().getProvinceOrCity())
-                   .contactPerson(user.getDealer().getContactPerson());
+                   .provinceOrCity(user.getDealer().getProvinceOrCity());
         } else {
             // Fallback nếu không có dealer
             builder.dealerId(user.getUserId())

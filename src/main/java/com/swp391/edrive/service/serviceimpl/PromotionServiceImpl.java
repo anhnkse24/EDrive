@@ -25,7 +25,6 @@ public class PromotionServiceImpl implements PromotionService {
     private final VehicleRepository vehicleRepository;
     private final DealerRepository dealerRepository;
 
-    // ------------------ CRUD CHUNG ------------------
 
     @Override
     public PromotionResponse createPromotion(PromotionRequest req) {
@@ -66,7 +65,6 @@ public class PromotionServiceImpl implements PromotionService {
         promotionRepository.deleteById(id);
     }
 
-    // ------------------ CRUD THEO DEALER ID ------------------
 
     @Override
     public List<PromotionResponse> getPromotionsByDealerId(Long dealerId) {
@@ -89,7 +87,7 @@ public class PromotionServiceImpl implements PromotionService {
                 .orElseThrow(() -> new IllegalArgumentException("Dealer không tồn tại với ID = " + dealerId));
 
         Promotion promo = mapRequestToEntity(req, new Promotion());
-        promo.setDealer(dealer); // gán dealer vào promotion
+        promo.setDealer(dealer);
 
         Promotion saved = promotionRepository.save(promo);
         return toResponse(saved);
@@ -112,7 +110,6 @@ public class PromotionServiceImpl implements PromotionService {
         promotionRepository.delete(promo);
     }
 
-    // ------------------ HELPER FUNCTIONS ------------------
 
     private Promotion mapRequestToEntity(PromotionRequest req, Promotion promo) {
         promo.setTitle(req.getTitle());
@@ -123,7 +120,6 @@ public class PromotionServiceImpl implements PromotionService {
         promo.setEndDate(req.getEndDate());
         promo.setApplicableTo(req.getApplicableTo());
 
-        // Gắn nhiều vehicle vào promotion (nếu có)
         if (req.getVehicleIds() != null && !req.getVehicleIds().isEmpty()) {
             Set<Vehicle> vehicles = new HashSet<>(vehicleRepository.findAllById(req.getVehicleIds()));
             promo.setVehicles(vehicles);

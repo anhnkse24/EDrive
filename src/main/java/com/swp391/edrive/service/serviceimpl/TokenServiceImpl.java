@@ -53,11 +53,11 @@ public class TokenServiceImpl implements TokenService {
                 "permissions",
                 user.getRoles().stream()
                         .flatMap(role -> role.getPermissions().stream())
-                        .map(Permission::getCode) // Use CODE instead of name
+                        .map(Permission::getCode)
                         .collect(Collectors.toSet()));
 
         return Jwts.builder()
-                .setClaims(claims) // Đặt claims trước
+                .setClaims(claims)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(new Date().getTime() + jwtExpirationMs))
                 .signWith(getSigninKey(), SignatureAlgorithm.HS512) // Sử dụng SecretKey

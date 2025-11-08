@@ -30,7 +30,6 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
     @Override
     public RefreshToken createRefreshToken(User user) {
-        // Delete any existing refresh token for this account
         refreshTokenRepository.findByUser(user).ifPresent(refreshTokenRepository::delete);
 
         RefreshToken refreshToken = new RefreshToken();

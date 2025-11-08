@@ -2,6 +2,9 @@ package com.swp391.edrive.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,6 +41,8 @@ public class Dealer {
 
     @Column(nullable = false, length = 100)
     private String contactPerson;
+
+    private String email;
 
     private String phone;
 

@@ -63,7 +63,6 @@ public class TestDriveServiceImpl implements TestDriveService {
 
         testDrive.setCancelReason(request.getCancelReason());
         testDriveRepository.save(testDrive);
-        // ✅ Gửi notification cho dealer
         String message = String.format(
                 "Khách hàng %s vừa đặt lịch lái thử xe %s vào lúc %s",
                 customer.getFullName(),
@@ -79,7 +78,7 @@ public class TestDriveServiceImpl implements TestDriveService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        notificationRepository.save(notification); // ✅ lưu thông báo vào DB
+        notificationRepository.save(notification);
 
 
         return mapToResponse(testDrive);

@@ -40,6 +40,8 @@ public class DealerServiceImpl implements DealerService {
         dealer.setDistrict(req.getDistrict());
         dealer.setProvinceOrCity(req.getProvinceOrCity());
         dealer.setContactPerson(req.getContactPerson());
+        dealer.setEmail(req.getEmail());
+        dealer.setPhone(req.getPhone());
 
         Dealer saved = dealerRepository.save(dealer);
         notificationService.createAdminNotificationForDealerRequest(dealer.getDealerId());
@@ -114,12 +116,6 @@ public class DealerServiceImpl implements DealerService {
             throw new IllegalStateException("Không thể xóa đại lý vì còn " + quotations.size() + " báo giá liên kết.");
         }
 
-        // 7. Kiểm tra Notifications (QUAN TRỌNG - nullable=false trong DB!)
-        List<?> notifications = notificationRepository.findByDealer_DealerIdOrderByCreatedAtDesc(dealerId);
-        if (notifications != null && !notifications.isEmpty()) {
-            throw new IllegalStateException("Không thể xóa đại lý vì còn " + notifications.size() + " thông báo liên kết. Vui lòng xóa thông báo trước.");
-        }
-
         // 8. Kiểm tra Profiles
         List<?> profiles = profileRepository.findByDealer_DealerId(dealerId);
         if (profiles != null && !profiles.isEmpty()) {
@@ -146,6 +142,7 @@ public class DealerServiceImpl implements DealerService {
             throw new IllegalStateException("Không thể xóa đại lý vì còn " + customers.size() + " khách hàng liên kết.");
         }
 
+        notificationRepository.deleteAllByDealer_DealerId(dealerId);
         // Nếu tất cả kiểm tra đều pass, xóa dealer
         dealerRepository.delete(dealer);
     }
@@ -176,6 +173,8 @@ public class DealerServiceImpl implements DealerService {
                 .district(dealer.getDistrict())
                 .provinceOrCity(dealer.getProvinceOrCity())
                 .contactPerson(dealer.getContactPerson())
+                .email(dealer.getEmail())
+                .phone(dealer.getPhone())
                 .build();
     }
 }
