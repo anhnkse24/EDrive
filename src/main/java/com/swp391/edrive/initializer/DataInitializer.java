@@ -214,7 +214,7 @@ public class DataInitializer implements CommandLineRunner {
         vf9_blue.setHeightMm(1750);
         vf9_blue.setPriceRetail(new BigDecimal("2000"));
         vf9_blue.setManufactureYear(2024);
-        vf9_blue.setImageUrl("https://vinfasthadong.com.vn/wp-content/uploads/2023/10/vinfast-vf9_blue-blue.jpg");
+        vf9_blue.setImageUrl("https://vinfastdienchau.com/wp-content/uploads/2013/08/VF-9-Plus_US-CA_21inch_VinFast-Blue_Mid-2-1.png");
         vf9_blue.setStatus(VehicleStatus.AVAILABLE);
 
         Vehicle vf9_red = new Vehicle();
