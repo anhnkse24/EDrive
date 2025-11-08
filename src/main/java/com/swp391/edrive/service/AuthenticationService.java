@@ -6,11 +6,12 @@ import com.swp391.edrive.dto.response.UnverifiedUserResponse;
 import com.swp391.edrive.dto.response.UserResponse;
 import com.swp391.edrive.entity.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 public interface AuthenticationService extends UserDetailsService {
-    User register(UserRegistrationRequest request);
+    User register(UserRegistrationRequest request, MultipartFile businessLicense);
 
     UserResponse login(LoginRequest loginRequest);
 

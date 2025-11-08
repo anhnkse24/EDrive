@@ -16,24 +16,19 @@ import com.swp391.edrive.service.RefreshTokenService;
 import com.swp391.edrive.service.TokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.time.Duration;
-import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -56,19 +51,31 @@ public class AuthController {
     @Value("${frontend.url.base}")
     private String frontendUrl;
 
-    @PostMapping("/register")
-    public ResponseEntity<ResponseObject> register(@Valid @RequestBody UserRegistrationRequest request) {
+    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Đăng ký đại lý với giấy phép kinh doanh")
+    public ResponseEntity<ResponseObject> register(
+            @Valid @ModelAttribute UserRegistrationRequest request,
+            @RequestParam(value = "businessLicense", required = false) MultipartFile businessLicense) {
+
+        // Kiểm tra bắt buộc phải upload ảnh
+        if (businessLicense == null || businessLicense.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ResponseObject(
+                            HttpStatus.BAD_REQUEST.value(),
+                            "Vui lòng upload giấy phép kinh doanh",
+                            null));
+        }
+
         try {
-            User user = authenticationService.register(request);
+            User user = authenticationService.register(request, businessLicense);
             return ResponseEntity.ok()
                     .body(new ResponseObject(
                             HttpStatus.OK.value(),
-                            "Registration successful, please check email for authentication",
+                            "Đăng ký thành công, vui lòng chờ quản trị viên phê duyệt",
                             userMapper.toUserResponse(user)));
         } catch (ConflictException e) {
             throw e;
         } catch (RuntimeException e) {
-            // Fixed: Preserve stack trace
             throw new BadRequestException(e.getMessage(), e);
         }
     }

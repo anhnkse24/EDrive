@@ -34,12 +34,21 @@ public class VehicleServiceImpl implements VehicleService {
     private final ManufacturerRepository manufacturerRepository;
     private final ManufacturerInventoryRepository manufacturerInventoryRepository;
 
+//    @Override
+//    public List<VehicleResponse> getAllVehicles(int page, int size) {
+//        Pageable pageable = PageRequest.of(page, size);
+//        Page<Vehicle> vehicles = vehicleRepository.findAll(pageable);
+//        return vehicles.stream().map(this::toResponse).toList();
+//    }
+
     @Override
-    public List<VehicleResponse> getAllVehicles(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Vehicle> vehicles = vehicleRepository.findAll(pageable);
-        return vehicles.stream().map(this::toResponse).toList();
+    public List<VehicleResponse> getAllVehicles() {
+        List<Vehicle> vehicles = vehicleRepository.findAll();
+        return vehicles.stream()
+                .map(this::toResponse)
+                .toList();
     }
+
 
     @Override
     public VehicleResponse findVehicleById(Long id) {

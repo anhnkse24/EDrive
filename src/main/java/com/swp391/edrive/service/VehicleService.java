@@ -10,7 +10,8 @@ import java.util.List;
 
 public interface VehicleService {
 
-    List<VehicleResponse> getAllVehicles(int page, int size);
+//    List<VehicleResponse> getAllVehicles(int page, int size);
+    List<VehicleResponse> getAllVehicles();
 
     VehicleResponse findVehicleById(Long id);
 

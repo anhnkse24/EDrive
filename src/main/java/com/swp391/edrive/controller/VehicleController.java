@@ -28,13 +28,20 @@ public class VehicleController {
         this.vehicleService = vehicleService;   
     }
 
+//    @Operation(summary = "Lấy danh sách tất cả xe")
+//    @GetMapping
+//    public ResponseEntity<ResponseObject> getAllVehicles(
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "10") int size) {
+//
+//        List<VehicleResponse> vehicles = vehicleService.getAllVehicles(page, size);
+//        return ResponseEntity.ok(new ResponseObject(200, "Vehicle list retrieved successfully", vehicles));
+//    }
+
     @Operation(summary = "Lấy danh sách tất cả xe")
     @GetMapping
-    public ResponseEntity<ResponseObject> getAllVehicles(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-
-        List<VehicleResponse> vehicles = vehicleService.getAllVehicles(page, size);
+    public ResponseEntity<ResponseObject> getAllVehicles() {
+        List<VehicleResponse> vehicles = vehicleService.getAllVehicles();
         return ResponseEntity.ok(new ResponseObject(200, "Vehicle list retrieved successfully", vehicles));
     }
 

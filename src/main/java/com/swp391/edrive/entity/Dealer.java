@@ -41,6 +41,9 @@ public class Dealer {
 
     private String phone;
 
+    @Column(length = 500)
+    private String businessLicenseUrl;
+
     @OneToMany(mappedBy = "dealer")
     @JsonIgnore
     private List<User> users;

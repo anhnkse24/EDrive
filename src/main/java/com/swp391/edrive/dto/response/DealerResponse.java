@@ -11,6 +11,7 @@ import java.util.Set;
 @Setter
 @Builder
 public class DealerResponse {
+    private Long userId;
     private Long dealerId;
     private String dealerName;
     private  String email;

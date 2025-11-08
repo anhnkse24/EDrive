@@ -90,7 +90,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     @Transactional
-    public User register(UserRegistrationRequest request) {
+    public User register(UserRegistrationRequest request, org.springframework.web.multipart.MultipartFile businessLicense) {
         // Validate unique constraints
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new ConflictException("Username already exists");
@@ -108,6 +108,47 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new ConflictException("Dealer name already exists");
         }
 
+        // Validate and upload business license file
+        String businessLicenseUrl = null;
+        if (businessLicense != null && !businessLicense.isEmpty()) {
+            try {
+                String originalFileName = businessLicense.getOriginalFilename();
+                if (originalFileName == null || originalFileName.isEmpty()) {
+                    throw new BadRequestException("Tên file giấy phép kinh doanh không hợp lệ");
+                }
+
+                // Validate file extension
+                String fileExtension = originalFileName.substring(originalFileName.lastIndexOf(".")).toLowerCase();
+                if (!fileExtension.matches("\\.(pdf|jpg|jpeg|png)$")) {
+                    throw new BadRequestException("Chỉ chấp nhận file PDF, JPG, JPEG hoặc PNG");
+                }
+
+                // Create unique filename
+                String uniqueFileName = "business_license_" + UUID.randomUUID() + fileExtension;
+
+                // Define upload directory
+                String userHome = System.getProperty("user.home");
+                String uploadDirPath = userHome + java.io.File.separator + "edrive_uploads" + java.io.File.separator + "licenses";
+
+                java.io.File uploadDirFile = new java.io.File(uploadDirPath);
+                if (!uploadDirFile.exists()) {
+                    boolean created = uploadDirFile.mkdirs();
+                    if (!created) {
+                        throw new RuntimeException("Không thể tạo thư mục upload: " + uploadDirPath);
+                    }
+                }
+
+                // Save file
+                java.io.File uploadFile = new java.io.File(uploadDirFile, uniqueFileName);
+                businessLicense.transferTo(uploadFile);
+                businessLicenseUrl = uploadFile.getAbsolutePath();
+
+                log.info("Business license uploaded successfully: {}", businessLicenseUrl);
+            } catch (java.io.IOException e) {
+                throw new RuntimeException("Lỗi khi tải lên giấy phép kinh doanh: " + e.getMessage(), e);
+            }
+        }
+
         // Create Dealer entity
         Dealer dealer = new Dealer();
         dealer.setDealerName(request.getDealerName());
@@ -116,7 +157,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         dealer.setDistrict(request.getDistrict());
         dealer.setProvinceOrCity(request.getProvinceOrCity());
         dealer.setContactPerson(request.getFullName());
-        
+        dealer.setBusinessLicenseUrl(businessLicenseUrl);
+
         Dealer savedDealer = dealerRepository.save(dealer);
 
         // Create User entity
@@ -142,13 +184,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         createVerificationToken(savedUser, token);
 
         // Send email to admin for approval
-        String fullAddress = String.format("%s, %s, %s, %s", 
+        String fullAddress = String.format("%s, %s, %s, %s",
             request.getHouseNumberAndStreet(),
             request.getWardOrCommune(),
             request.getDistrict(),
             request.getProvinceOrCity()
         );
-        
+
         mailService.sendDealerApprovalRequestToAdmin(
             ADMIN_EMAIL,
             request.getDealerName(),
