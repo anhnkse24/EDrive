@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ContractFileResponse {
     private Long contractId;
+    private String contactName;
+    private String contactPhone;
     private String pdfFilename;
     private LocalDateTime uploadedAt;
     private String downloadUrl;

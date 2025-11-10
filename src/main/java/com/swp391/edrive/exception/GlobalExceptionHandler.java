@@ -11,6 +11,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.lang.IllegalArgumentException;
 import java.sql.SQLIntegrityConstraintViolationException;
@@ -195,6 +196,15 @@ public class GlobalExceptionHandler {
                 .body(ResponseObject.builder()
                         .statusCode(HttpStatus.BAD_REQUEST.value())
                         .message(exception.getMessage())
+                        .data(null)
+                        .build());
+    }
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ResponseObject> handleMaxSizeException(MaxUploadSizeExceededException ex) {
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                .body(ResponseObject.builder()
+                        .statusCode(HttpStatus.PAYLOAD_TOO_LARGE.value())
+                        .message("Kích thước tệp vượt quá giới hạn cho phép (tối đa 10MB).")
                         .data(null)
                         .build());
     }
