@@ -17,6 +17,7 @@ public class UnverifiedUserResponse {
     private String phone;
     private String dealerName;
     private String dealerAddress;
+    private String businessLicenseUrl;
     private LocalDateTime registrationDate;
     private boolean isVerified;
 }

@@ -390,10 +390,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .map(user -> {
                     String dealerAddress = "";
                     String dealerName = "";
-                    
+                    String businessLicenseUrl = "";
+
                     if (user.getDealer() != null) {
                         Dealer dealer = user.getDealer();
                         dealerName = dealer.getDealerName();
+                        businessLicenseUrl = dealer.getBusinessLicenseUrl();
                         dealerAddress = String.format("%s, %s, %s, %s",
                                 dealer.getHouseNumberAndStreet() != null ? dealer.getHouseNumberAndStreet() : "",
                                 dealer.getWardOrCommune() != null ? dealer.getWardOrCommune() : "",
@@ -410,6 +412,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                             .phone(user.getPhone())
                             .dealerName(dealerName)
                             .dealerAddress(dealerAddress)
+                            .businessLicenseUrl(businessLicenseUrl)
                             .isVerified(user.isVerify())
                             .build();
                 })
@@ -459,5 +462,21 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         log.info("Account verified successfully by admin for user ID: {}", userId);
     }
 
+    @Override
+    public String getBusinessLicenseUrl(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BadRequestException("User not found with ID: " + userId));
+
+        if (user.getDealer() == null) {
+            throw new BadRequestException("User is not associated with any dealer");
+        }
+
+        String businessLicenseUrl = user.getDealer().getBusinessLicenseUrl();
+        if (businessLicenseUrl == null || businessLicenseUrl.isEmpty()) {
+            throw new BadRequestException("Business license not found for this dealer");
+        }
+
+        return businessLicenseUrl;
+    }
 
 }

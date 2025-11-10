@@ -8,11 +8,20 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 @RestController
@@ -57,6 +66,47 @@ public class AdminController {
             throw e;
         } catch (Exception e) {
             throw new BadRequestException("Failed to verify account: " + e.getMessage(), e);
+        }
+    }
+
+    @GetMapping("/business-license/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "View/Download business license",
+               description = "Download the business license file for a dealer by user ID")
+    public ResponseEntity<Resource> getBusinessLicense(@PathVariable Long userId) {
+        try {
+            String businessLicenseUrl = authenticationService.getBusinessLicenseUrl(userId);
+
+            File file = new File(businessLicenseUrl);
+            if (!file.exists()) {
+                throw new BadRequestException("Business license file not found");
+            }
+
+            Path path = Paths.get(businessLicenseUrl);
+            Resource resource = new FileSystemResource(file);
+
+            // Determine content type
+            String contentType;
+            try {
+                contentType = Files.probeContentType(path);
+                if (contentType == null) {
+                    contentType = "application/octet-stream";
+                }
+            } catch (IOException e) {
+                contentType = "application/octet-stream";
+            }
+
+            String filename = file.getName();
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                    .body(resource);
+
+        } catch (BadRequestException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new BadRequestException("Failed to retrieve business license: " + e.getMessage(), e);
         }
     }
 }
