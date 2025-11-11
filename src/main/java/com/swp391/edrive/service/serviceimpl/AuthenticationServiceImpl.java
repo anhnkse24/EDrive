@@ -96,7 +96,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new ConflictException("Username already exists");
         }
 
-        if (userRepository.existsByEmail(request.getEmail())) {
+        if (userRepository.existsByEmail(request.getDealerEmail())) {
             throw new ConflictException("Email already exists");
         }
 
@@ -152,11 +152,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         // Create Dealer entity
         Dealer dealer = new Dealer();
         dealer.setDealerName(request.getDealerName());
+        dealer.setDealerEmail(request.getDealerEmail());
         dealer.setHouseNumberAndStreet(request.getHouseNumberAndStreet());
         dealer.setWardOrCommune(request.getWardOrCommune());
         dealer.setDistrict(request.getDistrict());
         dealer.setProvinceOrCity(request.getProvinceOrCity());
         dealer.setContactPerson(request.getFullName());
+        dealer.setPhone(request.getPhone());
         dealer.setBusinessLicenseUrl(businessLicenseUrl);
 
         Dealer savedDealer = dealerRepository.save(dealer);
@@ -165,7 +167,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         User user = User.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .email(request.getEmail())
+                .email(request.getDealerEmail())
                 .phone(request.getPhone())
                 .fullName(request.getFullName())
                 .dealer(savedDealer)
@@ -195,7 +197,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             ADMIN_EMAIL,
             request.getDealerName(),
             request.getFullName(),
-            request.getEmail(),
+            request.getDealerEmail(),
             request.getPhone(),
             fullAddress,
             token
