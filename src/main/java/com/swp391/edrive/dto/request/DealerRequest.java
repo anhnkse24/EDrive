@@ -14,10 +14,6 @@ public class DealerRequest {
 
     @NotBlank(message = "Email của đại lý không được để trống")
     @Email(message = "Email của đại lý không hợp lệ")
-    @Pattern(
-            regexp = "^[A-Za-z0-9._%+-]+@edrive\\.local$",
-            message = "Email phải có đuôi @edrive.local"
-    )
     private String dealerEmail;
 
     @NotBlank(message = "Số nhà và tên đường không được để trống")
