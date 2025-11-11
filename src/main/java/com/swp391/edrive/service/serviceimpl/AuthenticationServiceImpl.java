@@ -391,9 +391,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     String dealerAddress = "";
                     String dealerName = "";
                     String businessLicenseUrl = "";
+                    Long dealerId = null;
 
                     if (user.getDealer() != null) {
                         Dealer dealer = user.getDealer();
+                        dealerId = dealer.getDealerId();
                         dealerName = dealer.getDealerName();
                         businessLicenseUrl = dealer.getBusinessLicenseUrl();
                         dealerAddress = String.format("%s, %s, %s, %s",
@@ -406,6 +408,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     
                     return UnverifiedUserResponse.builder()
                             .userId(user.getUserId())
+                            .dealerId(dealerId)
                             .username(user.getUsername())
                             .fullName(user.getFullName())
                             .email(user.getEmail())
@@ -421,12 +424,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     @Transactional
-    public void verifyAccountById(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BadRequestException("User not found with ID: " + userId));
-        
+    public void verifyAccountByDealerId(Long dealerId) {
+        Dealer dealer = dealerRepository.findById(dealerId)
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy đại lý với ID: " + dealerId));
+
+        User user = userRepository.findByDealer(dealer)
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy tài khoản cho đại lý ID: " + dealerId));
+
         if (user.isVerify()) {
-            throw new BadRequestException("Account is already verified");
+            throw new BadRequestException("Tài khoản đã được xác nhận");
         }
         
         // Set account as verified
@@ -454,26 +460,22 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 user.getFullName(),
                 user.getUsername(),
                 user.getEmail(),
-                user.getDealer() != null ? user.getDealer().getDealerName() : "N/A"
+                dealer.getDealerName()
         );
         
         emailService.sendEmail(user.getEmail(), emailSubject, emailText);
         
-        log.info("Account verified successfully by admin for user ID: {}", userId);
+        log.info("Account verified successfully by admin for dealer ID: {}", dealerId);
     }
 
     @Override
-    public String getBusinessLicenseUrl(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BadRequestException("User not found with ID: " + userId));
+    public String getBusinessLicenseUrl(Long dealerId) {
+        Dealer dealer = dealerRepository.findById(dealerId)
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy đại lý với ID: " + dealerId));
 
-        if (user.getDealer() == null) {
-            throw new BadRequestException("User is not associated with any dealer");
-        }
-
-        String businessLicenseUrl = user.getDealer().getBusinessLicenseUrl();
+        String businessLicenseUrl = dealer.getBusinessLicenseUrl();
         if (businessLicenseUrl == null || businessLicenseUrl.isEmpty()) {
-            throw new BadRequestException("Business license not found for this dealer");
+            throw new BadRequestException("Không tìm thấy giấy phép kinh doanh cho đại lý này");
         }
 
         return businessLicenseUrl;

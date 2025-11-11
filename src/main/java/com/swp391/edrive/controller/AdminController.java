@@ -50,32 +50,32 @@ public class AdminController {
         }
     }
 
-    @PostMapping("/verify-account/{userId}")
+    @PostMapping("/verify-account/{dealerId}")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Verify account by ID", 
-               description = "Manually verify a user account by providing the user ID. This will enable the account and send a confirmation email to the user.")
-    public ResponseEntity<ResponseObject<Void>> verifyAccountById(@PathVariable Long userId) {
+    @Operation(summary = "Verify account by Dealer ID",
+               description = "Manually verify a dealer account by providing the dealer ID. This will enable the account and send a confirmation email to the dealer.")
+    public ResponseEntity<ResponseObject<Void>> verifyAccountByDealerId(@PathVariable Long dealerId) {
         try {
-            authenticationService.verifyAccountById(userId);
+            authenticationService.verifyAccountByDealerId(dealerId);
             return ResponseEntity.ok()
                     .body(new ResponseObject<>(
                             HttpStatus.OK.value(),
-                            "Account verified successfully",
+                            "Tài khoản đại lý đã được xác nhận thành công",
                             null));
         } catch (BadRequestException e) {
             throw e;
         } catch (Exception e) {
-            throw new BadRequestException("Failed to verify account: " + e.getMessage(), e);
+            throw new BadRequestException("Xác nhận tài khoản thất bại: " + e.getMessage(), e);
         }
     }
 
-    @GetMapping("/business-license/{userId}")
+    @GetMapping("/business-license/{dealerId}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "View/Download business license",
-               description = "Download the business license file for a dealer by user ID")
-    public ResponseEntity<Resource> getBusinessLicense(@PathVariable Long userId) {
+               description = "Download the business license file for a dealer by dealer ID")
+    public ResponseEntity<Resource> getBusinessLicense(@PathVariable Long dealerId) {
         try {
-            String businessLicenseUrl = authenticationService.getBusinessLicenseUrl(userId);
+            String businessLicenseUrl = authenticationService.getBusinessLicenseUrl(dealerId);
 
             File file = new File(businessLicenseUrl);
             if (!file.exists()) {

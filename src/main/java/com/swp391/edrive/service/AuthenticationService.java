@@ -35,7 +35,7 @@ public interface AuthenticationService extends UserDetailsService {
     
     List<UnverifiedUserResponse> getAllUnverifiedAccounts();
     
-    void verifyAccountById(Long userId);
+    void verifyAccountByDealerId(Long dealerId);
 
-    String getBusinessLicenseUrl(Long userId);
+    String getBusinessLicenseUrl(Long dealerId);
 }
