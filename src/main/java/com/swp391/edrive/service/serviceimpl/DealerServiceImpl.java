@@ -3,6 +3,7 @@ package com.swp391.edrive.service.serviceimpl;
 import com.swp391.edrive.dto.request.DealerRequest;
 import com.swp391.edrive.dto.response.DealerResponse;
 import com.swp391.edrive.entity.Dealer;
+import com.swp391.edrive.entity.User;
 import com.swp391.edrive.repository.*;
 import com.swp391.edrive.service.DealerService;
 import com.swp391.edrive.service.NotificationService;
@@ -77,12 +78,14 @@ public class DealerServiceImpl implements DealerService {
 
         // Kiểm tra TẤT CẢ các ràng buộc bằng cách query trực tiếp từ repository
 
-        // 1. Kiểm tra Users
-        long userCount = userRepository.findAll().stream()
+        // --- Bỏ ràng buộc của User thay vì báo lỗi ---
+        var users = userRepository.findAll().stream()
                 .filter(u -> u.getDealer() != null && u.getDealer().getDealerId().equals(dealerId))
-                .count();
-        if (userCount > 0) {
-            throw new IllegalStateException("Không thể xóa đại lý vì còn " + userCount + " người dùng liên kết.");
+                .toList();
+
+        for (var user : users) {
+            user.setDealer(null);
+            userRepository.save(user);
         }
 
         // 2. Kiểm tra Orders
