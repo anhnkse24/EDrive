@@ -84,16 +84,16 @@ public class DataInitializer implements CommandLineRunner {
         List<Dealer> dealersInDb = dealerRepository.findAll();
         if (dealersInDb.isEmpty()) {
             List<Dealer> seedDealers = new ArrayList<>();
-            seedDealers.add(makeDealer("E-Drive Hà Nội", "123 Trần Duy Hưng", "Trung Hòa", "Cầu Giấy", "Hà Nội", "Liên hệ 1", "0900000001"));
-            seedDealers.add(makeDealer("E-Drive Hồ Chí Minh", "45 Lê Lợi", "Bến Nghé", "Quận 1", "Hồ Chí Minh", "Liên hệ 2", "0900000002"));
-            seedDealers.add(makeDealer("E-Drive Đà Nẵng", "99 Nguyễn Văn Linh", "Hải Châu 1", "Hải Châu", "Đà Nẵng", "Liên hệ 3", "0900000003"));
-            seedDealers.add(makeDealer("E-Drive Hải Phòng", "12 Điện Biên Phủ", "Minh Khai", "Hồng Bàng", "Hải Phòng", "Liên hệ 4", "0900000004"));
-            seedDealers.add(makeDealer("E-Drive Cần Thơ", "8 Mậu Thân", "Xuân Khánh", "Ninh Kiều", "Cần Thơ", "Liên hệ 5", "0900000005"));
-            seedDealers.add(makeDealer("E-Drive Nha Trang", "27 Trần Phú", "Lộc Thọ", "Nha Trang", "Khánh Hòa", "Liên hệ 6", "0900000006"));
-            seedDealers.add(makeDealer("E-Drive Biên Hòa", "18 Phạm Văn Thuận", "Tân Tiến", "Biên Hòa", "Đồng Nai", "Liên hệ 7", "0900000007"));
-            seedDealers.add(makeDealer("E-Drive Vinh", "56 Trường Chinh", "Trung Đô", "Vinh", "Nghệ An", "Liên hệ 8", "0900000008"));
-            seedDealers.add(makeDealer("E-Drive Buôn Ma Thuột", "10 Nguyễn Tất Thành", "Tân Lợi", "Buôn Ma Thuột", "Đắk Lắk", "Liên hệ 9", "0900000009"));
-            seedDealers.add(makeDealer("E-Drive Thanh Hóa", "20 Hạc Thành", "Tân Sơn", "Thanh Hóa", "Thanh Hóa", "Liên hệ 10", "0900000010"));
+            seedDealers.add(makeDealer("E-Drive Hà Nội","edrivehanoi@edrive.local","123 Trần Duy Hưng", "Trung Hòa", "Cầu Giấy", "Hà Nội", "Liên hệ 1", "0900000001"));
+            seedDealers.add(makeDealer("E-Drive Hồ Chí Minh","edrivehochiminh@edrive.local", "45 Lê Lợi", "Bến Nghé", "Quận 1", "Hồ Chí Minh", "Liên hệ 2", "0900000002"));
+            seedDealers.add(makeDealer("E-Drive Đà Nẵng","edrivedanang@edrive.local", "99 Nguyễn Văn Linh", "Hải Châu 1", "Hải Châu", "Đà Nẵng", "Liên hệ 3", "0900000003"));
+            seedDealers.add(makeDealer("E-Drive Hải Phòng","edrivehaiphong@edrive.local", "12 Điện Biên Phủ", "Minh Khai", "Hồng Bàng", "Hải Phòng", "Liên hệ 4", "0900000004"));
+            seedDealers.add(makeDealer("E-Drive Cần Thơ","edrivecantho@edrive.local", "8 Mậu Thân", "Xuân Khánh", "Ninh Kiều", "Cần Thơ", "Liên hệ 5", "0900000005"));
+            seedDealers.add(makeDealer("E-Drive Nha Trang","edrivenhatrang@edrive.local", "27 Trần Phú", "Lộc Thọ", "Nha Trang", "Khánh Hòa", "Liên hệ 6", "0900000006"));
+            seedDealers.add(makeDealer("E-Drive Biên Hòa","edrivebienhoa@edrive.local", "18 Phạm Văn Thuận", "Tân Tiến", "Biên Hòa", "Đồng Nai", "Liên hệ 7", "0900000007"));
+            seedDealers.add(makeDealer("E-Drive Vinh","edrivevinh@edrive.local", "56 Trường Chinh", "Trung Đô", "Vinh", "Nghệ An", "Liên hệ 8", "0900000008"));
+            seedDealers.add(makeDealer("E-Drive Buôn Ma Thuột","edrivebuonmathuot@edrive.local", "10 Nguyễn Tất Thành", "Tân Lợi", "Buôn Ma Thuột", "Đắk Lắk", "Liên hệ 9", "0900000009"));
+            seedDealers.add(makeDealer("E-Drive Thanh Hóa","edrivethanhhoa@edrive.local", "20 Hạc Thành", "Tân Sơn", "Thanh Hóa", "Thanh Hóa", "Liên hệ 10", "0900000010"));
             dealersInDb = dealerRepository.saveAll(seedDealers);
             System.out.println("✅ Đã khởi tạo " + dealersInDb.size() + " dealers");
         }
@@ -1167,9 +1167,10 @@ public class DataInitializer implements CommandLineRunner {
         System.out.println("🎉 Hoàn thành khởi tạo dữ liệu!");
     }
 
-    private Dealer makeDealer(String name, String street, String ward, String district, String city, String contact, String phone) {
+    private Dealer makeDealer(String name,String email, String street, String ward, String district, String city, String contact, String phone) {
         Dealer d = new Dealer();
         d.setDealerName(name);
+        d.setDealerEmail(email);
         d.setHouseNumberAndStreet(street);
         d.setWardOrCommune(ward);
         d.setDistrict(district);

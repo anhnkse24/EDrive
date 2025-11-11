@@ -27,6 +27,9 @@ public class Dealer {
     @Column(nullable = false, length = 100)
     private String dealerName;
 
+    @Column(nullable = false, length = 100)
+    private String dealerEmail;
+
     @Column(length = 150)
     private String houseNumberAndStreet;
 
@@ -42,8 +45,7 @@ public class Dealer {
     @Column(nullable = false, length = 100)
     private String contactPerson;
 
-    private String email;
-
+    @Column(length = 100)
     private String phone;
 
     @Column(length = 500)

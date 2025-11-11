@@ -35,12 +35,12 @@ public class DealerServiceImpl implements DealerService {
     public DealerResponse createDealer(DealerRequest req) {
         Dealer dealer = new Dealer();
         dealer.setDealerName(req.getDealerName());
+        dealer.setDealerEmail(req.getDealerEmail());
         dealer.setHouseNumberAndStreet(req.getHouseNumberAndStreet());
         dealer.setWardOrCommune(req.getWardOrCommune());
         dealer.setDistrict(req.getDistrict());
         dealer.setProvinceOrCity(req.getProvinceOrCity());
         dealer.setContactPerson(req.getContactPerson());
-        dealer.setEmail(req.getEmail());
         dealer.setPhone(req.getPhone());
 
         Dealer saved = dealerRepository.save(dealer);
@@ -56,11 +56,14 @@ public class DealerServiceImpl implements DealerService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đại lý với ID = " + dealerId));
 
         dealer.setDealerName(req.getDealerName());
+        dealer.setDealerEmail(req.getDealerEmail());
         dealer.setHouseNumberAndStreet(req.getHouseNumberAndStreet());
         dealer.setWardOrCommune(req.getWardOrCommune());
         dealer.setDistrict(req.getDistrict());
         dealer.setProvinceOrCity(req.getProvinceOrCity());
         dealer.setContactPerson(req.getContactPerson());
+        dealer.setPhone(req.getPhone());
+
 
         Dealer updated = dealerRepository.save(dealer);
         return toResponse(updated);
@@ -168,13 +171,13 @@ public class DealerServiceImpl implements DealerService {
         return DealerResponse.builder()
                 .dealerId(dealer.getDealerId())
                 .dealerName(dealer.getDealerName())
+                .dealerEmail(dealer.getDealerEmail())
                 .houseNumberAndStreet(dealer.getHouseNumberAndStreet())
                 .wardOrCommune(dealer.getWardOrCommune())
                 .district(dealer.getDistrict())
                 .provinceOrCity(dealer.getProvinceOrCity())
                 .contactPerson(dealer.getContactPerson())
-                .email(dealer.getEmail())
-                .phone(dealer.getPhone())
+                .contactPhone(dealer.getPhone())
                 .build();
     }
 }

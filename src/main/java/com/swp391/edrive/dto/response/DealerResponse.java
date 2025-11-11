@@ -13,7 +13,7 @@ public class DealerResponse {
     private Long userId;
     private Long dealerId;
     private String dealerName;
-    private  String email;
+    private  String dealerEmail;
 
     private String houseNumberAndStreet;
     private String wardOrCommune;
@@ -21,7 +21,7 @@ public class DealerResponse {
     private String provinceOrCity;
 
     private String contactPerson;
-    private String phone;
+    private String contactPhone;
     private Set<String> roles;
 
 }
