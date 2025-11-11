@@ -186,6 +186,15 @@ public class ContractServiceImpl implements ContractService {
         if (file.isEmpty()) {
             throw new IllegalArgumentException("Tệp không được để trống");
         }
+        long maxFileSize = 10 * 1024 * 1024;
+        if (file.getSize() > maxFileSize) {
+            throw new IllegalArgumentException("Kích thước tệp vượt quá giới hạn cho phép (tối đa 10MB).");
+        }
+
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null || !originalFilename.toLowerCase().endsWith(".pdf")) {
+            throw new IllegalArgumentException("Chỉ được phép tải lên tệp định dạng PDF (.pdf).");
+        }
 
         try {
             String uploadDir = "uploads/contracts/";
@@ -200,9 +209,13 @@ public class ContractServiceImpl implements ContractService {
             contractRepo.save(contract);
 
             String fileUrl = "http://localhost:8080/uploads/contracts/" + filename;
+            Dealer dealer = contract.getDealer();
+
 
             return ContractFileResponse.builder()
                     .contractId(contractId)
+                    .contactName(dealer != null ? dealer.getContactPerson() : null)
+                    .contactPhone(dealer != null ? dealer.getPhone() : null)
                     .pdfFilename(filename)
                     .uploadedAt(contract.getPdfUploadedAt())
                     .downloadUrl(fileUrl)

@@ -54,6 +54,8 @@ public class ContractMapper implements IContractMapper {
 
         return ContractFileResponse.builder()
                 .contractId(c.getId())
+                .contactName(c.getDealer() != null ? c.getDealer().getContactPerson() : null)
+                .contactPhone(c.getDealer() != null ? c.getDealer().getPhone() : null)
                 .pdfFilename(c.getPdfFilename())
                 .uploadedAt(c.getPdfUploadedAt())
                 .downloadUrl(fileUrl)
