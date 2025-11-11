@@ -1,16 +1,16 @@
 package com.swp391.edrive.dto.response;
 
-import com.swp391.edrive.entity.Dealer;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Set;
 
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class DealerResponse {
+    private Long userId;
     private Long dealerId;
     private String dealerName;
     private  String email;
@@ -23,6 +23,5 @@ public class DealerResponse {
     private String contactPerson;
     private String phone;
     private Set<String> roles;
-
 
 }

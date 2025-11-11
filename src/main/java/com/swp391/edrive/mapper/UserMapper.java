@@ -10,27 +10,26 @@ import java.util.stream.Collectors;
 
 @Component
 public class UserMapper {
+
     public static UserResponse toResponse(User user, String token, String refreshToken) {
         return UserResponse.builder().token(token).refreshToken(refreshToken).build();
     }
     public DealerResponse toUserResponse(User user) {
         DealerResponse.DealerResponseBuilder builder = DealerResponse.builder()
+                .userId(user.getUserId())
                 .email(user.getEmail())
                 .phone(user.getPhone())
                 .roles(user.getRoles().stream().map(role -> role.getName()).collect(Collectors.toSet()));
 
         // Map thông tin dealer nếu có
         if (user.getDealer() != null) {
-            builder.dealerId(user.getDealer().getDealerId()) // Lấy dealerId từ dealer, không phải userId
-                   .dealerName(user.getDealer().getDealerName()) // Lấy dealerName từ dealer, không phải username
+            builder.dealerId(user.getDealer().getDealerId())
+                   .dealerName(user.getDealer().getDealerName())
                    .houseNumberAndStreet(user.getDealer().getHouseNumberAndStreet())
                    .wardOrCommune(user.getDealer().getWardOrCommune())
                    .district(user.getDealer().getDistrict())
-                   .provinceOrCity(user.getDealer().getProvinceOrCity());
-        } else {
-            // Fallback nếu không có dealer
-            builder.dealerId(user.getUserId())
-                   .dealerName(user.getUsername());
+                   .provinceOrCity(user.getDealer().getProvinceOrCity())
+                   .contactPerson(user.getDealer().getContactPerson());
         }
 
         return builder.build();
