@@ -9,6 +9,7 @@ import com.swp391.edrive.entity.*;
 import com.swp391.edrive.enums.OrderStatus;
 import com.swp391.edrive.enums.PaymentStatus;
 import com.swp391.edrive.repository.*;
+import com.swp391.edrive.service.EmailService;
 import com.swp391.edrive.service.NotificationService;
 import com.swp391.edrive.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,7 @@ public class OrderServiceImpl implements OrderService {
     private final ManufacturerInventoryRepository manufacturerInventoryRepo;
     private final NotificationService notificationService;
     private final DiscountPolicyRepository discountPolicyRepo;
+    private final EmailService emailService;
 
     @Value("${edrive.vat-rate:0.1}")
     private BigDecimal vatRate;
@@ -435,4 +437,46 @@ public class OrderServiceImpl implements OrderService {
 
         return mapToOrderResponse(order);
     }
+    @Override
+    public void sendBillByDealerEmail(String dealerEmail) {
+        Dealer dealer = dealerRepo.findByDealerEmail(dealerEmail)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đại lý với email: " + dealerEmail));
+
+        Order orderWithBill = orderRepo.findTopByDealer_DealerIdAndPaymentImageIsNotNullOrderByOrderDateDesc(dealer.getDealerId())
+                .orElseThrow(() -> new RuntimeException("Đại lý này chưa có đơn hàng nào có bill được tải lên."));
+
+        File billFile = new File(orderWithBill.getPaymentImage());
+        if (!billFile.exists()) {
+            throw new RuntimeException("Không tìm thấy file hóa đơn: " + orderWithBill.getPaymentImage());
+        }
+
+        try {
+            emailService.sendEmailWithAttachment(
+                    dealer.getDealerEmail(),
+                    "Hóa đơn thanh toán - Đơn hàng #" + orderWithBill.getOrderId(),
+                    String.format("""
+                        Xin chào %s,
+
+                        Hóa đơn thanh toán cho đơn hàng #%s đã được gửi tới bạn.
+
+                        Tổng tiền: %s VND
+                        Ngày đặt hàng: %s
+
+                        Vui lòng xem file đính kèm để kiểm tra chi tiết.
+
+                        Trân trọng,
+                        Đội ngũ eDrive.
+                        """,
+                            dealer.getContactPerson(),
+                            orderWithBill.getOrderId(),
+                            orderWithBill.getTotalPrice(),
+                            orderWithBill.getOrderDate()
+                    ),
+                    billFile
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("Gửi email thất bại: " + e.getMessage());
+        }
+    }
+
 }
