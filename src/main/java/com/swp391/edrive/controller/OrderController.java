@@ -140,4 +140,15 @@ public class OrderController {
                 .data(result)
                 .build();
     }
+    @Operation(summary = "Admin gửi bill cho đại lý bằng email", description = "Admin nhập email của đại lý, hệ thống sẽ tìm đơn hàng gần nhất có bill và gửi qua email")
+    @PostMapping("/send-bill-by-email")
+    public ResponseObject<String> sendBillByDealerEmail(@RequestParam String dealerEmail) {
+        orderService.sendBillByDealerEmail(dealerEmail);
+        return ResponseObject.<String>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Đã gửi bill thành công tới " + dealerEmail)
+                .data("success")
+                .build();
+    }
+
 }

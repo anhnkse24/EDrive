@@ -23,9 +23,9 @@ public class UserRegistrationRequest {
     @NotBlank(message = "Confirm Password cannot be blank")
     private String confirmPassword;
 
-    @NotBlank(message = "Email cannot be blank")
-    @Email(message = "Invalid email format")
-    private String email;
+    @NotBlank(message = "Email của đại lý không được để trống")
+    @Email(message = "Email của đại lý không hợp lệ")
+    private String dealerEmail;
 
     @NotBlank(message = "Phone Number cannot be blank")
     @Pattern(regexp = "\\d{10}", message = "Invalid phone number")

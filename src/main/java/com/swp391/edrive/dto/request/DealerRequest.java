@@ -12,6 +12,10 @@ public class DealerRequest {
     @Size(max = 100, message = "Tên đại lý không được vượt quá 100 ký tự")
     private String dealerName;
 
+    @NotBlank(message = "Email của đại lý không được để trống")
+    @Email(message = "Email của đại lý không hợp lệ")
+    private String dealerEmail;
+
     @NotBlank(message = "Số nhà và tên đường không được để trống")
     @Size(max = 100, message = "Số nhà và tên đường không được vượt quá 100 ký tự")
     private String houseNumberAndStreet;
@@ -30,10 +34,6 @@ public class DealerRequest {
     @NotBlank(message = "Người liên hệ không được để trống")
     @Size(max = 100, message = "Tên người liên hệ không được vượt quá 100 ký tự")
     private String contactPerson;
-
-    @NotBlank(message = "Email không được để trống")
-    @Email(message = "Email không hợp lệ")
-    private String email;
 
     @NotBlank(message = "Số điện thoại không được để trống")
     @Pattern(

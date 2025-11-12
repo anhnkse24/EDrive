@@ -3,6 +3,7 @@ package com.swp391.edrive.service.serviceimpl;
 import com.swp391.edrive.dto.request.DealerRequest;
 import com.swp391.edrive.dto.response.DealerResponse;
 import com.swp391.edrive.entity.Dealer;
+import com.swp391.edrive.entity.User;
 import com.swp391.edrive.repository.*;
 import com.swp391.edrive.service.DealerService;
 import com.swp391.edrive.service.NotificationService;
@@ -35,12 +36,12 @@ public class DealerServiceImpl implements DealerService {
     public DealerResponse createDealer(DealerRequest req) {
         Dealer dealer = new Dealer();
         dealer.setDealerName(req.getDealerName());
+        dealer.setDealerEmail(req.getDealerEmail());
         dealer.setHouseNumberAndStreet(req.getHouseNumberAndStreet());
         dealer.setWardOrCommune(req.getWardOrCommune());
         dealer.setDistrict(req.getDistrict());
         dealer.setProvinceOrCity(req.getProvinceOrCity());
         dealer.setContactPerson(req.getContactPerson());
-        dealer.setEmail(req.getEmail());
         dealer.setPhone(req.getPhone());
 
         Dealer saved = dealerRepository.save(dealer);
@@ -56,11 +57,14 @@ public class DealerServiceImpl implements DealerService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đại lý với ID = " + dealerId));
 
         dealer.setDealerName(req.getDealerName());
+        dealer.setDealerEmail(req.getDealerEmail());
         dealer.setHouseNumberAndStreet(req.getHouseNumberAndStreet());
         dealer.setWardOrCommune(req.getWardOrCommune());
         dealer.setDistrict(req.getDistrict());
         dealer.setProvinceOrCity(req.getProvinceOrCity());
         dealer.setContactPerson(req.getContactPerson());
+        dealer.setPhone(req.getPhone());
+
 
         Dealer updated = dealerRepository.save(dealer);
         return toResponse(updated);
@@ -74,12 +78,14 @@ public class DealerServiceImpl implements DealerService {
 
         // Kiểm tra TẤT CẢ các ràng buộc bằng cách query trực tiếp từ repository
 
-        // 1. Kiểm tra Users
-        long userCount = userRepository.findAll().stream()
+        // --- Bỏ ràng buộc của User thay vì báo lỗi ---
+        var users = userRepository.findAll().stream()
                 .filter(u -> u.getDealer() != null && u.getDealer().getDealerId().equals(dealerId))
-                .count();
-        if (userCount > 0) {
-            throw new IllegalStateException("Không thể xóa đại lý vì còn " + userCount + " người dùng liên kết.");
+                .toList();
+
+        for (var user : users) {
+            user.setDealer(null);
+            userRepository.save(user);
         }
 
         // 2. Kiểm tra Orders
@@ -168,13 +174,13 @@ public class DealerServiceImpl implements DealerService {
         return DealerResponse.builder()
                 .dealerId(dealer.getDealerId())
                 .dealerName(dealer.getDealerName())
+                .dealerEmail(dealer.getDealerEmail())
                 .houseNumberAndStreet(dealer.getHouseNumberAndStreet())
                 .wardOrCommune(dealer.getWardOrCommune())
                 .district(dealer.getDistrict())
                 .provinceOrCity(dealer.getProvinceOrCity())
                 .contactPerson(dealer.getContactPerson())
-                .email(dealer.getEmail())
-                .phone(dealer.getPhone())
+                .contactPhone(dealer.getPhone())
                 .build();
     }
 }

@@ -26,4 +26,6 @@ public interface OrderService {
     String getPaymentBillContentType(String orderId);
     String getPaymentBillFileName(String orderId);
     OrderResponse markOrderAsPaid(String orderId);
+    void sendBillByDealerEmail(String dealerEmail);
+
 }
