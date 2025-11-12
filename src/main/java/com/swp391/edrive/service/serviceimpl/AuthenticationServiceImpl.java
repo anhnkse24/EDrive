@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 public class AuthenticationServiceImpl implements AuthenticationService {
 
     // Constants
-    private static final String ADMIN_EMAIL = "cuongcaoleanh@gmail.com";
+    private static final String ADMIN_EMAIL = "jaycengo59@gmail.com";
 
     @Value("${frontend.url.email.verification}")
     private String emailVerificationUrl;
