@@ -1,5 +1,6 @@
 package com.swp391.edrive.entity;
 
+import com.swp391.edrive.enums.PaymentMethod;
 import com.swp391.edrive.enums.QuotationStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -8,6 +9,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @Table(name = "quotations")
@@ -28,55 +30,45 @@ public class Quotation {
     private Vehicle vehicle;
 
     private Double quotedPrice;
-    // ====== Giá & chiết khấu ======
     @Column(precision = 14, scale = 2, nullable = false)
     private BigDecimal unitPrice;        // giá xe tại thời điểm báo giá
 
-    @Column(precision = 5, scale = 2)
-    private BigDecimal discountRate;     // ví dụ 0.05 (5%)
-    @Column(precision = 14, scale = 2)
-    private BigDecimal discountAmount;   // unitPrice * discountRate
+    private Integer installmentMonths; // Tháng trả góp, chỉ áp dụng khi trả góp
+    private BigDecimal monthlyInstallment;  // Số tiền trả hàng tháng, chỉ áp dụng khi trả góp
 
-    // ====== Dịch vụ chính hãng ======
-    @Column(nullable = false)
-    private boolean includeInsurancePercent;   // +3% giá xe
-    @Column(nullable = false)
-    private boolean includeWarrantyExtension;  // +50,000,000
-    @Column(nullable = false)
-    private boolean includeAccessories;        // +30,000,000
+    @ManyToOne
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod paymentMethod;
+
+    // ====== Giá sau khuyến mãi ======
+    @Column(precision = 14, scale = 2)
+    private BigDecimal promotionDiscountAmount; // Tổng giảm giá từ khuyến mãi
 
     @Column(precision = 14, scale = 2)
-    private BigDecimal serviceTotal;           // tổng tiền dịch vụ đã chọn
+    private BigDecimal priceAfterPromotion;    // Giá trị sau khi trừ khuyến mãi
 
-    // ====== Thuế & tổng tiền ======
-    @Column(precision = 5, scale = 2)
-    private BigDecimal vatRate;                // ví dụ 0.10
-    @Column(precision = 14, scale = 2)
-    private BigDecimal vehicleSubtotal;        // đơn giá xe
-    @Column(precision = 14, scale = 2)
-    private BigDecimal subtotalAfterDiscount;  // sau chiết khấu
-    @Column(precision = 14, scale = 2)
-    private BigDecimal taxableBase;            // sau chiết khấu + dịch vụ
-    @Column(precision = 14, scale = 2)
-    private BigDecimal vatAmount;
-    @Column(precision = 14, scale = 2)
-    private BigDecimal grandTotal;
+    @ManyToMany
+    @JoinTable(
+            name = "quotation_promotion",
+            joinColumns = @JoinColumn(name = "quotation_id"),
+            inverseJoinColumns = @JoinColumn(name = "promotion_id")
+    )
+    private Set<Promotion> promotions;
 
-    // ====== Thông tin khách hàng ======
-    @Column(length = 150)
-    private String customerFullName;
-    @Column(length = 30)
-    private String phone;
-    @Column(length = 150)
-    private String email;
-    @Column(length = 500)
-    private String fullAddress;
-    @Column(columnDefinition = "TEXT")
-    private String notes;
+    // ====== Bảo hiểm ======
 
-    // ====== Audit ======
+
+    // ====== Dịch vụ bổ sung ======
+    @Embedded  // Nhúng AdditionalServices vào Quotation
+    private AdditionalServices additionalServices;
+
+    // ====== Ngày tạo và ngày hết hạn báo giá ======
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDate expiryDate;
 
     @PrePersist
     void prePersist() {
@@ -88,5 +80,4 @@ public class Quotation {
     void preUpdate() {
         updatedAt = LocalDateTime.now();
     }
-
 }

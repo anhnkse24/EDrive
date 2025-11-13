@@ -1,221 +1,216 @@
 package com.swp391.edrive.service.serviceimpl;
 
-import com.swp391.edrive.dto.request.QuotationCreateRequest;
+import com.swp391.edrive.dto.request.AdditionalServicesRequest;
+import com.swp391.edrive.dto.request.QuotationRequest;
+import com.swp391.edrive.dto.response.AdditionalServicesResponse;
 import com.swp391.edrive.dto.response.QuotationResponse;
+import com.swp391.edrive.entity.AdditionalServices;
+import com.swp391.edrive.entity.Customer;
 import com.swp391.edrive.entity.Quotation;
 import com.swp391.edrive.entity.Vehicle;
+import com.swp391.edrive.repository.CustomerRepository;
 import com.swp391.edrive.repository.QuotationRepository;
 import com.swp391.edrive.repository.VehicleRepository;
 import com.swp391.edrive.service.QuotationService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.math.*;
-import java.util.List;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Service
-@RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class QuotationServiceImpl implements QuotationService {
 
-    private final VehicleRepository vehicleRepo;
-    private final QuotationRepository quotationRepo;
+    @Autowired
+    private QuotationRepository quotationRepository;
 
-    @Value("${edrive.vat-rate:0.10}")          // nếu muốn inject từ config
-    private BigDecimal vatRate;
+    @Autowired
+    private VehicleRepository vehicleRepository;
 
-    private static final BigDecimal DISCOUNT_RATE_FOR_ONE = new BigDecimal("0.05");
+    @Autowired
+    private CustomerRepository customerRepository;
+
+    // Giá cố định cho các dịch vụ bổ sung
+    private static final BigDecimal TINT_FILM_PRICE = new BigDecimal("8500000");
+    private static final BigDecimal WALLBOX_CHARGER_PRICE = new BigDecimal("15000000");
+    private static final BigDecimal WARRANTY_EXTENSION_PRICE = new BigDecimal("25000000");
+    private static final BigDecimal PPF_PRICE = new BigDecimal("45000000");
+    private static final BigDecimal CERAMIC_COATING_PRICE = new BigDecimal("12000000");
+    private static final BigDecimal CAMERA_360_PRICE = new BigDecimal("18000000");
 
     @Override
-    public QuotationResponse previewQuotation(QuotationCreateRequest r) {
-        var v = vehicleRepo.findById(r.getVehicleId())
-                .orElseThrow(() -> new IllegalArgumentException("Vehicle not found: " + r.getVehicleId()));
+    public QuotationResponse createQuotation(QuotationRequest quotationRequest) {
+        // Lấy thông tin xe
+        Vehicle vehicle = vehicleRepository.findById(quotationRequest.getVehicleId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy xe với ID: " + quotationRequest.getVehicleId()));
 
-        BigDecimal unitPrice = v.getPriceRetail();
-        BigDecimal discountRate = discountRateByQty(1);
-        BigDecimal discountAmount = unitPrice.multiply(discountRate);
-        BigDecimal subtotalAfterDiscount = unitPrice.subtract(discountAmount);
+        // Lấy thông tin khách hàng
+        Customer customer = customerRepository.findById(quotationRequest.getCustomerId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng với ID: " + quotationRequest.getCustomerId()));
 
-        BigDecimal serviceTotal = BigDecimal.ZERO;
-        if (r.isIncludeInsurancePercent())
-            serviceTotal = serviceTotal.add(unitPrice.multiply(new BigDecimal("0.03")));
-        if (r.isIncludeWarrantyExtension())
-            serviceTotal = serviceTotal.add(new BigDecimal("50000000"));
-        if (r.isIncludeAccessories())
-            serviceTotal = serviceTotal.add(new BigDecimal("30000000"));
+        // Tính toán giá trị báo giá
+        BigDecimal unitPrice = vehicle.getPriceRetail(); // Giá xe ban đầu
 
+        // Giá giảm từ khuyến mãi (hiện tại = 0, có thể tích hợp sau)
+        BigDecimal promotionDiscountAmount = BigDecimal.ZERO;
 
-        BigDecimal taxableBase = subtotalAfterDiscount.add(serviceTotal);
-        BigDecimal vatAmount = taxableBase.multiply(vatRate).setScale(0, RoundingMode.HALF_UP);
-        BigDecimal grandTotal = taxableBase.add(vatAmount);
+        // Tính giá sau giảm giá
+        BigDecimal priceAfterDiscount = unitPrice.subtract(promotionDiscountAmount);
 
-        String fullAddress = String.join(", ",
-                r.getStreet(), r.getWard(), r.getDistrict(), r.getCity()
-        );
+        // Xử lý dịch vụ bổ sung
+        AdditionalServices additionalServices = null;
+        BigDecimal additionalServicesTotal = BigDecimal.ZERO;
+        AdditionalServicesResponse additionalServicesResponse = null;
 
+        if (quotationRequest.getAdditionalServices() != null) {
+            additionalServices = buildAdditionalServices(quotationRequest.getAdditionalServices());
+            additionalServicesTotal = calculateAdditionalServicesTotal(additionalServices);
+            additionalServicesResponse = buildAdditionalServicesResponse(additionalServices, additionalServicesTotal);
+        }
+
+        // Tính VAT 10% (áp dụng cho cả giá xe và dịch vụ bổ sung)
+        BigDecimal totalBeforeVat = priceAfterDiscount.add(additionalServicesTotal);
+        BigDecimal vatAmount = totalBeforeVat.multiply(BigDecimal.valueOf(0.10))
+                .setScale(2, RoundingMode.HALF_UP);
+
+        // Tổng giá cuối cùng = (Giá gốc - Giảm giá) + Dịch vụ bổ sung + VAT
+        BigDecimal grandTotal = totalBeforeVat.add(vatAmount);
+
+        // Tạo báo giá
+        Quotation quotation = new Quotation();
+        quotation.setVehicle(vehicle);
+        quotation.setCustomer(customer);
+        quotation.setQuotedPrice(unitPrice.doubleValue());
+        quotation.setUnitPrice(unitPrice);
+        quotation.setPromotionDiscountAmount(promotionDiscountAmount);
+        quotation.setPriceAfterPromotion(grandTotal);
+        quotation.setPaymentMethod(quotationRequest.getPaymentMethod());
+        quotation.setAdditionalServices(additionalServices); // Lưu dịch vụ bổ sung
+
+        // Lưu báo giá
+        Quotation savedQuotation = quotationRepository.save(quotation);
+
+        // Chuyển đổi sang Response
         return QuotationResponse.builder()
-                .vehicleId(v.getVehicleId())
-                .vehicleModel(v.getModelName() + " - " + v.getVersion())
-                .vehicleImageUrl(v.getImageUrl())
+                .quotationId(savedQuotation.getQuotationId())
+                // Thông tin xe
+                .vehicleId(vehicle.getVehicleId())
+                .modelName(vehicle.getModelName())
+                .version(vehicle.getVersion())
+                .batteryCapacityKwh(vehicle.getBatteryCapacityKwh())
+                .rangeKm(vehicle.getRangeKm())
+                .maxSpeedKmh(vehicle.getMaxSpeedKmh())
+                .chargingTimeHours(vehicle.getChargingTimeHours())
+                .seatingCapacity(vehicle.getSeatingCapacity())
+                .motorPowerKw(vehicle.getMotorPowerKw())
+                .weightKg(vehicle.getWeightKg())
+                .lengthMm(vehicle.getLengthMm())
+                .widthMm(vehicle.getWidthMm())
+                .heightMm(vehicle.getHeightMm())
+                .imageUrl(vehicle.getImageUrl())
+                .manufactureYear(vehicle.getManufactureYear())
+                .vehicleStatus(vehicle.getStatus() != null ? vehicle.getStatus().toString() : null)
+                // Thông tin khách hàng
+                .customerId(customer.getCustomerId())
+                .customerFullName(customer.getFullName())
+                .customerDob(customer.getDob())
+                .customerGender(customer.getGender())
+                .customerEmail(customer.getEmail())
+                .customerPhone(customer.getPhone())
+                .customerAddress(customer.getAddress())
+                .customerIdCardNo(customer.getIdCardNo())
+                // Thông tin thanh toán
+                .paymentMethod(quotationRequest.getPaymentMethod() != null ? quotationRequest.getPaymentMethod().name() : null)
+                // Dịch vụ bổ sung
+                .additionalServices(additionalServicesResponse)
+                // Chi tiết giá
                 .unitPrice(unitPrice)
-                .includeInsurancePercent(r.isIncludeInsurancePercent())
-                .includeWarrantyExtension(r.isIncludeWarrantyExtension())
-                .includeAccessories(r.isIncludeAccessories())
-                .discountRate(discountRate)
-                .discountAmount(discountAmount)
-                .vehicleSubtotal(unitPrice)
-                .serviceTotal(serviceTotal)
-                .subtotalAfterDiscount(subtotalAfterDiscount)
-                .taxableBase(taxableBase)
-                .vatRate(vatRate)
+                .promotionDiscountAmount(promotionDiscountAmount)
+                .additionalServicesTotal(additionalServicesTotal)
                 .vatAmount(vatAmount)
                 .grandTotal(grandTotal)
-                .customerFullName(r.getCustomerFullName())
-                .phone(r.getPhone())
-                .email(r.getEmail())
-                .fullAddress(fullAddress)
-                .notes(r.getNotes())
                 .build();
     }
 
+    /**
+     * Xây dựng đối tượng AdditionalServices từ request
+     */
+    private AdditionalServices buildAdditionalServices(AdditionalServicesRequest request) {
+        AdditionalServices services = new AdditionalServices();
 
-    @Override
-    @Transactional
-    public QuotationResponse createQuotation(QuotationCreateRequest r) {
-        QuotationResponse calc = previewQuotation(r); // tính giống preview
+        // Phim cách nhiệt
+        services.setHasTintFilm(request.getHasTintFilm() != null && request.getHasTintFilm());
+        services.setTintFilmPrice(services.getHasTintFilm() ? TINT_FILM_PRICE : BigDecimal.ZERO);
 
-        Quotation q = new Quotation();
-        Vehicle v = new Vehicle();
-        v.setVehicleId(calc.getVehicleId());
-        q.setVehicle(v);
+        // Bộ sạc Wallbox
+        services.setHasWallboxCharger(request.getHasWallboxCharger() != null && request.getHasWallboxCharger());
+        services.setWallboxChargerPrice(services.getHasWallboxCharger() ? WALLBOX_CHARGER_PRICE : BigDecimal.ZERO);
 
-        q.setUnitPrice(calc.getUnitPrice());
-        q.setDiscountRate(calc.getDiscountRate());
-        q.setDiscountAmount(calc.getDiscountAmount());
+        // Bảo hành mở rộng
+        services.setHasWarrantyExtension(request.getHasWarrantyExtension() != null && request.getHasWarrantyExtension());
+        services.setWarrantyExtensionPrice(services.getHasWarrantyExtension() ? WARRANTY_EXTENSION_PRICE : BigDecimal.ZERO);
 
-        q.setIncludeInsurancePercent(calc.isIncludeInsurancePercent());
-        q.setIncludeWarrantyExtension(calc.isIncludeWarrantyExtension());
-        q.setIncludeAccessories(calc.isIncludeAccessories());
-        q.setServiceTotal(calc.getServiceTotal());
+        // PPF
+        services.setHasPPF(request.getHasPPF() != null && request.getHasPPF());
+        services.setPpfPrice(services.getHasPPF() ? PPF_PRICE : BigDecimal.ZERO);
 
-        q.setVatRate(calc.getVatRate());
-        q.setVehicleSubtotal(calc.getVehicleSubtotal());
-        q.setSubtotalAfterDiscount(calc.getSubtotalAfterDiscount());
-        q.setTaxableBase(calc.getTaxableBase());
-        q.setVatAmount(calc.getVatAmount());
-        q.setGrandTotal(calc.getGrandTotal());
+        // Ceramic Coating
+        services.setHasCeramicCoating(request.getHasCeramicCoating() != null && request.getHasCeramicCoating());
+        services.setCeramicCoatingPrice(services.getHasCeramicCoating() ? CERAMIC_COATING_PRICE : BigDecimal.ZERO);
 
-        q.setCustomerFullName(calc.getCustomerFullName());
-        q.setPhone(calc.getPhone());
-        q.setEmail(calc.getEmail());
-        q.setFullAddress(calc.getFullAddress());
-        q.setNotes(calc.getNotes());
+        // Camera 360
+        services.setHas360Camera(request.getHas360Camera() != null && request.getHas360Camera());
+        services.setCamera360Price(services.getHas360Camera() ? CAMERA_360_PRICE : BigDecimal.ZERO);
 
-        q = quotationRepo.save(q);
+        return services;
+    }
 
-        return QuotationResponse.builder()
-                .quotationId(q.getQuotationId())
-                .vehicleId(q.getVehicle().getVehicleId())
-                .vehicleModel(calc.getVehicleModel())
-                .vehicleImageUrl(calc.getVehicleImageUrl())
-                .unitPrice(q.getUnitPrice())
-                .includeInsurancePercent(q.isIncludeInsurancePercent())
-                .includeWarrantyExtension(q.isIncludeWarrantyExtension())
-                .includeAccessories(q.isIncludeAccessories())
-                .discountRate(q.getDiscountRate())
-                .discountAmount(q.getDiscountAmount())
-                .vehicleSubtotal(q.getVehicleSubtotal())
-                .serviceTotal(q.getServiceTotal())
-                .subtotalAfterDiscount(q.getSubtotalAfterDiscount())
-                .taxableBase(q.getTaxableBase())
-                .vatRate(q.getVatRate())
-                .vatAmount(q.getVatAmount())
-                .grandTotal(q.getGrandTotal())
-                .customerFullName(q.getCustomerFullName())
-                .phone(q.getPhone())
-                .email(q.getEmail())
-                .fullAddress(q.getFullAddress())
-                .notes(q.getNotes())
+    /**
+     * Tính tổng giá dịch vụ bổ sung
+     */
+    private BigDecimal calculateAdditionalServicesTotal(AdditionalServices services) {
+        BigDecimal total = BigDecimal.ZERO;
+
+        if (services.getHasTintFilm()) {
+            total = total.add(TINT_FILM_PRICE);
+        }
+        if (services.getHasWallboxCharger()) {
+            total = total.add(WALLBOX_CHARGER_PRICE);
+        }
+        if (services.getHasWarrantyExtension()) {
+            total = total.add(WARRANTY_EXTENSION_PRICE);
+        }
+        if (services.getHasPPF()) {
+            total = total.add(PPF_PRICE);
+        }
+        if (services.getHasCeramicCoating()) {
+            total = total.add(CERAMIC_COATING_PRICE);
+        }
+        if (services.getHas360Camera()) {
+            total = total.add(CAMERA_360_PRICE);
+        }
+
+        return total;
+    }
+
+    /**
+     * Xây dựng response cho dịch vụ bổ sung
+     */
+    private AdditionalServicesResponse buildAdditionalServicesResponse(AdditionalServices services, BigDecimal total) {
+        return AdditionalServicesResponse.builder()
+                .hasTintFilm(services.getHasTintFilm())
+                .tintFilmPrice(services.getTintFilmPrice())
+                .hasWallboxCharger(services.getHasWallboxCharger())
+                .wallboxChargerPrice(services.getWallboxChargerPrice())
+                .hasWarrantyExtension(services.getHasWarrantyExtension())
+                .warrantyExtensionPrice(services.getWarrantyExtensionPrice())
+                .hasPPF(services.getHasPPF())
+                .ppfPrice(services.getPpfPrice())
+                .hasCeramicCoating(services.getHasCeramicCoating())
+                .ceramicCoatingPrice(services.getCeramicCoatingPrice())
+                .has360Camera(services.getHas360Camera())
+                .camera360Price(services.getCamera360Price())
+                .totalServicesPrice(total)
                 .build();
     }
-
-    @Override
-    public QuotationResponse getQuotation(Long id) {
-        Quotation q = quotationRepo.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Quotation not found: " + id));
-
-        Vehicle v = q.getVehicle();
-
-        return QuotationResponse.builder()
-                .quotationId(q.getQuotationId())
-                .vehicleId(v.getVehicleId())
-                .vehicleModel(v.getModelName() + " - " + v.getVersion())
-                .vehicleImageUrl(v.getImageUrl())
-                .unitPrice(q.getUnitPrice())
-                .includeInsurancePercent(q.isIncludeInsurancePercent())
-                .includeWarrantyExtension(q.isIncludeWarrantyExtension())
-                .includeAccessories(q.isIncludeAccessories())
-                .discountRate(q.getDiscountRate())
-                .discountAmount(q.getDiscountAmount())
-                .vehicleSubtotal(q.getVehicleSubtotal())
-                .serviceTotal(q.getServiceTotal())
-                .subtotalAfterDiscount(q.getSubtotalAfterDiscount())
-                .taxableBase(q.getTaxableBase())
-                .vatRate(q.getVatRate())
-                .vatAmount(q.getVatAmount())
-                .grandTotal(q.getGrandTotal())
-                .customerFullName(q.getCustomerFullName())
-                .phone(q.getPhone())
-                .email(q.getEmail())
-                .fullAddress(q.getFullAddress())
-                .notes(q.getNotes())
-                .build();
-    }
-
-    private BigDecimal discountRateByQty(int quantity) {
-        if (quantity > 10) return new BigDecimal("0.15");
-        if (quantity >= 6) return new BigDecimal("0.10");
-        if (quantity >= 1) return new BigDecimal("0.05");
-        return BigDecimal.ZERO;
-    }
-
-    @Override
-    public List<QuotationResponse> getAllQuotations() {
-        List<Quotation> quotations = quotationRepo.findAll();
-        return quotations.stream()
-                .map(this::toResponse)
-                .toList();
-    }
-
-    private QuotationResponse toResponse(Quotation q) {
-        Vehicle v = q.getVehicle();
-
-        return QuotationResponse.builder()
-                .quotationId(q.getQuotationId())
-                .vehicleId(v.getVehicleId())
-                .vehicleModel(v.getModelName() + " - " + v.getVersion())
-                .vehicleImageUrl(v.getImageUrl())
-                .unitPrice(q.getUnitPrice())
-                .includeInsurancePercent(q.isIncludeInsurancePercent())
-                .includeWarrantyExtension(q.isIncludeWarrantyExtension())
-                .includeAccessories(q.isIncludeAccessories())
-                .discountRate(q.getDiscountRate())
-                .discountAmount(q.getDiscountAmount())
-                .vehicleSubtotal(q.getVehicleSubtotal())
-                .serviceTotal(q.getServiceTotal())
-                .subtotalAfterDiscount(q.getSubtotalAfterDiscount())
-                .taxableBase(q.getTaxableBase())
-                .vatRate(q.getVatRate())
-                .vatAmount(q.getVatAmount())
-                .grandTotal(q.getGrandTotal())
-                .customerFullName(q.getCustomerFullName())
-                .phone(q.getPhone())
-                .email(q.getEmail())
-                .fullAddress(q.getFullAddress())
-                .notes(q.getNotes())
-                .build();
-    }
-
 }

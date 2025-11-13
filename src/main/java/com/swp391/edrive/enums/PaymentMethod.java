@@ -1,6 +1,6 @@
 package com.swp391.edrive.enums;
 
 public enum PaymentMethod {
-    CASH,
-    VNPAY
+    TRẢ_THẲNG,
+    TRẢ_GÓP
 }

@@ -1,45 +1,56 @@
 package com.swp391.edrive.dto.response;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class QuotationResponse {
-
-    // ====== Thông tin chung ======
     private Long quotationId;
 
-    // ====== Thông tin xe ======
+    // Thông tin xe đầy đủ
     private Long vehicleId;
-    private String vehicleModel;     // Ví dụ: "VF 8 - Plus"
-    private String vehicleImageUrl;  // Nếu Vehicle có trường imageUrl
-    private BigDecimal unitPrice;    // Giá xe tại thời điểm báo giá
+    private String modelName;
+    private String version;
+    private Integer batteryCapacityKwh;
+    private Integer rangeKm;
+    private Integer maxSpeedKmh;
+    private Float chargingTimeHours;
+    private Integer seatingCapacity;
+    private Integer motorPowerKw;
+    private Integer weightKg;
+    private Integer lengthMm;
+    private Integer widthMm;
+    private Integer heightMm;
+    private String imageUrl;
+    private Integer manufactureYear;
+    private String vehicleStatus;
 
-    // ====== Dịch vụ chính hãng ======
-    private boolean includeInsurancePercent;   // +3% giá xe
-    private boolean includeWarrantyExtension;  // +50,000,000
-    private boolean includeAccessories;        // +30,000,000
-
-    // ====== Thông tin tính giá ======
-    private BigDecimal discountRate;           // Ví dụ 0.05 (5%)
-    private BigDecimal discountAmount;         // unitPrice * discountRate
-    private BigDecimal vehicleSubtotal;        // Giá xe trước chiết khấu
-    private BigDecimal serviceTotal;           // Tổng dịch vụ cộng thêm
-    private BigDecimal subtotalAfterDiscount;  // Sau khi trừ chiết khấu
-    private BigDecimal taxableBase;            // Cộng thêm dịch vụ để tính VAT
-    private BigDecimal vatRate;                // Ví dụ 0.10
-    private BigDecimal vatAmount;              // Làm tròn 0 số
-    private BigDecimal grandTotal;             // Tổng cộng cuối cùng (sau VAT)
-
-    // ====== Thông tin khách hàng ======
+    // Thông tin khách hàng đầy đủ
+    private Long customerId;
     private String customerFullName;
-    private String phone;
-    private String email;
-    private String fullAddress; // Ghép: "số nhà, phường/xã, quận/huyện, tỉnh/thành phố"
-    private String notes;
+    private LocalDate customerDob;
+    private String customerGender;
+    private String customerEmail;
+    private String customerPhone;
+    private String customerAddress;
+    private String customerIdCardNo;
+
+    // Thông tin thanh toán
+    private String paymentMethod;
+
+    // Dịch vụ bổ sung
+    private AdditionalServicesResponse additionalServices;
+
+    // Chi tiết giá
+    private BigDecimal unitPrice;              // Giá gốc
+    private BigDecimal promotionDiscountAmount; // Giá giảm từ khuyến mãi
+    private BigDecimal additionalServicesTotal; // Tổng giá dịch vụ bổ sung
+    private BigDecimal vatAmount;               // Phí VAT (10%)
+    private BigDecimal grandTotal;              // Tổng giá cuối cùng
 }

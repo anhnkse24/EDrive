@@ -48,6 +48,7 @@ public class Order {
     @Column
     private String paymentImage;
 
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<OrderItem> orderItems;
 
@@ -57,9 +58,6 @@ public class Order {
     @Column
     private LocalDateTime paymentExpiryTime;
 
-    public boolean isPaymentExpired() {
-        return paymentExpiryTime != null && LocalDateTime.now().isAfter(paymentExpiryTime);
-    }
 
     @PrePersist
     protected void onCreate() {
