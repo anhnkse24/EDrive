@@ -33,20 +33,20 @@ public class DataInitializer implements CommandLineRunner {
     private final StatusOrderCustomerRepository statusOrderCustomerRepository;
     private final FeedbackRepository feedbackRepository;
     private final ColorRepository colorRepository;
-
+    private final DealerInventoryRepository dealerInventoryRepository;
 
 
     @Override
     public void run(String... args) throws Exception {
         // ========== 1) SEED ROLES & USERS (chạy luôn, không phụ thuộc dữ liệu khác) ==========
         // 1.1 Roles
-        Role adminRole          = roleRepository.findById("ADMIN")
+        Role adminRole = roleRepository.findById("ADMIN")
                 .orElseGet(() -> roleRepository.save(Role.builder().name("ADMIN").description("System Administrator").build()));
-        Role dealerManagerRole  = roleRepository.findById("DEALER_MANAGER")
+        Role dealerManagerRole = roleRepository.findById("DEALER_MANAGER")
                 .orElseGet(() -> roleRepository.save(Role.builder().name("DEALER_MANAGER").description("Dealer Manager").build()));
-        Role dealerStaffRole    = roleRepository.findById("DEALER_STAFF")
+        Role dealerStaffRole = roleRepository.findById("DEALER_STAFF")
                 .orElseGet(() -> roleRepository.save(Role.builder().name("DEALER_STAFF").description("Dealer Staff").build()));
-        Role evmStaffRole       = roleRepository.findById("EVM_STAFF")
+        Role evmStaffRole = roleRepository.findById("EVM_STAFF")
                 .orElseGet(() -> roleRepository.save(Role.builder().name("EVM_STAFF").description("E-Drive Manufacturer Staff").build()));
 
 
@@ -84,16 +84,16 @@ public class DataInitializer implements CommandLineRunner {
         List<Dealer> dealersInDb = dealerRepository.findAll();
         if (dealersInDb.isEmpty()) {
             List<Dealer> seedDealers = new ArrayList<>();
-            seedDealers.add(makeDealer("E-Drive Hà Nội","edrivehanoi@edrive.local","123 Trần Duy Hưng", "Trung Hòa", "Cầu Giấy", "Hà Nội", "Nguyen Van 1", "0900000001"));
-            seedDealers.add(makeDealer("E-Drive Hồ Chí Minh","edrivehochiminh@edrive.local", "45 Lê Lợi", "Bến Nghé", "Quận 1", "Hồ Chí Minh", "Nguyen Van 2", "0900000002"));
-            seedDealers.add(makeDealer("E-Drive Đà Nẵng","edrivedanang@edrive.local", "99 Nguyễn Văn Linh", "Hải Châu 1", "Hải Châu", "Đà Nẵng", "Nguyen Van 3", "0900000003"));
-            seedDealers.add(makeDealer("E-Drive Hải Phòng","edrivehaiphong@edrive.local", "12 Điện Biên Phủ", "Minh Khai", "Hồng Bàng", "Hải Phòng", "Than Trong 4", "0900000004"));
-            seedDealers.add(makeDealer("E-Drive Cần Thơ","edrivecantho@edrive.local", "8 Mậu Thân", "Xuân Khánh", "Ninh Kiều", "Cần Thơ", "Than Trong 5", "0900000005"));
-            seedDealers.add(makeDealer("E-Drive Nha Trang","edrivenhatrang@edrive.local", "27 Trần Phú", "Lộc Thọ", "Nha Trang", "Khánh Hòa", "Than Trong 6", "0900000006"));
-            seedDealers.add(makeDealer("E-Drive Biên Hòa","edrivebienhoa@edrive.local", "18 Phạm Văn Thuận", "Tân Tiến", "Biên Hòa", "Đồng Nai", "Ngo Ky 7", "0900000007"));
-            seedDealers.add(makeDealer("E-Drive Vinh","edrivevinh@edrive.local", "56 Trường Chinh", "Trung Đô", "Vinh", "Nghệ An", "Truong Dinh 8", "0900000008"));
-            seedDealers.add(makeDealer("E-Drive Buôn Ma Thuột","edrivebuonmathuot@edrive.local", "10 Nguyễn Tất Thành", "Tân Lợi", "Buôn Ma Thuột", "Đắk Lắk", "Ta Hoang 9", "0900000009"));
-            seedDealers.add(makeDealer("E-Drive Thanh Hóa","edrivethanhhoa@edrive.local", "20 Hạc Thành", "Tân Sơn", "Thanh Hóa", "Thanh Hóa", "Ngo Ky 10", "0900000010"));
+            seedDealers.add(makeDealer("E-Drive Hà Nội", "edrivehanoi@edrive.local", "123 Trần Duy Hưng", "Trung Hòa", "Cầu Giấy", "Hà Nội", "Nguyen Van 1", "0900000001"));
+            seedDealers.add(makeDealer("E-Drive Hồ Chí Minh", "edrivehochiminh@edrive.local", "45 Lê Lợi", "Bến Nghé", "Quận 1", "Hồ Chí Minh", "Nguyen Van 2", "0900000002"));
+            seedDealers.add(makeDealer("E-Drive Đà Nẵng", "edrivedanang@edrive.local", "99 Nguyễn Văn Linh", "Hải Châu 1", "Hải Châu", "Đà Nẵng", "Nguyen Van 3", "0900000003"));
+            seedDealers.add(makeDealer("E-Drive Hải Phòng", "edrivehaiphong@edrive.local", "12 Điện Biên Phủ", "Minh Khai", "Hồng Bàng", "Hải Phòng", "Than Trong 4", "0900000004"));
+            seedDealers.add(makeDealer("E-Drive Cần Thơ", "edrivecantho@edrive.local", "8 Mậu Thân", "Xuân Khánh", "Ninh Kiều", "Cần Thơ", "Than Trong 5", "0900000005"));
+            seedDealers.add(makeDealer("E-Drive Nha Trang", "edrivenhatrang@edrive.local", "27 Trần Phú", "Lộc Thọ", "Nha Trang", "Khánh Hòa", "Than Trong 6", "0900000006"));
+            seedDealers.add(makeDealer("E-Drive Biên Hòa", "edrivebienhoa@edrive.local", "18 Phạm Văn Thuận", "Tân Tiến", "Biên Hòa", "Đồng Nai", "Ngo Ky 7", "0900000007"));
+            seedDealers.add(makeDealer("E-Drive Vinh", "edrivevinh@edrive.local", "56 Trường Chinh", "Trung Đô", "Vinh", "Nghệ An", "Truong Dinh 8", "0900000008"));
+            seedDealers.add(makeDealer("E-Drive Buôn Ma Thuột", "edrivebuonmathuot@edrive.local", "10 Nguyễn Tất Thành", "Tân Lợi", "Buôn Ma Thuột", "Đắk Lắk", "Ta Hoang 9", "0900000009"));
+            seedDealers.add(makeDealer("E-Drive Thanh Hóa", "edrivethanhhoa@edrive.local", "20 Hạc Thành", "Tân Sơn", "Thanh Hóa", "Thanh Hóa", "Ngo Ky 10", "0900000010"));
             dealersInDb = dealerRepository.saveAll(seedDealers);
             System.out.println("✅ Đã khởi tạo " + dealersInDb.size() + " dealers");
         }
@@ -146,15 +146,15 @@ public class DataInitializer implements CommandLineRunner {
         System.out.println("✅ Đã khởi tạo " + manufacturers.size() + " manufacturers");
 
 // ====== Seed Colors (dùng chung) ======
-        Color red    = upsertColor("Đỏ",      "#FF0000");
-        Color black  = upsertColor("Đen",     "#000000");
-        Color white  = upsertColor("Trắng",   "#FFFFFF");
-        Color blue   = upsertColor("Xanh",    "#0000FF");
-        Color silver = upsertColor("Bạc",     "#C0C0C0");
-        Color gray   = upsertColor("Xám",     "#808080");
-        Color cyan   = upsertColor("Xanh Lam","#1E90FF");
-        Color green  = upsertColor("Xanh lá", "#008000");
-        Color yellow  = upsertColor("Vàng", "#FDFD49");
+        Color red = upsertColor("Đỏ", "#FF0000");
+        Color black = upsertColor("Đen", "#000000");
+        Color white = upsertColor("Trắng", "#FFFFFF");
+        Color blue = upsertColor("Xanh", "#0000FF");
+        Color silver = upsertColor("Bạc", "#C0C0C0");
+        Color gray = upsertColor("Xám", "#808080");
+        Color cyan = upsertColor("Xanh Lam", "#1E90FF");
+        Color green = upsertColor("Xanh lá", "#008000");
+        Color yellow = upsertColor("Vàng", "#FDFD49");
 
 // ====== Khởi tạo Vehicles cho VinFast ======
         Vehicle vf8_silver = new Vehicle();
@@ -520,24 +520,24 @@ public class DataInitializer implements CommandLineRunner {
         vf6_red.setStatus(VehicleStatus.AVAILABLE);
 
         Vehicle vf6_white = new Vehicle();
-       vf6_white.setManufacturer(edrive);
-       vf6_white.setModelName("VF 6");
-       vf6_white.setVersion("Long Range");
-       vf6_white.setColor(red); // giữ “Xanh” nhưng có mã hex riêng
-       vf6_white.setBatteryCapacityKwh(82);
-       vf6_white.setRangeKm(602);
-       vf6_white.setMaxSpeedKmh(233);
-       vf6_white.setChargingTimeHours(8.0f);
-       vf6_white.setSeatingCapacity(5);
-       vf6_white.setMotorPowerKw(283);
-       vf6_white.setWeightKg(1844);
-       vf6_white.setLengthMm(4694);
-       vf6_white.setWidthMm(1849);
-       vf6_white.setHeightMm(1443);
-       vf6_white.setPriceRetail(new BigDecimal("1500000000"));
-       vf6_white.setManufactureYear(2024);
-       vf6_white.setImageUrl("https://vinfast-cars.vn/wp-content/uploads/2024/09/vinfastvf6-4.png");
-       vf6_white.setStatus(VehicleStatus.AVAILABLE);
+        vf6_white.setManufacturer(edrive);
+        vf6_white.setModelName("VF 6");
+        vf6_white.setVersion("Long Range");
+        vf6_white.setColor(red); // giữ “Xanh” nhưng có mã hex riêng
+        vf6_white.setBatteryCapacityKwh(82);
+        vf6_white.setRangeKm(602);
+        vf6_white.setMaxSpeedKmh(233);
+        vf6_white.setChargingTimeHours(8.0f);
+        vf6_white.setSeatingCapacity(5);
+        vf6_white.setMotorPowerKw(283);
+        vf6_white.setWeightKg(1844);
+        vf6_white.setLengthMm(4694);
+        vf6_white.setWidthMm(1849);
+        vf6_white.setHeightMm(1443);
+        vf6_white.setPriceRetail(new BigDecimal("1500000000"));
+        vf6_white.setManufactureYear(2024);
+        vf6_white.setImageUrl("https://vinfast-cars.vn/wp-content/uploads/2024/09/vinfastvf6-4.png");
+        vf6_white.setStatus(VehicleStatus.AVAILABLE);
 
 
         Vehicle vf7_white = new Vehicle();
@@ -809,10 +809,10 @@ public class DataInitializer implements CommandLineRunner {
                         vf3_yellow, vf3_red,
                         vf5_red, vf5_grey,
                         vf6_red, vf6_green,
-                        vf8_black,vf8_white,
-                        vf9_green,vf9_black,
-                        vf3_white, vf5_blue,vf5_white,
-                        vf6_white,vf7_black,
+                        vf8_black, vf8_white,
+                        vf9_green, vf9_black,
+                        vf3_white, vf5_blue, vf5_white,
+                        vf6_white, vf7_black,
                         vf7_white, vf7_red,
                         // 10 chiếc xe mới
                         vf8_cyan, vf9_silver,
@@ -854,6 +854,49 @@ public class DataInitializer implements CommandLineRunner {
 
         inventories = manufacturerInventoryRepository.saveAll(inventories);
         System.out.println("✅ Đã khởi tạo " + inventories.size() + " manufacturer inventories");
+
+// =================== SEED DEALER INVENTORIES ===================
+        if (dealerInventoryRepository.count() == 0) {
+            List<DealerInventory> dealerInventories = new ArrayList<>();
+            LocalDateTime nowDealerInv = LocalDateTime.now();
+
+            // Mỗi đại lý sẽ có ít nhất 3 mẫu xe với 10 chiếc mỗi mẫu
+            int defaultDealerQty = 10; // Mỗi mẫu có ít nhất 10 chiếc
+            Map<String, Integer> dealerQtyByModel = new HashMap<>();
+            dealerQtyByModel.put("VF 3", 10); // 10 chiếc VF 3
+            dealerQtyByModel.put("VF 5", 10); // 10 chiếc VF 5
+            dealerQtyByModel.put("VF 6", 10); // 10 chiếc VF 6
+            dealerQtyByModel.put("VF 7", 10); // 10 chiếc VF 7
+            dealerQtyByModel.put("VF 8", 10); // 10 chiếc VF 8
+            dealerQtyByModel.put("VF 9", 10); // 10 chiếc VF 9
+
+            // Vòng lặp: mỗi đại lý có ít nhất 3 mẫu xe và mỗi mẫu có 10 chiếc
+            for (Dealer dealer : dealersInDb) {
+                List<String> assignedModels = new ArrayList<>();
+
+                for (Vehicle v : vehicles) {
+                    if (assignedModels.size() >= 3) break;  // Đảm bảo chỉ gán 3 mẫu xe
+
+                    // Kiểm tra xem mẫu xe đã được gán cho đại lý chưa
+                    if (!assignedModels.contains(v.getModelName())) {
+                        int qty = dealerQtyByModel.getOrDefault(v.getModelName(), defaultDealerQty);
+
+                        DealerInventory di = DealerInventory.builder()
+                                .dealer(dealer)
+                                .vehicle(v)
+                                .quantity(qty)
+                                .lastUpdated(nowDealerInv)
+                                .build();
+
+                        dealerInventories.add(di);
+                        assignedModels.add(v.getModelName()); // Đánh dấu mẫu xe đã được gán
+                    }
+                }
+            }
+
+            dealerInventoryRepository.saveAll(dealerInventories);
+            System.out.println("✅ Đã khởi tạo " + dealerInventories.size() + " dealer inventories");
+        }
 // =================== SEED PROMOTIONS ===================
         if (promotionRepository.count() == 0) {
             List<Promotion> promotions = new ArrayList<>();
@@ -1167,7 +1210,7 @@ public class DataInitializer implements CommandLineRunner {
         System.out.println("🎉 Hoàn thành khởi tạo dữ liệu!");
     }
 
-    private Dealer makeDealer(String name,String email, String street, String ward, String district, String city, String contact, String phone) {
+    private Dealer makeDealer(String name, String email, String street, String ward, String district, String city, String contact, String phone) {
         Dealer d = new Dealer();
         d.setDealerName(name);
         d.setDealerEmail(email);

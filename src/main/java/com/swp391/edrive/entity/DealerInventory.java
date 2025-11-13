@@ -32,6 +32,4 @@ public class DealerInventory {
 
     private LocalDateTime lastUpdated;
 
-    @OneToMany(mappedBy = "dealerInventory")
-    private List<TestDrive> testDrives;
 }
