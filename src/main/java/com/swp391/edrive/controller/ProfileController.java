@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Tag(name = "Profile", description = "Quản lý thông tin hồ sơ người dùng")
 @SecurityRequirement(name = "api")
-
+@PreAuthorize("isAuthenticated()")
 public class ProfileController {
 
     private final ProfileService profileService;

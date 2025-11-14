@@ -10,9 +10,6 @@ import java.util.List;
 public interface ContractService {
     ContractResponse create(ContractRequest req);
 
-    // ✅ Trả về Object để có thể là 1 trong 2 loại
-    Object getById(Long id);
-    Object getAllContracts();
 
     // Admin duyệt hoặc từ chối hợp đồng
     ContractResponse reviewContract(Long contractId, Boolean approved, String rejectionReason);
@@ -23,9 +20,8 @@ public interface ContractService {
     List<ContractResponse> getAllContracts();
     // ========== Đại lý ↔ Khách hàng ==========
     CustomerContractResponse createContractFromOrder(String orderId);
-    CustomerContractResponse reviewContract(Long contractId, Boolean approved, String rejectionReason);
+//    CustomerContractResponse reviewContract(Long contractId, Boolean approved, String rejectionReason);
 
-    ContractResponse getById(Long id);
     List<ContractResponse> getByDealer(Long dealerId);
     ContractFileResponse uploadPdf(Long contractId, MultipartFile file);
     Contract findEntityById(Long id);

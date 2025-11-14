@@ -3,10 +3,9 @@ package com.swp391.edrive.controller;
 import com.swp391.edrive.dto.request.ContractApprovalRequest;
 import com.swp391.edrive.dto.request.ContractFromOrderRequest;
 import com.swp391.edrive.dto.request.ContractRequest;
-import com.swp391.edrive.dto.response.ContractFileResponse;
-import com.swp391.edrive.dto.response.ContractResponse;
-import com.swp391.edrive.dto.response.ResponseObject;
+import com.swp391.edrive.dto.response.*;
 import com.swp391.edrive.entity.Contract;
+import com.swp391.edrive.entity.Dealer;
 import com.swp391.edrive.service.ContractService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -86,10 +85,6 @@ public class ContractController {
         return ResponseEntity.ok(service.reject(id, note));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ContractResponse> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(service.getById(id));
-    }
 
     @GetMapping("/dealer/{dealerId}")
     public ResponseEntity<List<ContractResponse>> listByDealer(@PathVariable Long dealerId) {

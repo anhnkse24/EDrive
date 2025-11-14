@@ -11,6 +11,7 @@ import com.swp391.edrive.enums.ContractStatus;
 import com.swp391.edrive.mapper.contract.IContractMapper;
 import com.swp391.edrive.repository.*;
 import com.swp391.edrive.service.ContractService;
+import com.swp391.edrive.service.NotificationService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -204,7 +205,7 @@ public class ContractServiceImpl implements ContractService {
                 .totalPrice(totalPrice)
                 .discountRate(discountAmount)
                 .terms("Điều khoản hợp đồng mặc định")
-                .status(ContractStatus.CHỜ_DUYỆT)
+                .status(ContractStatus.DRAFT)
                 .build();
 
         Contract savedContract = contractRepo.save(contract);
@@ -361,12 +362,6 @@ public class ContractServiceImpl implements ContractService {
        c.setStatus(ContractStatus.REJECTED);
         c.setManufacturerNote(note);
         return mapper.toResponse(contractRepo.save(c));
-    }
-
-    @Override
-    public ContractResponse getById(Long id) {
-        return mapper.toResponse(contractRepo.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy hợp đồng")));
     }
 
     @Override
@@ -608,7 +603,7 @@ public class ContractServiceImpl implements ContractService {
         ContractDetailResponse.ManufacturerInfo manufacturerInfo = ContractDetailResponse.ManufacturerInfo.builder()
                 .name(manufacturer != null ? manufacturer.getManufacturerName() : "E-DRIVE VIETNAM")
                 .address(manufacturer != null ? manufacturer.getAddress() : "123 Đường Điện Biên Phủ, Quận 1, TP.HCM")
-                .phone(manufacturer != null ? manufacturer.getPhone() : "(0123) 456 789")
+                .phone(manufacturer != null ? manufacturer.getContactPersonPhone() : "(0123) 456 789")
                 .taxCode("0123456789")
                 .signatureData(contract.getManufacturerSignature())
                 .signedAt(contract.getManufacturerSignedAt())
