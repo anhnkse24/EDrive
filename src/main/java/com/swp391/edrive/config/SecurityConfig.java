@@ -74,7 +74,8 @@ public class SecurityConfig {
                                 "/api/vehicles/search/**",
                                 "/chat",
                                 "/api/feedbacks/**",
-                                "/api/testdrives/**"
+                                "/api/testdrives/**",
+                                "/api/contracts/**"
                         )
                         .permitAll() // Các endpoint không cần xác thực
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**")
