@@ -2,7 +2,8 @@ package com.swp391.edrive.service.serviceimpl;
 
 import com.swp391.edrive.dto.request.ContractRequest;
 import com.swp391.edrive.dto.response.ContractFileResponse;
-import com.swp391.edrive.dto.response.ContractResponse;
+import com.swp391.edrive.dto.response.CustomerContractResponse;
+import com.swp391.edrive.dto.response.ManufacturerContractResponse;
 import com.swp391.edrive.entity.*;
 import com.swp391.edrive.enums.ContractStatus;
 import com.swp391.edrive.mapper.contract.IContractMapper;
@@ -20,7 +21,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,16 +35,33 @@ public class ContractServiceImpl implements ContractService {
     private final DealerInventoryRepository dealerInventoryRepo;
 
     @Override
-    public List<ContractResponse> getAllContracts() {
+    public Object getAllContracts() {
         List<Contract> contracts = contractRepo.findAll();
-        return contracts.stream()
-                .map(mapper::toResponse)
-                .collect(Collectors.toList());
+
+        List<ManufacturerContractResponse> manufacturerContracts = new java.util.ArrayList<>();
+        List<CustomerContractResponse> customerContracts = new java.util.ArrayList<>();
+
+        for (Contract contract : contracts) {
+            // Kiểm tra loại hợp đồng dựa vào customer
+            Order order = contract.getOrder();
+            boolean isCustomerContract = (order != null && order.getCustomer() != null);
+
+            if (isCustomerContract) {
+                customerContracts.add(mapper.toCustomerContractResponse(contract));
+            } else {
+                manufacturerContracts.add(mapper.toManufacturerContractResponse(contract));
+            }
+        }
+
+        return com.swp391.edrive.dto.response.ContractListResponse.builder()
+                .manufacturerContracts(manufacturerContracts)
+                .customerContracts(customerContracts)
+                .build();
     }
 
     @Override
     @Transactional
-    public ContractResponse create(ContractRequest req) {
+    public ManufacturerContractResponse create(ContractRequest req) {
         Dealer dealer = dealerRepo.findById(req.getDealerId())
                 .orElseThrow(() -> new EntityNotFoundException("Dealer not found"));
 
@@ -120,7 +137,7 @@ public class ContractServiceImpl implements ContractService {
 
         Contract savedContract = contractRepo.save(c);
 
-        ContractResponse response = mapper.toResponse(savedContract);
+        ManufacturerContractResponse response = mapper.toManufacturerContractResponse(savedContract);
         response.setSubtotal(subtotal);
         response.setVatAmount(vatAmount);
 
@@ -129,7 +146,7 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     @Transactional
-    public ContractResponse createContractFromOrder(String orderId) {
+    public CustomerContractResponse createContractFromOrder(String orderId) {
         // Lấy Order
         Order order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy đơn hàng với ID: " + orderId));
@@ -151,14 +168,43 @@ public class ContractServiceImpl implements ContractService {
 
         // Lấy thông tin từ order
         BigDecimal totalPrice = order.getTotalPrice();
-        BigDecimal discountRate = order.getTotalDiscount();
+        BigDecimal discountAmount = order.getTotalDiscount();
         BigDecimal subtotal = order.getSubtotal();
         BigDecimal vatAmount = order.getVatAmount();
 
-        // Lấy manufacturer từ vehicle
+        // Tính tiền cọc 7%
+        BigDecimal depositAmount = totalPrice
+                .multiply(new java.math.BigDecimal("0.07"))
+                .setScale(0, java.math.RoundingMode.HALF_UP);
+
+        // Tính số tiền còn lại
+        BigDecimal remainingAmount = totalPrice.subtract(depositAmount);
+
+        // Lấy manufacturer và thông tin xe từ vehicle
         Vehicle vehicle = order.getOrderItems().get(0).getVehicle();
         Manufacturer manufacturer = vehicle.getManufacturer();
         String colorName = (vehicle.getColor() != null) ? vehicle.getColor().getColorName() : null;
+
+        // Lấy thông tin khách hàng từ Order
+        Customer customer = order.getCustomer();
+        String customerName = null;
+        String customerEmail = null;
+        String customerPhone = null;
+        String customerAddress = null;
+        Long customerId = null;
+
+        if (customer != null) {
+            customerId = customer.getCustomerId();
+            customerName = customer.getFullName();
+            customerEmail = customer.getEmail();
+            customerPhone = customer.getPhone();
+            customerAddress = customer.getAddress();
+        }
+
+        // Lấy tên quản lý đại lý từ dealer.contactPerson
+        String dealerManagerName = dealer.getContactPerson();
+        String dealerPhone = dealer.getPhone();
+        String dealerEmail = dealer.getDealerEmail();
 
         // Tạo hợp đồng với trạng thái CHỜ_DUYỆT
         Contract contract = Contract.builder()
@@ -169,7 +215,7 @@ public class ContractServiceImpl implements ContractService {
                 .vehicleVersion(vehicle.getVersion())
                 .colorName(colorName)
                 .totalPrice(totalPrice)
-                .discountRate(discountRate)
+                .discountRate(discountAmount)
                 .terms("Điều khoản hợp đồng mặc định")
                 .status(ContractStatus.CHỜ_DUYỆT)
                 .build();
@@ -180,16 +226,45 @@ public class ContractServiceImpl implements ContractService {
         order.setPaymentStatus(com.swp391.edrive.enums.PaymentStatus.ĐÃ_CỌC);
         orderRepo.save(order);
 
-        ContractResponse response = mapper.toResponse(savedContract);
-        response.setSubtotal(subtotal);
-        response.setVatAmount(vatAmount);
-
-        return response;
+        // Tạo CustomerContractResponse với đầy đủ thông tin
+        return CustomerContractResponse.builder()
+                .id(savedContract.getId())
+                .contractCode(savedContract.getContractCode())
+                .orderId(order.getOrderId())
+                // Thông tin khách hàng
+                .customerId(customerId)
+                .customerName(customerName)
+                .customerEmail(customerEmail)
+                .customerPhone(customerPhone)
+                .customerAddress(customerAddress)
+                // Thông tin đại lý
+                .dealerId(dealer.getDealerId())
+                .dealerName(dealer.getDealerName())
+                .dealerManagerName(dealerManagerName)
+                .dealerPhone(dealerPhone)
+                .dealerEmail(dealerEmail)
+                // Thông tin xe
+                .vehicleModel(vehicle.getModelName())
+                .vehicleVersion(vehicle.getVersion())
+                .colorName(colorName)
+                // Chi phí chi tiết
+                .subtotal(subtotal)
+                .discountAmount(discountAmount)
+                .vatAmount(vatAmount)
+                .totalPrice(totalPrice)
+                .depositAmount(depositAmount)
+                .remainingAmount(remainingAmount)
+                // Thông tin hợp đồng
+                .status(savedContract.getStatus().name())
+                .terms(savedContract.getTerms())
+                .createdAt(savedContract.getCreatedAt())
+                .updatedAt(savedContract.getUpdatedAt())
+                .build();
     }
 
     @Override
     @Transactional
-    public ContractResponse reviewContract(Long contractId, Boolean approved, String rejectionReason) {
+    public CustomerContractResponse reviewContract(Long contractId, Boolean approved, String rejectionReason) {
         Contract contract = contractRepo.findById(contractId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy hợp đồng với ID: " + contractId));
 
@@ -252,19 +327,65 @@ public class ContractServiceImpl implements ContractService {
             contract.setStatus(ContractStatus.ĐÃ_TỪ_CHỐI);
             contract.setManufacturerNote(rejectionReason != null ? rejectionReason : "Đã từ chối");
 
-            // Hoàn lại trạng thái payment của order về ĐÃ_THANH_TOÁN
+            // Hoàn lại trạng thái payment của order về CHỜ_DUYỆT
             Order order = contract.getOrder();
-            order.setPaymentStatus(com.swp391.edrive.enums.PaymentStatus.ĐÃ_THANH_TOÁN);
+            order.setPaymentStatus(com.swp391.edrive.enums.PaymentStatus.CHỜ_DUYỆT);
             orderRepo.save(order);
         }
 
         Contract savedContract = contractRepo.save(contract);
-        return mapper.toResponse(savedContract);
+
+        // Build CustomerContractResponse
+        Order order = savedContract.getOrder();
+        Customer customer = order.getCustomer();
+        Vehicle vehicle = order.getOrderItems().get(0).getVehicle();
+        Dealer dealer = savedContract.getDealer();
+
+        // Tính toán chi phí
+        BigDecimal totalPrice = order.getTotalPrice();
+        BigDecimal depositAmount = totalPrice
+                .multiply(new BigDecimal("0.07"))
+                .setScale(0, java.math.RoundingMode.HALF_UP);
+        BigDecimal remainingAmount = totalPrice.subtract(depositAmount);
+
+        return CustomerContractResponse.builder()
+                .id(savedContract.getId())
+                .contractCode(savedContract.getContractCode())
+                .orderId(order.getOrderId())
+                // Thông tin khách hàng
+                .customerId(customer != null ? customer.getCustomerId() : null)
+                .customerName(customer != null ? customer.getFullName() : null)
+                .customerEmail(customer != null ? customer.getEmail() : null)
+                .customerPhone(customer != null ? customer.getPhone() : null)
+                .customerAddress(customer != null ? customer.getAddress() : null)
+                // Thông tin đại lý
+                .dealerId(dealer.getDealerId())
+                .dealerName(dealer.getDealerName())
+                .dealerManagerName(dealer.getContactPerson())
+                .dealerPhone(dealer.getPhone())
+                .dealerEmail(dealer.getDealerEmail())
+                // Thông tin xe
+                .vehicleModel(vehicle.getModelName())
+                .vehicleVersion(vehicle.getVersion())
+                .colorName(vehicle.getColor() != null ? vehicle.getColor().getColorName() : null)
+                // Chi phí
+                .subtotal(order.getSubtotal())
+                .discountAmount(order.getTotalDiscount())
+                .vatAmount(order.getVatAmount())
+                .totalPrice(totalPrice)
+                .depositAmount(depositAmount)
+                .remainingAmount(remainingAmount)
+                // Thông tin hợp đồng
+                .status(savedContract.getStatus().name())
+                .terms(savedContract.getTerms())
+                .createdAt(savedContract.getCreatedAt())
+                .updatedAt(savedContract.getUpdatedAt())
+                .build();
     }
 
     @Override
     @Transactional
-    public ContractResponse submitToManufacturer(Long contractId) {
+    public ManufacturerContractResponse submitToManufacturer(Long contractId) {
         Contract c = contractRepo.findById(contractId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy hợp đồng"));
 
@@ -272,12 +393,12 @@ public class ContractServiceImpl implements ContractService {
             throw new IllegalStateException("Chỉ có hợp đồng BẢN_NHÁP/ĐÃ_TỪ_CHỐI mới có thể gửi");
         }
         c.setStatus(ContractStatus.CHỜ_DUYỆT);
-        return mapper.toResponse(contractRepo.save(c));
+        return mapper.toManufacturerContractResponse(contractRepo.save(c));
     }
 
     @Override
     @Transactional
-    public ContractResponse approve(Long id, String note) {
+    public ManufacturerContractResponse approve(Long id, String note) {
         Contract c = contractRepo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy hợp đồng"));
         if (c.getStatus() != ContractStatus.CHỜ_DUYỆT) {
@@ -285,31 +406,45 @@ public class ContractServiceImpl implements ContractService {
         }
         c.setStatus(ContractStatus.ĐÃ_XÁC_NHẬN);
         c.setManufacturerNote(note);
-        return mapper.toResponse(contractRepo.save(c));
+        return mapper.toManufacturerContractResponse(contractRepo.save(c));
     }
 
     @Override
     @Transactional
-    public ContractResponse reject(Long id, String note) {
+    public ManufacturerContractResponse reject(Long id, String note) {
         Contract c = contractRepo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy hợp đồng"));
         if (c.getStatus() != ContractStatus.CHỜ_DUYỆT) {
             throw new IllegalStateException("Chỉ có hợp đồng CHỜ_DUYỆT mới có thể từ chối");
         }
-       c.setStatus(ContractStatus.ĐÃ_TỪ_CHỐI);
+        c.setStatus(ContractStatus.ĐÃ_TỪ_CHỐI);
         c.setManufacturerNote(note);
-        return mapper.toResponse(contractRepo.save(c));
+        return mapper.toManufacturerContractResponse(contractRepo.save(c));
     }
 
     @Override
-    public ContractResponse getById(Long id) {
-        return mapper.toResponse(contractRepo.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy hợp đồng")));
+    public Object getById(Long id) {
+        Contract contract = contractRepo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy hợp đồng"));
+
+        // Kiểm tra loại hợp đồng dựa vào customer
+        Order order = contract.getOrder();
+        boolean isCustomerContract = (order != null && order.getCustomer() != null);
+
+        if (isCustomerContract) {
+            // Hợp đồng Đại lý ↔ Khách hàng
+            return mapper.toCustomerContractResponse(contract);
+        } else {
+            // Hợp đồng Hãng ↔ Đại lý
+            return mapper.toManufacturerContractResponse(contract);
+        }
     }
 
     @Override
-    public List<ContractResponse> getByDealer(Long dealerId) {
-        return contractRepo.findByDealer_DealerId(dealerId).stream().map(mapper::toResponse).toList();
+    public List<ManufacturerContractResponse> getByDealer(Long dealerId) {
+        return contractRepo.findByDealer_DealerId(dealerId).stream()
+                .map(mapper::toManufacturerContractResponse)
+                .toList();
     }
 
     @Override
@@ -346,7 +481,6 @@ public class ContractServiceImpl implements ContractService {
             String fileUrl = "http://localhost:8080/uploads/contracts/" + filename;
             Dealer dealer = contract.getDealer();
 
-
             return ContractFileResponse.builder()
                     .contractId(contractId)
                     .contactName(dealer != null ? dealer.getContactPerson() : null)
@@ -367,3 +501,4 @@ public class ContractServiceImpl implements ContractService {
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy hợp đồng"));
     }
 }
+

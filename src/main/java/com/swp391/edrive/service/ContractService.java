@@ -2,30 +2,32 @@ package com.swp391.edrive.service;
 
 import com.swp391.edrive.dto.request.ContractRequest;
 import com.swp391.edrive.dto.response.ContractFileResponse;
-import com.swp391.edrive.dto.response.ContractResponse;
+import com.swp391.edrive.dto.response.CustomerContractResponse;
+import com.swp391.edrive.dto.response.ManufacturerContractResponse;
 import com.swp391.edrive.entity.Contract;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 public interface ContractService {
-    ContractResponse create(ContractRequest req);
+    // ========== Hãng ↔ Đại lý ==========
+    ManufacturerContractResponse create(ContractRequest req);
+    ManufacturerContractResponse submitToManufacturer(Long contractId);
+    ManufacturerContractResponse approve(Long contractId, String note);
+    ManufacturerContractResponse reject(Long contractId, String note);
 
-    // Tạo hợp đồng từ Order (payment status → ĐÃ_CỌC)
-    ContractResponse createContractFromOrder(String orderId);
+    // ✅ Trả về Object để có thể là 1 trong 2 loại
+    Object getById(Long id);
+    Object getAllContracts();
 
-    // Admin duyệt hoặc từ chối hợp đồng
-    ContractResponse reviewContract(Long contractId, Boolean approved, String rejectionReason);
+    List<ManufacturerContractResponse> getByDealer(Long dealerId);
 
-    ContractResponse submitToManufacturer(Long contractId);
-    ContractResponse approve(Long contractId, String note);
-    ContractResponse reject(Long contractId, String note);
-    List<ContractResponse> getAllContracts(); // Thêm phương thức này
+    // ========== Đại lý ↔ Khách hàng ==========
+    CustomerContractResponse createContractFromOrder(String orderId);
+    CustomerContractResponse reviewContract(Long contractId, Boolean approved, String rejectionReason);
 
-    ContractResponse getById(Long id);
-    List<ContractResponse> getByDealer(Long dealerId);
+    // ========== Common ==========
     ContractFileResponse uploadPdf(Long contractId, MultipartFile file);
     Contract findEntityById(Long id);
-
 
 }

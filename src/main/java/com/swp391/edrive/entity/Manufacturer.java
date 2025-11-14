@@ -31,7 +31,9 @@ public class Manufacturer {
     private String contactPerson;
 
     @Column(nullable = false, length = 20)
-    private String phone;
+    private String contactPersonPhone;
+
+    private String contactPersonEmail;
 
     @OneToMany(mappedBy = "manufacturer")
     @JsonIgnore

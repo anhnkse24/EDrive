@@ -4,7 +4,8 @@ import com.swp391.edrive.dto.request.ContractApprovalRequest;
 import com.swp391.edrive.dto.request.ContractFromOrderRequest;
 import com.swp391.edrive.dto.request.ContractRequest;
 import com.swp391.edrive.dto.response.ContractFileResponse;
-import com.swp391.edrive.dto.response.ContractResponse;
+import com.swp391.edrive.dto.response.CustomerContractResponse;
+import com.swp391.edrive.dto.response.ManufacturerContractResponse;
 import com.swp391.edrive.dto.response.ResponseObject;
 import com.swp391.edrive.entity.Contract;
 import com.swp391.edrive.service.ContractService;
@@ -28,21 +29,69 @@ import java.util.List;
 @RequestMapping("/api/contracts")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "api")
-
 public class ContractController {
 
     private final ContractService service;
 
+    // ========== API cho Hãng ↔ Đại lý ==========
+
+    @Operation(summary = "Tạo hợp đồng mua xe từ hãng", description = "Đại lý tạo hợp đồng mua xe từ hãng")
     @PostMapping
-    public ResponseEntity<ContractResponse> create(@RequestBody ContractRequest req) {
+    public ResponseEntity<ManufacturerContractResponse> create(@RequestBody ContractRequest req) {
         return ResponseEntity.ok(service.create(req));
     }
 
+    @Operation(summary = "Gửi hợp đồng cho hãng phê duyệt")
+    @PutMapping("/{id}/submit")
+    public ResponseEntity<ManufacturerContractResponse> submit(@PathVariable Long id) {
+        return ResponseEntity.ok(service.submitToManufacturer(id));
+    }
+
+    @Operation(summary = "Hãng phê duyệt hợp đồng")
+    @PutMapping("/{id}/approve")
+    public ResponseEntity<ManufacturerContractResponse> approve(@PathVariable Long id,
+                                                    @RequestParam(required = false) String note) {
+        return ResponseEntity.ok(service.approve(id, note));
+    }
+
+    @Operation(summary = "Hãng từ chối hợp đồng")
+    @PutMapping("/{id}/reject")
+    public ResponseEntity<ManufacturerContractResponse> reject(@PathVariable Long id,
+                                                   @RequestParam(required = false) String note) {
+        return ResponseEntity.ok(service.reject(id, note));
+    }
+
+    @Operation(summary = "Lấy thông tin hợp đồng theo ID", description = "Tự động phân biệt và trả về ManufacturerContractResponse hoặc CustomerContractResponse")
+    @GetMapping("/{id}")
+    public ResponseEntity<Object> getById(@PathVariable Long id) {
+        Object result = service.getById(id);
+        return ResponseEntity.ok(result);
+    }
+
+    @Operation(summary = "Lấy danh sách hợp đồng theo đại lý")
+    @GetMapping("/dealer/{dealerId}")
+    public ResponseEntity<List<ManufacturerContractResponse>> listByDealer(@PathVariable Long dealerId) {
+        return ResponseEntity.ok(service.getByDealer(dealerId));
+    }
+
+    @Operation(summary = "Lấy tất cả hợp đồng", description = "Trả về danh sách phân loại: manufacturerContracts và customerContracts")
+    @GetMapping
+    public ResponseObject<Object> getAllContracts() {
+        Object result = service.getAllContracts();
+        return ResponseObject.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Lấy danh sách hợp đồng thành công")
+                .data(result)
+                .build();
+    }
+
+    // ========== API cho Đại lý ↔ Khách hàng ==========
+
     @Operation(summary = "Tạo hợp đồng từ Order", description = "Tạo hợp đồng từ đơn hàng đã thanh toán, payment status chuyển sang ĐÃ_CỌC")
     @PostMapping("/from-order")
-    public ResponseObject<ContractResponse> createFromOrder(@RequestBody ContractFromOrderRequest req) {
-        ContractResponse result = service.createContractFromOrder(req.getOrderId());
-        return ResponseObject.<ContractResponse>builder()
+    public ResponseObject<CustomerContractResponse> createFromOrder(@RequestBody ContractFromOrderRequest req) {
+        CustomerContractResponse result = service.createContractFromOrder(req.getOrderId());
+        return ResponseObject.<CustomerContractResponse>builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("Tạo hợp đồng thành công. Trạng thái thanh toán đã chuyển sang ĐÃ_CỌC")
                 .data(result)
@@ -51,8 +100,8 @@ public class ContractController {
 
     @Operation(summary = "Admin duyệt hoặc từ chối hợp đồng", description = "Admin approve/reject hợp đồng đang ở trạng thái CHỜ_DUYỆT")
     @PostMapping("/review")
-    public ResponseObject<ContractResponse> reviewContract(@RequestBody ContractApprovalRequest req) {
-        ContractResponse result = service.reviewContract(
+    public ResponseObject<CustomerContractResponse> reviewContract(@RequestBody ContractApprovalRequest req) {
+        CustomerContractResponse result = service.reviewContract(
                 req.getContractId(),
                 req.getApproved(),
                 req.getRejectionReason()
@@ -62,54 +111,21 @@ public class ContractController {
                 ? "Phê duyệt hợp đồng thành công"
                 : "Từ chối hợp đồng thành công";
 
-        return ResponseObject.<ContractResponse>builder()
+        return ResponseObject.<CustomerContractResponse>builder()
                 .statusCode(HttpStatus.OK.value())
                 .message(message)
                 .data(result)
                 .build();
     }
 
-    @PutMapping("/{id}/submit")
-    public ResponseEntity<ContractResponse> submit(@PathVariable Long id) {
-        return ResponseEntity.ok(service.submitToManufacturer(id));
-    }
+    // ========== API Common ==========
 
-    @PutMapping("/{id}/approve")
-    public ResponseEntity<ContractResponse> approve(@PathVariable Long id,
-                                                    @RequestParam(required = false) String note) {
-        return ResponseEntity.ok(service.approve(id, note));
-    }
-
-    @PutMapping("/{id}/reject")
-    public ResponseEntity<ContractResponse> reject(@PathVariable Long id,
-                                                   @RequestParam(required = false) String note) {
-        return ResponseEntity.ok(service.reject(id, note));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<ContractResponse> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(service.getById(id));
-    }
-
-    @GetMapping("/dealer/{dealerId}")
-    public ResponseEntity<List<ContractResponse>> listByDealer(@PathVariable Long dealerId) {
-        return ResponseEntity.ok(service.getByDealer(dealerId));
-    }
-
-    @GetMapping
-    public ResponseObject<List<ContractResponse>> getAllContracts() {
-        List<ContractResponse> result = service.getAllContracts();
-        return ResponseObject.<List<ContractResponse>>builder()
-                .statusCode(HttpStatus.OK.value())
-                .message("Lấy danh sách hợp đồng thành công")
-                .data(result)
-                .build();
-    }
-
+    @Operation(summary = "Upload hợp đồng PDF")
     @PostMapping(
             value = "/{contractId}/upload-pdf",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )    public ResponseEntity<ContractFileResponse> uploadContractPdf(
+    )
+    public ResponseEntity<ContractFileResponse> uploadContractPdf(
             @PathVariable Long contractId,
             @RequestParam("file") MultipartFile file) {
 
@@ -117,6 +133,7 @@ public class ContractController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Tải xuống hợp đồng PDF")
     @GetMapping("/{id}/download")
     public ResponseEntity<Resource> downloadContract(@PathVariable Long id) {
         Contract contract = service.findEntityById(id);
@@ -138,3 +155,4 @@ public class ContractController {
                 .body(resource);
     }
 }
+

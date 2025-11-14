@@ -140,7 +140,8 @@ public class DataInitializer implements CommandLineRunner {
         edrive.setManufacturerName("EDrive");
         edrive.setAddress("Khu Công nghệ cao Hòa Lạc, Huyện Thạch Thất, Hà Nội");
         edrive.setContactPerson("Nguyễn Văn A");
-        edrive.setPhone("0243-123-4567");
+        edrive.setContactPersonPhone("0243-123-4567");
+        edrive.setContactPersonEmail("nhattronviec@gmail.com");
 
         List<Manufacturer> manufacturers = manufacturerRepository.saveAll(Arrays.asList(edrive));
         System.out.println("✅ Đã khởi tạo " + manufacturers.size() + " manufacturers");

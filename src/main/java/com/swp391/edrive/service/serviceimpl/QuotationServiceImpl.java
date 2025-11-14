@@ -86,6 +86,7 @@ public class QuotationServiceImpl implements QuotationService {
         // Tạo báo giá
         Quotation quotation = new Quotation();
         quotation.setDealer(dealer);  // Lưu thông tin dealer
+        quotation.setCreatedBy(createdByUser);  // Lưu user tạo báo giá
         quotation.setVehicle(vehicle);
         quotation.setCustomer(customer);
         quotation.setQuotedPrice(unitPrice.doubleValue());
@@ -246,6 +247,7 @@ public class QuotationServiceImpl implements QuotationService {
         Vehicle vehicle = quotation.getVehicle();
         Customer customer = quotation.getCustomer();
         Dealer dealer = quotation.getDealer();
+        User createdBy = quotation.getCreatedBy();
 
         // Lấy thông tin về dịch vụ bổ sung
         AdditionalServicesResponse additionalServicesResponse = null;
@@ -264,7 +266,7 @@ public class QuotationServiceImpl implements QuotationService {
                 // Thông tin đại lý (có thể null nếu báo giá cũ)
                 .dealerId(dealer != null ? dealer.getDealerId() : null)
                 .dealerName(dealer != null ? dealer.getDealerName() : null)
-                .createdByUserName(null)  // Không lưu thông tin user trong DB nên để null
+                .createdByUserName(createdBy != null ? createdBy.getFullName() : null)  // Lấy tên user tạo báo giá
                 // Thông tin xe
                 .vehicleId(vehicle.getVehicleId())
                 .modelName(vehicle.getModelName())

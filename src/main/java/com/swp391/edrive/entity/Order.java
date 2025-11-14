@@ -23,6 +23,10 @@ public class Order {
     private Dealer dealer;
 
     @ManyToOne
+    @JoinColumn(name = "customer_id")
+    private Customer customer;  // Khách hàng (nếu order từ quotation)
+
+    @ManyToOne
     @JoinColumn(name = "created_by")
     private User createdBy;
 

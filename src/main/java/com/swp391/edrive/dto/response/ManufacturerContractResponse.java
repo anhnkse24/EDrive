@@ -9,15 +9,14 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * Response chung cho các API internal contract
- * @deprecated Nên dùng ManufacturerContractResponse hoặc CustomerContractResponse thay thế
+ * Response cho hợp đồng giữa Hãng và Đại lý
+ * Sử dụng khi: Đại lý mua xe từ hãng
  */
 @Data
 @Builder
 @Getter
 @Setter
-@Deprecated
-public class ContractResponse {
+public class ManufacturerContractResponse {
     private String orderId;
 
     private Long id;
@@ -26,9 +25,15 @@ public class ContractResponse {
     // Thông tin đại lý
     private Long dealerId;
     private String dealerName;
-    private String dealerManagerName;  // Tên quản lý đại lý
+    private String dealerManagerName;  // Tên quản lý đại lý (contactPerson)
+    private String dealerPhone;         // Số điện thoại đại lý
+    private String dealerEmail;         // Email đại lý
 
+    // Thông tin hãng
     private String manufacturerName;
+    private String manufacturerAdminName;   // Tên admin hãng
+    private String manufacturerAdminPhone;  // Số điện thoại admin hãng
+    private String manufacturerAdminEmail;  // Email admin hãng
 
     // Thông tin xe
     private String vehicleModel;
@@ -52,3 +57,4 @@ public class ContractResponse {
     private String pdfUrl;
     private LocalDateTime pdfUploadedAt;
 }
+

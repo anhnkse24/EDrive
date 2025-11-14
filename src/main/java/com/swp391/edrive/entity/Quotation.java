@@ -26,6 +26,10 @@ public class Quotation {
     private Dealer dealer;
 
     @ManyToOne
+    @JoinColumn(name = "created_by")
+    private User createdBy;  // User tạo báo giá
+
+    @ManyToOne
     @JoinColumn(name = "vehicle_id", nullable = false)
     private Vehicle vehicle;
 

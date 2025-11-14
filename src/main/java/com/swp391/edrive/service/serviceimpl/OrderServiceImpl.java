@@ -314,6 +314,7 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderId(UUID.randomUUID().toString());
         order.setOrderDate(LocalDate.now());
         order.setDealer(dealer);
+        order.setCustomer(quotation.getCustomer());  // Lưu thông tin khách hàng từ quotation
         order.setCreatedBy(createdBy);
         order.setStatus(OrderStatus.CHỜ_DUYỆT);
         order.setPaymentStatus(PaymentStatus.CHỜ_DUYỆT);
