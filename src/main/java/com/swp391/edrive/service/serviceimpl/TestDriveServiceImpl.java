@@ -5,6 +5,7 @@ import com.swp391.edrive.dto.response.TestDriveResponse;
 import com.swp391.edrive.entity.*;
 import com.swp391.edrive.enums.TestDriveStatus;
 import com.swp391.edrive.repository.*;
+import com.swp391.edrive.service.NotificationService;
 import com.swp391.edrive.service.TestDriveService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class TestDriveServiceImpl implements TestDriveService {
     private final DealerRepository dealerRepository;
     private final VehicleRepository vehicleRepository;
     private final NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
 
     @Override
     public List<TestDriveResponse> getAllTestDrives() {
@@ -63,23 +65,8 @@ public class TestDriveServiceImpl implements TestDriveService {
 
         testDrive.setCancelReason(request.getCancelReason());
         testDriveRepository.save(testDrive);
-        String message = String.format(
-                "Khách hàng %s vừa đặt lịch lái thử xe %s vào lúc %s",
-                customer.getFullName(),
-                vehicle.getModelName(),
-                request.getScheduleDatetime()
-        );
 
-        Notification notification = Notification.builder()
-                .dealer(dealer)
-                .title("Lịch lái thử mới")
-                .message(message)
-                .isRead(false)
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        notificationRepository.save(notification);
-
+        notificationService.createNotificationForTestDrive(dealerId, testDrive.getTestdriveId());
 
         return mapToResponse(testDrive);
     }

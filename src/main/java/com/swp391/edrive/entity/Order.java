@@ -3,12 +3,14 @@ package com.swp391.edrive.entity;
 import com.swp391.edrive.enums.OrderStatus;
 import com.swp391.edrive.enums.PaymentStatus;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 @Entity
 @Table(name = "orders")
@@ -52,12 +54,12 @@ public class Order {
     @Column
     private String paymentImage;
 
+    @Builder.Default
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<OrderItem> orderItems = new ArrayList<>();
     // Dịch vụ bổ sung (chỉ áp dụng khi khách hàng đặt xe từ đại lý)
     @Embedded
     private AdditionalServices additionalServices;
-
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<OrderItem> orderItems;
 
     @OneToMany(mappedBy = "order")
     private List<Payment> payments;

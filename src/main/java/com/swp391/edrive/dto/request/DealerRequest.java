@@ -8,6 +8,8 @@ import lombok.Setter;
 @Setter
 public class DealerRequest {
 
+    private Long ownerUserId;
+
     @NotBlank(message = "Tên đại lý không được để trống")
     @Size(max = 100, message = "Tên đại lý không được vượt quá 100 ký tự")
     private String dealerName;

@@ -15,11 +15,7 @@ import com.swp391.edrive.repository.PasswordResetTokenRepository;
 import com.swp391.edrive.repository.RoleRepository;
 import com.swp391.edrive.repository.UserRepository;
 import com.swp391.edrive.repository.VerificationTokenRepository;
-import com.swp391.edrive.service.AuthenticationService;
-import com.swp391.edrive.service.EmailService;
-import com.swp391.edrive.service.MailService;
-import com.swp391.edrive.service.RefreshTokenService;
-import com.swp391.edrive.service.TokenService;
+import com.swp391.edrive.service.*;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +48,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Autowired
     private DealerRepository dealerRepository;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -162,6 +161,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         dealer.setBusinessLicenseUrl(businessLicenseUrl);
 
         Dealer savedDealer = dealerRepository.save(dealer);
+        notificationService.createAdminNotificationForDealerRequest(dealer.getDealerId());
+
 
         // Create User entity
         User user = User.builder()
@@ -180,6 +181,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         user.setRoles(roles);
 
         User savedUser = userRepository.save(user);
+
+        savedDealer.setOwnerUser(savedUser);
+        dealerRepository.save(savedDealer);
 
         // Generate verification token for admin approval
         String token = UUID.randomUUID().toString();

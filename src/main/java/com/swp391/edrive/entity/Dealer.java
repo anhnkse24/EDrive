@@ -74,4 +74,8 @@ public class Dealer {
     @OneToMany(mappedBy = "dealer")
     @JsonIgnore
     private List<Contract> contracts;
+
+    @ManyToOne
+    @JoinColumn(name = "owner_user_id")
+    private User ownerUser;
 }

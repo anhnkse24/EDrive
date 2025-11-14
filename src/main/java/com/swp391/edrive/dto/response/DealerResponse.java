@@ -10,7 +10,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DealerResponse {
-    private Long userId;
+    private Long ownerUserId;
     private Long dealerId;
     private String dealerName;
     private  String dealerEmail;

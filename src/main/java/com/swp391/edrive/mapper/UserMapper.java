@@ -16,7 +16,7 @@ public class UserMapper {
     }
     public DealerResponse toUserResponse(User user) {
         DealerResponse.DealerResponseBuilder builder = DealerResponse.builder()
-                .userId(user.getUserId())
+                .ownerUserId(user.getUserId())
                 .dealerEmail(user.getEmail())
                 .contactPhone(user.getPhone())
                 .roles(user.getRoles().stream().map(role -> role.getName()).collect(Collectors.toSet()));

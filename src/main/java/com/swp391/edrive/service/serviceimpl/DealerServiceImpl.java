@@ -8,10 +8,14 @@ import com.swp391.edrive.repository.*;
 import com.swp391.edrive.service.DealerService;
 import com.swp391.edrive.service.NotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -171,7 +175,16 @@ public class DealerServiceImpl implements DealerService {
     }
 
     private DealerResponse toResponse(Dealer dealer) {
+        Set<String> roleNames = null;
+
+        if (dealer.getOwnerUser() != null && dealer.getOwnerUser().getRoles() != null) {
+            roleNames = dealer.getOwnerUser().getRoles()
+                    .stream()
+                    .map(role -> role.getName())
+                    .collect(Collectors.toSet());
+        }
         return DealerResponse.builder()
+                .ownerUserId(dealer.getOwnerUser() != null ? dealer.getOwnerUser().getUserId() : null)
                 .dealerId(dealer.getDealerId())
                 .dealerName(dealer.getDealerName())
                 .dealerEmail(dealer.getDealerEmail())
@@ -181,6 +194,7 @@ public class DealerServiceImpl implements DealerService {
                 .provinceOrCity(dealer.getProvinceOrCity())
                 .contactPerson(dealer.getContactPerson())
                 .contactPhone(dealer.getPhone())
+                .roles(roleNames)
                 .build();
     }
 }

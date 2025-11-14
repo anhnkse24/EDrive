@@ -259,6 +259,7 @@ public class OrderServiceImpl implements OrderService {
             orderItem.setTotalPrice(itemTotal);
 
             orderItems.add(orderItem);
+            order.getOrderItems().add(orderItem);
         }
 
         // Tính VAT và tổng tiền
@@ -567,6 +568,8 @@ public class OrderServiceImpl implements OrderService {
 
             order.setPaymentImage(uploadFile.getAbsolutePath());
             orderRepo.save(order);
+
+            notificationService.createAdminNotificationForUploadedBill(order.getOrderId());
 
             return "Tải lên hóa đơn thành công. Tệp: " + uploadFile.getAbsolutePath();
         } catch (IOException e) {
