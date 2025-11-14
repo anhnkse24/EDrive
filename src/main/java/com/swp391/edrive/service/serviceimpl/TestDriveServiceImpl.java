@@ -100,6 +100,94 @@ public class TestDriveServiceImpl implements TestDriveService {
 
         testDriveRepository.delete(testDrive);
     }
+    @Override
+    public TestDriveResponse createTestDriveByCustomer(TestDriveRequest request) {
+
+        Customer customer = customerRepository.findById(request.getCustomerId())
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy khách hàng"));
+
+        Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy xe"));
+
+        Dealer dealer = vehicle.getDealerInventories()
+                .stream()
+                .map(DealerInventory::getDealer)
+                .findFirst()
+                .orElseThrow(() ->
+                        new EntityNotFoundException("Xe không thuộc đại lý nào"));
+
+        TestDrive testDrive = new TestDrive(
+                customer,
+                dealer,
+                vehicle,
+                request.getScheduleDatetime(),
+                TestDriveStatus.PENDING
+        );
+
+        testDriveRepository.save(testDrive);
+
+        // Gửi thông báo cho dealer
+        notificationService.createNotificationForTestDrive(
+                dealer.getDealerId(),
+                testDrive.getTestdriveId()
+        );
+
+        return mapToResponse(testDrive);
+    }
+    @Override
+    public TestDriveResponse approveTestDrive(Long dealerId, Long testDriveId) {
+        TestDrive testDrive = testDriveRepository.findById(testDriveId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy lịch lái thử"));
+
+        if (!testDrive.getDealer().getDealerId().equals(dealerId))
+            throw new EntityNotFoundException("Không có quyền duyệt lịch này");
+
+        testDrive.setStatus(TestDriveStatus.APPROVED);
+        testDriveRepository.save(testDrive);
+
+        return mapToResponse(testDrive);
+    }
+    @Override
+    public TestDriveResponse completeTestDrive(Long dealerId, Long testDriveId) {
+        TestDrive testDrive = testDriveRepository.findById(testDriveId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy lịch lái thử"));
+
+        if (!testDrive.getDealer().getDealerId().equals(dealerId))
+            throw new EntityNotFoundException("Không có quyền cập nhật");
+
+        testDrive.setStatus(TestDriveStatus.COMPLETED);
+        testDrive.setCompletedAt(LocalDateTime.now());
+
+        testDriveRepository.save(testDrive);
+        return mapToResponse(testDrive);
+    }
+    @Override
+    public TestDriveResponse cancelTestDrive(Long testDriveId, String reason) {
+
+        TestDrive testDrive = testDriveRepository.findById(testDriveId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy lịch lái thử"));
+
+        // Chỉ được hủy khi còn PENDING hoặc APPROVED
+        if (testDrive.getStatus() != TestDriveStatus.PENDING &&
+                testDrive.getStatus() != TestDriveStatus.APPROVED) {
+            throw new IllegalStateException("Không thể hủy lịch lái thử ở trạng thái hiện tại");
+        }
+
+        testDrive.setStatus(TestDriveStatus.CANCELLED);
+        testDrive.setCancelReason(reason);
+        testDrive.setCompletedAt(LocalDateTime.now());
+
+        testDriveRepository.save(testDrive);
+
+        // Gửi notification cho dealer
+        notificationService.createNotificationForTestDrive(
+                testDrive.getDealer().getDealerId(),
+                testDrive.getTestdriveId()
+        );
+
+        return mapToResponse(testDrive);
+    }
+
 
     private TestDriveResponse mapToResponse(TestDrive testDrive) {
         return TestDriveResponse.builder()

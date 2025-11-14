@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,16 +43,6 @@ public class TestDriveController {
         return ResponseEntity.ok(new ResponseObject(200, "Lấy danh sách lịch lái thử thành công theo Dealer ID", list));
     }
 
-    @Operation(summary = "Tạo mới lịch lái thử cho Dealer cụ thể")
-    @PostMapping("/dealer/{dealerId}")
-    @SecurityRequirement(name = "api")
-
-    public ResponseEntity<ResponseObject> createTestDriveByDealer(@PathVariable Long dealerId,
-                                                                  @Valid @RequestBody TestDriveRequest request) {
-        TestDriveResponse created = testDriveService.createTestDriveByDealer(dealerId, request);
-        return ResponseEntity.ok(new ResponseObject(200, "Tạo lịch lái thử cho Dealer thành công", created));
-    }
-
     @Operation(summary = "Cập nhật lịch lái thử theo Dealer ID")
     @PutMapping("/dealer/{dealerId}/{testDriveId}")
     @SecurityRequirement(name = "api")
@@ -71,5 +62,40 @@ public class TestDriveController {
                                                                   @PathVariable Long testDriveId) {
         testDriveService.deleteTestDriveByDealer(dealerId, testDriveId);
         return ResponseEntity.ok(new ResponseObject(200, "Xóa lịch lái thử cho Dealer thành công", null));
+    }
+    @Operation(summary = "Khách hàng đăng ký lái thử xe")
+    @PostMapping("/customer")
+    public ResponseEntity<ResponseObject> createByCustomer(@RequestBody TestDriveRequest request) {
+        TestDriveResponse res = testDriveService.createTestDriveByCustomer(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new ResponseObject(201, "Tạo lịch lái thử thành công", res));
+    }
+
+    @Operation(summary = "Dealer duyệt lịch lái thử")
+    @PutMapping("/{dealerId}/{testDriveId}/approve")
+    public ResponseEntity<ResponseObject> approve(
+            @PathVariable Long dealerId,
+            @PathVariable Long testDriveId) {
+
+        TestDriveResponse res = testDriveService.approveTestDrive(dealerId, testDriveId);
+        return ResponseEntity.ok(new ResponseObject(200, "Duyệt lịch lái thử thành công", res));
+    }
+
+    @Operation(summary = "Dealer xác nhận khách hàng đã lái thử xong")
+    @PutMapping("/{dealerId}/{testDriveId}/complete")
+    public ResponseEntity<ResponseObject> complete(
+            @PathVariable Long dealerId,
+            @PathVariable Long testDriveId) {
+
+        TestDriveResponse res = testDriveService.completeTestDrive(dealerId, testDriveId);
+        return ResponseEntity.ok(new ResponseObject(200, "Hoàn thành buổi lái thử", res));
+    }
+    @PutMapping("/{testDriveId}/cancel")
+    public ResponseEntity<ResponseObject> cancelTestDrive(
+            @PathVariable Long testDriveId,
+            @RequestParam(required = false) String reason
+    ) {
+        TestDriveResponse res = testDriveService.cancelTestDrive(testDriveId, reason);
+        return ResponseEntity.ok(new ResponseObject(200, "Đã hủy lịch lái thử", res));
     }
 }

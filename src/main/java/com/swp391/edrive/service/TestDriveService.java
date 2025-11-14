@@ -12,4 +12,9 @@ public interface TestDriveService {
     TestDriveResponse createTestDriveByDealer(Long dealerId, TestDriveRequest request);
     TestDriveResponse updateTestDriveByDealer(Long dealerId, Long testDriveId, TestDriveRequest request);
     void deleteTestDriveByDealer(Long dealerId, Long testDriveId);
+    TestDriveResponse createTestDriveByCustomer(TestDriveRequest request);
+    TestDriveResponse approveTestDrive(Long dealerId, Long testDriveId);
+    TestDriveResponse completeTestDrive(Long dealerId, Long testDriveId);
+    TestDriveResponse cancelTestDrive(Long testDriveId, String reason);
+
 }
