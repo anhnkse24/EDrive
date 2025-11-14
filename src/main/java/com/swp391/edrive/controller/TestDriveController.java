@@ -1,6 +1,7 @@
 package com.swp391.edrive.controller;
 
 import com.swp391.edrive.dto.request.TestDriveRequest;
+import com.swp391.edrive.dto.request.TestDriveStatusRequest;
 import com.swp391.edrive.dto.response.ResponseObject;
 import com.swp391.edrive.dto.response.TestDriveResponse;
 import com.swp391.edrive.service.TestDriveService;
@@ -71,5 +72,16 @@ public class TestDriveController {
                                                                   @PathVariable Long testDriveId) {
         testDriveService.deleteTestDriveByDealer(dealerId, testDriveId);
         return ResponseEntity.ok(new ResponseObject(200, "Xóa lịch lái thử cho Dealer thành công", null));
+    }
+
+    @Operation(summary = "Thay đổi trạng thái lịch lái thử")
+    @PatchMapping("/dealer/{dealerId}/{testDriveId}/status")
+    @SecurityRequirement(name = "api")
+
+    public ResponseEntity<ResponseObject> changeTestDriveStatus(@PathVariable Long dealerId,
+                                                                 @PathVariable Long testDriveId,
+                                                                 @Valid @RequestBody TestDriveStatusRequest request) {
+        TestDriveResponse response = testDriveService.changeTestDriveStatus(dealerId, testDriveId, request);
+        return ResponseEntity.ok(new ResponseObject(200, "Thay đổi trạng thái lịch lái thử thành công", response));
     }
 }

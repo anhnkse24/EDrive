@@ -1,6 +1,7 @@
 package com.swp391.edrive.service.serviceimpl;
 
 import com.swp391.edrive.dto.request.TestDriveRequest;
+import com.swp391.edrive.dto.request.TestDriveStatusRequest;
 import com.swp391.edrive.dto.response.TestDriveResponse;
 import com.swp391.edrive.entity.*;
 import com.swp391.edrive.enums.TestDriveStatus;
@@ -112,6 +113,68 @@ public class TestDriveServiceImpl implements TestDriveService {
             throw new EntityNotFoundException("Không có quyền xóa lịch lái thử của Dealer khác");
 
         testDriveRepository.delete(testDrive);
+    }
+
+    @Override
+    public TestDriveResponse changeTestDriveStatus(Long dealerId, Long testDriveId, TestDriveStatusRequest request) {
+        TestDrive testDrive = testDriveRepository.findById(testDriveId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy lịch lái thử"));
+
+        if (!testDrive.getDealer().getDealerId().equals(dealerId))
+            throw new EntityNotFoundException("Không có quyền thay đổi trạng thái lịch lái thử của Dealer khác");
+
+        testDrive.setStatus(request.getStatus());
+
+        // Nếu status là COMPLETED, tự động set completedAt
+        if (request.getStatus() == TestDriveStatus.COMPLETED) {
+            testDrive.setCompletedAt(LocalDateTime.now());
+        }
+
+        // Nếu status là CANCELLED, lưu lý do hủy
+        if (request.getStatus() == TestDriveStatus.CANCELLED && request.getCancelReason() != null) {
+            testDrive.setCancelReason(request.getCancelReason());
+        }
+
+        testDriveRepository.save(testDrive);
+
+        // Tạo thông báo cho khách hàng về việc thay đổi trạng thái
+        String statusMessage = getStatusMessage(request.getStatus());
+        String message = String.format(
+                "Lịch lái thử xe %s của bạn đã được chuyển sang trạng thái: %s",
+                testDrive.getVehicle().getModelName(),
+                statusMessage
+        );
+
+        if (request.getStatus() == TestDriveStatus.CANCELLED && request.getCancelReason() != null) {
+            message += ". Lý do: " + request.getCancelReason();
+        }
+
+        Notification notification = Notification.builder()
+                .dealer(testDrive.getDealer())
+                .title("Cập nhật trạng thái lịch lái thử")
+                .message(message)
+                .isRead(false)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        notificationRepository.save(notification);
+
+        return mapToResponse(testDrive);
+    }
+
+    private String getStatusMessage(TestDriveStatus status) {
+        switch (status) {
+            case PENDING:
+                return "Đang chờ xử lý";
+            case APPROVED:
+                return "Đã phê duyệt";
+            case COMPLETED:
+                return "Đã hoàn thành";
+            case CANCELLED:
+                return "Đã hủy";
+            default:
+                return status.toString();
+        }
     }
 
     private TestDriveResponse mapToResponse(TestDrive testDrive) {

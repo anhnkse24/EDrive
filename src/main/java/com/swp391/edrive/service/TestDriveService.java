@@ -1,6 +1,7 @@
 package com.swp391.edrive.service;
 
 import com.swp391.edrive.dto.request.TestDriveRequest;
+import com.swp391.edrive.dto.request.TestDriveStatusRequest;
 import com.swp391.edrive.dto.response.TestDriveResponse;
 
 import java.util.List;
@@ -12,4 +13,5 @@ public interface TestDriveService {
     TestDriveResponse createTestDriveByDealer(Long dealerId, TestDriveRequest request);
     TestDriveResponse updateTestDriveByDealer(Long dealerId, Long testDriveId, TestDriveRequest request);
     void deleteTestDriveByDealer(Long dealerId, Long testDriveId);
+    TestDriveResponse changeTestDriveStatus(Long dealerId, Long testDriveId, TestDriveStatusRequest request);
 }
