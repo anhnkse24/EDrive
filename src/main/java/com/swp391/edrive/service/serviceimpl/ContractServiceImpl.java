@@ -1,8 +1,7 @@
 package com.swp391.edrive.service.serviceimpl;
 
 import com.swp391.edrive.dto.request.ContractRequest;
-import com.swp391.edrive.dto.response.ContractFileResponse;
-import com.swp391.edrive.dto.response.ContractResponse;
+import com.swp391.edrive.dto.response.*;
 import com.swp391.edrive.entity.*;
 import com.swp391.edrive.enums.ContractStatus;
 import com.swp391.edrive.mapper.contract.IContractMapper;
@@ -101,7 +100,7 @@ public class ContractServiceImpl implements ContractService {
             dealerInventoryRepo.save(dealerInventory);
         }
 
-        // Tạo contract với trạng thái ĐÃ_XÁC_NHẬN
+        // Tạo contract với trạng thái DRAFT
         Vehicle vehicle = order.getOrderItems().get(0).getVehicle();
         String colorName = (vehicle.getColor() != null) ? vehicle.getColor().getColorName() : null;
 
@@ -115,7 +114,7 @@ public class ContractServiceImpl implements ContractService {
                 .totalPrice(totalPrice)
                 .discountRate(discountRate)
                 .terms(req.getTerms())
-                .status(ContractStatus.ĐÃ_XÁC_NHẬN)
+                .status(ContractStatus.DRAFT)
                 .build();
 
         Contract savedContract = contractRepo.save(c);
@@ -160,7 +159,7 @@ public class ContractServiceImpl implements ContractService {
         Manufacturer manufacturer = vehicle.getManufacturer();
         String colorName = (vehicle.getColor() != null) ? vehicle.getColor().getColorName() : null;
 
-        // Tạo hợp đồng với trạng thái CHỜ_DUYỆT
+        // Tạo hợp đồng với trạng thái DRAFT
         Contract contract = Contract.builder()
                 .order(order)
                 .dealer(dealer)
@@ -171,7 +170,7 @@ public class ContractServiceImpl implements ContractService {
                 .totalPrice(totalPrice)
                 .discountRate(discountRate)
                 .terms("Điều khoản hợp đồng mặc định")
-                .status(ContractStatus.CHỜ_DUYỆT)
+                .status(ContractStatus.DRAFT)
                 .build();
 
         Contract savedContract = contractRepo.save(contract);
@@ -194,13 +193,13 @@ public class ContractServiceImpl implements ContractService {
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy hợp đồng với ID: " + contractId));
 
         // Kiểm tra trạng thái hiện tại
-        if (contract.getStatus() != ContractStatus.CHỜ_DUYỆT) {
-            throw new IllegalStateException("Chỉ có thể duyệt hợp đồng ở trạng thái CHỜ_DUYỆT");
+        if (contract.getStatus() != ContractStatus.DRAFT) {
+            throw new IllegalStateException("Chỉ có thể duyệt hợp đồng ở trạng thái DRAFT");
         }
 
         if (approved) {
-            // APPROVE: Chuyển sang ĐÃ_XÁC_NHẬN và xử lý inventory
-            contract.setStatus(ContractStatus.ĐÃ_XÁC_NHẬN);
+            // APPROVE: Giữ nguyên DRAFT (sẵn sàng cho hãng ký)
+            contract.setStatus(ContractStatus.DRAFT);
             contract.setManufacturerNote("Đã phê duyệt");
 
             Order order = contract.getOrder();
@@ -248,8 +247,8 @@ public class ContractServiceImpl implements ContractService {
                 dealerInventoryRepo.save(dealerInventory);
             }
         } else {
-            // REJECT: Chuyển sang ĐÃ_TỪ_CHỐI
-            contract.setStatus(ContractStatus.ĐÃ_TỪ_CHỐI);
+            // REJECT: Chuyển sang REJECTED
+            contract.setStatus(ContractStatus.REJECTED);
             contract.setManufacturerNote(rejectionReason != null ? rejectionReason : "Đã từ chối");
 
             // Hoàn lại trạng thái payment của order về ĐÃ_THANH_TOÁN
@@ -268,10 +267,10 @@ public class ContractServiceImpl implements ContractService {
         Contract c = contractRepo.findById(contractId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy hợp đồng"));
 
-        if (c.getStatus() != ContractStatus.BẢN_NHÁP && c.getStatus() != ContractStatus.ĐÃ_TỪ_CHỐI) {
-            throw new IllegalStateException("Chỉ có hợp đồng BẢN_NHÁP/ĐÃ_TỪ_CHỐI mới có thể gửi");
+        if (c.getStatus() != ContractStatus.DRAFT && c.getStatus() != ContractStatus.REJECTED) {
+            throw new IllegalStateException("Chỉ có hợp đồng DRAFT/REJECTED mới có thể gửi");
         }
-        c.setStatus(ContractStatus.CHỜ_DUYỆT);
+        c.setStatus(ContractStatus.DRAFT);
         return mapper.toResponse(contractRepo.save(c));
     }
 
@@ -280,10 +279,10 @@ public class ContractServiceImpl implements ContractService {
     public ContractResponse approve(Long id, String note) {
         Contract c = contractRepo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy hợp đồng"));
-        if (c.getStatus() != ContractStatus.CHỜ_DUYỆT) {
-            throw new IllegalStateException("Chỉ có hợp đồng CHỜ_DUYỆT mới có thể phê duyệt");
+        if (c.getStatus() != ContractStatus.DRAFT) {
+            throw new IllegalStateException("Chỉ có hợp đồng DRAFT mới có thể phê duyệt");
         }
-        c.setStatus(ContractStatus.ĐÃ_XÁC_NHẬN);
+        c.setStatus(ContractStatus.DRAFT);
         c.setManufacturerNote(note);
         return mapper.toResponse(contractRepo.save(c));
     }
@@ -293,10 +292,10 @@ public class ContractServiceImpl implements ContractService {
     public ContractResponse reject(Long id, String note) {
         Contract c = contractRepo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy hợp đồng"));
-        if (c.getStatus() != ContractStatus.CHỜ_DUYỆT) {
-            throw new IllegalStateException("Chỉ có hợp đồng CHỜ_DUYỆT mới có thể từ chối");
+        if (c.getStatus() != ContractStatus.DRAFT) {
+            throw new IllegalStateException("Chỉ có hợp đồng DRAFT mới có thể từ chối");
         }
-       c.setStatus(ContractStatus.ĐÃ_TỪ_CHỐI);
+       c.setStatus(ContractStatus.REJECTED);
         c.setManufacturerNote(note);
         return mapper.toResponse(contractRepo.save(c));
     }
@@ -365,5 +364,383 @@ public class ContractServiceImpl implements ContractService {
     public Contract findEntityById(Long id) {
         return contractRepo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy hợp đồng"));
+    }
+
+    @Override
+    @Transactional
+    public ContractResponse dealerSign(Long contractId, String signatureData) {
+        Contract contract = contractRepo.findById(contractId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy hợp đồng"));
+
+        // Kiểm tra trạng thái: cho phép ký khi SIGNING (hãng đã ký rồi)
+        if (contract.getStatus() != ContractStatus.SIGNING) {
+            throw new IllegalStateException("Hợp đồng không ở trạng thái SIGNING. Hãng phải ký trước.");
+        }
+
+        // Kiểm tra hãng đã ký chưa
+        if (contract.getManufacturerSignedAt() == null) {
+            throw new IllegalStateException("Hãng chưa ký hợp đồng");
+        }
+
+        contract.setDealerSignature(signatureData);
+        contract.setDealerSignedAt(LocalDateTime.now());
+
+        // Đại lý ký xong -> cả 2 đã ký đầy đủ -> ACTIVE
+        contract.setStatus(ContractStatus.ACTIVE);
+
+        return mapper.toResponse(contractRepo.save(contract));
+    }
+
+    @Override
+    @Transactional
+    public ContractResponse manufacturerSign(Long contractId, String signatureData) {
+        Contract contract = contractRepo.findById(contractId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy hợp đồng"));
+
+        // Kiểm tra trạng thái: cho phép ký khi DRAFT hoặc SIGNING
+        if (contract.getStatus() != ContractStatus.DRAFT 
+            && contract.getStatus() != ContractStatus.SIGNING) {
+            throw new IllegalStateException("Hợp đồng không ở trạng thái cho phép hãng ký");
+        }
+
+        contract.setManufacturerSignature(signatureData);
+        contract.setManufacturerSignedAt(LocalDateTime.now());
+
+        // Nếu đại lý đã ký rồi -> cả 2 đã ký đầy đủ
+        if (contract.getDealerSignedAt() != null) {
+            contract.setStatus(ContractStatus.ACTIVE);
+        } else {
+            // Hãng ký xong, chuyển sang SIGNING (chờ đại lý)
+            contract.setStatus(ContractStatus.SIGNING);
+        }
+
+        return mapper.toResponse(contractRepo.save(contract));
+    }
+
+    @Override
+    @Transactional
+    public ContractFileResponse uploadPaymentReceipt(Long contractId, MultipartFile file) {
+        Contract contract = contractRepo.findById(contractId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy hợp đồng"));
+
+        // Chỉ cho phép upload biên lai khi đã ký đầy đủ (status = ACTIVE)
+        if (contract.getStatus() != ContractStatus.ACTIVE) {
+            throw new IllegalStateException("Hợp đồng chưa được ký đầy đủ. Không thể upload biên lai thanh toán.");
+        }
+
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("Tệp không được để trống");
+        }
+
+        long maxFileSize = 10 * 1024 * 1024; // 10MB
+        if (file.getSize() > maxFileSize) {
+            throw new IllegalArgumentException("Kích thước tệp vượt quá giới hạn cho phép (tối đa 10MB).");
+        }
+
+        try {
+            String uploadDir = "uploads/payment-receipts/";
+            Files.createDirectories(Paths.get(uploadDir));
+
+            String filename = "receipt_" + contractId + "_" + System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            Path filePath = Paths.get(uploadDir, filename);
+            Files.write(filePath, file.getBytes());
+
+            contract.setPaymentReceiptFilename(filename);
+            contract.setPaymentReceiptUrl("/uploads/payment-receipts/" + filename);
+            contract.setPaymentReceiptUploadedAt(LocalDateTime.now());
+            // Status stays ACTIVE - no change on receipt upload
+
+            contractRepo.save(contract);
+
+            return ContractFileResponse.builder()
+                    .contractId(contractId)
+                    .pdfFilename(filename)
+                    .uploadedAt(contract.getPaymentReceiptUploadedAt())
+                    .downloadUrl("http://localhost:8080" + contract.getPaymentReceiptUrl())
+                    .build();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Tải lên biên lai thanh toán thất bại: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public ContractResponse verifyPayment(Long contractId, String verifiedBy) {
+        Contract contract = contractRepo.findById(contractId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy hợp đồng"));
+
+        if (contract.getStatus() != ContractStatus.ACTIVE) {
+            throw new IllegalStateException("Hợp đồng phải ở trạng thái ACTIVE để xác nhận thanh toán");
+        }
+
+        if (contract.getPaymentReceiptUrl() == null) {
+            throw new IllegalStateException("Chưa có biên lai thanh toán để xác nhận");
+        }
+
+        contract.setPaymentVerifiedAt(LocalDateTime.now());
+        contract.setPaymentVerifiedBy(verifiedBy);
+        // Status stays ACTIVE - verification is just marking payment as confirmed
+
+        return mapper.toResponse(contractRepo.save(contract));
+    }
+
+    @Override
+    @Transactional
+    public ContractResponse approveDelivery(Long contractId) {
+        Contract contract = contractRepo.findById(contractId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy hợp đồng"));
+
+        if (contract.getStatus() != ContractStatus.ACTIVE) {
+            throw new IllegalStateException("Hợp đồng phải ở trạng thái ACTIVE để duyệt giao xe");
+        }
+
+        if (contract.getPaymentVerifiedAt() == null) {
+            throw new IllegalStateException("Phải xác nhận thanh toán trước khi duyệt giao xe");
+        }
+
+        // Status stays ACTIVE - delivery approval doesn't change contract status
+        // Could add a deliveryApprovedAt field if needed
+
+        return mapper.toResponse(contractRepo.save(contract));
+    }
+
+    @Override
+    public ContractDetailResponse getContractDetail(Long contractId) {
+        Contract contract = findEntityById(contractId);
+        Order order = contract.getOrder();
+        
+        // Build buyer info
+        String buyerName = null;
+        String buyerPhone = null;
+        String buyerAddress = null;
+        
+        if (order != null && order.getCreatedBy() != null) {
+            User user = order.getCreatedBy();
+            buyerName = user.getFullName();
+        }
+        
+        ContractDetailResponse.BuyerInfo buyerInfo = ContractDetailResponse.BuyerInfo.builder()
+                .name(buyerName)
+                .phone(buyerPhone)
+                .address(buyerAddress)
+                .build();
+        
+        // Build dealer info
+        Dealer dealer = contract.getDealer();
+        ContractDetailResponse.DealerInfo dealerInfo = ContractDetailResponse.DealerInfo.builder()
+                .id(dealer != null ? dealer.getDealerId() : null)
+                .name(dealer != null ? dealer.getDealerName() : null)
+                .phone(dealer != null ? dealer.getPhone() : null)
+                .address(dealer != null ? buildDealerAddress(dealer) : null)
+                .representative(dealer != null ? dealer.getContactPerson() : null)
+                .signatureData(contract.getDealerSignature())
+                .signedAt(contract.getDealerSignedAt())
+                .build();
+        
+        // Build manufacturer info
+        Manufacturer manufacturer = contract.getManufacturer();
+        ContractDetailResponse.ManufacturerInfo manufacturerInfo = ContractDetailResponse.ManufacturerInfo.builder()
+                .name(manufacturer != null ? manufacturer.getManufacturerName() : "E-DRIVE VIETNAM")
+                .address(manufacturer != null ? manufacturer.getAddress() : "123 Đường Điện Biên Phủ, Quận 1, TP.HCM")
+                .phone(manufacturer != null ? manufacturer.getPhone() : "(0123) 456 789")
+                .taxCode("0123456789")
+                .signatureData(contract.getManufacturerSignature())
+                .signedAt(contract.getManufacturerSignedAt())
+                .build();
+        
+        // Build pricing info
+        BigDecimal vatAmount = order != null ? order.getVatAmount() : BigDecimal.ZERO;
+        BigDecimal discount = order != null ? order.getTotalDiscount() : BigDecimal.ZERO;
+        
+        ContractDetailResponse.PricingInfo pricingInfo = ContractDetailResponse.PricingInfo.builder()
+                .subtotal(order != null ? order.getSubtotal() : contract.getTotalPrice())
+                .discount(discount)
+                .taxPercent(10)
+                .total(contract.getTotalPrice())
+                .build();
+        
+        return ContractDetailResponse.builder()
+                .id(contract.getId())
+                .orderId(order != null ? order.getOrderId() : null)
+                .status(contract.getStatus().name())
+                .buyer(buyerInfo)
+                .dealer(dealerInfo)
+                .manufacturer(manufacturerInfo)
+                .pricing(pricingInfo)
+                .createdAt(contract.getCreatedAt())
+                .updatedAt(contract.getUpdatedAt())
+                .build();
+    }
+
+    @Override
+    public OrderDetailResponse getOrderDetail(String orderId) {
+        Order order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy đơn hàng"));
+        
+        // Build dealer info
+        OrderDetailResponse.DealerInfo dealerInfo = OrderDetailResponse.DealerInfo.builder()
+                .id(order.getDealer() != null ? order.getDealer().getDealerId() : null)
+                .name(order.getDealer() != null ? order.getDealer().getDealerName() : null)
+                .build();
+        
+        // Build customer info
+        String customerName = null;
+        String customerPhone = null;
+        String customerAddress = order.getDeliveryAddress();
+        
+        if (order.getCreatedBy() != null) {
+            customerName = order.getCreatedBy().getFullName();
+        }
+        
+        OrderDetailResponse.CustomerInfo customerInfo = OrderDetailResponse.CustomerInfo.builder()
+                .name(customerName)
+                .phone(customerPhone)
+                .address(customerAddress)
+                .build();
+        
+        // Build order items
+        List<OrderDetailResponse.OrderItemInfo> orderItems = order.getOrderItems().stream()
+                .map(item -> {
+                    Vehicle vehicle = item.getVehicle();
+                    BigDecimal itemSubtotal = item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
+                    BigDecimal itemDiscount = item.getDiscount() != null ? item.getDiscount() : BigDecimal.ZERO;
+                    BigDecimal itemTotal = itemSubtotal.subtract(itemDiscount);
+                    
+                    return OrderDetailResponse.OrderItemInfo.builder()
+                            .vehicleName(vehicle.getModelName())
+                            .color(vehicle.getColor() != null ? vehicle.getColor().getColorName() : null)
+                            .quantity(item.getQuantity())
+                            .unitPrice(item.getUnitPrice())
+                            .itemSubtotal(itemSubtotal)
+                            .itemDiscount(itemDiscount)
+                            .itemTotal(itemTotal)
+                            .build();
+                })
+                .collect(Collectors.toList());
+        
+        // Build money info
+        BigDecimal paidTotal = BigDecimal.ZERO; // TODO: Calculate from payments
+        BigDecimal remaining = order.getTotalPrice().subtract(paidTotal);
+        
+        OrderDetailResponse.MoneyInfo moneyInfo = OrderDetailResponse.MoneyInfo.builder()
+                .subtotal(order.getSubtotal())
+                .discount(order.getTotalDiscount())
+                .taxPercent(10)
+                .fees(BigDecimal.ZERO)
+                .total(order.getTotalPrice())
+                .paidTotal(paidTotal)
+                .remaining(remaining)
+                .build();
+        
+        return OrderDetailResponse.builder()
+                .id(order.getOrderId())
+                .code(order.getOrderId())
+                .orderDate(order.getOrderDate())
+                .desiredDeliveryDate(order.getDesiredDeliveryDate())
+                .dealer(dealerInfo)
+                .customer(customerInfo)
+                .orderItems(orderItems)
+                .money(moneyInfo)
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public SignatureResponse saveManufacturerSignature(Long contractId, String signatureData) {
+        Contract contract = findEntityById(contractId);
+        
+        contract.setManufacturerSignature(signatureData);
+        contract.setManufacturerSignedAt(LocalDateTime.now());
+        
+        // Update status to SIGNING if not already
+        if (contract.getStatus() == ContractStatus.DRAFT) {
+            contract.setStatus(ContractStatus.SIGNING);
+        } else if (contract.getDealerSignedAt() != null) {
+            contract.setStatus(ContractStatus.ACTIVE);
+        }
+        
+        contractRepo.save(contract);
+        
+        Manufacturer manufacturer = contract.getManufacturer();
+        
+        return SignatureResponse.builder()
+                .id(contract.getId())
+                .orderId(contract.getOrder() != null ? contract.getOrder().getOrderId() : null)
+                .status(contract.getStatus().name())
+                .manufacturer(SignatureResponse.ManufacturerSignature.builder()
+                        .name(manufacturer != null ? manufacturer.getManufacturerName() : "E-DRIVE VIETNAM")
+                        .signatureData(signatureData)
+                        .signedAt(contract.getManufacturerSignedAt())
+                        .build())
+                .updatedAt(contract.getUpdatedAt())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public PdfUploadResponse uploadContractPdf(Long contractId, MultipartFile file, String fileName) {
+        Contract contract = findEntityById(contractId);
+        
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("Tệp không được để trống");
+        }
+        
+        // Validate file size (5MB limit)
+        long maxFileSize = 5 * 1024 * 1024;
+        if (file.getSize() > maxFileSize) {
+            throw new IllegalArgumentException("File size exceeds limit (5MB)");
+        }
+        
+        // Validate file type
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null || !originalFilename.toLowerCase().endsWith(".pdf")) {
+            throw new IllegalArgumentException("Only PDF files are allowed");
+        }
+        
+        try {
+            String uploadDir = "uploads/contracts/";
+            Files.createDirectories(Paths.get(uploadDir));
+            
+            String finalFileName = fileName != null ? fileName : "contract_" + contractId + "_" + System.currentTimeMillis() + ".pdf";
+            Path filePath = Paths.get(uploadDir, finalFileName);
+            Files.write(filePath, file.getBytes());
+            
+            String pdfUrl = "http://localhost:8080/uploads/contracts/" + finalFileName;
+            contract.setPdfFilename(finalFileName);
+            contract.setPdfUrl(pdfUrl);
+            contract.setPdfUploadedAt(LocalDateTime.now());
+            // Status không đổi - chỉ update PDF URL (có thể upload lại nhiều lần)
+            contractRepo.save(contract);
+            
+            return PdfUploadResponse.builder()
+                    .success(true)
+                    .message("PDF uploaded successfully")
+                    .pdfUrl(pdfUrl)
+                    .build();
+                    
+        } catch (Exception e) {
+            throw new RuntimeException("PDF upload failed: " + e.getMessage(), e);
+        }
+    }
+    
+    private String buildDealerAddress(Dealer dealer) {
+        StringBuilder address = new StringBuilder();
+        if (dealer.getHouseNumberAndStreet() != null) {
+            address.append(dealer.getHouseNumberAndStreet());
+        }
+        if (dealer.getWardOrCommune() != null) {
+            if (address.length() > 0) address.append(", ");
+            address.append(dealer.getWardOrCommune());
+        }
+        if (dealer.getDistrict() != null) {
+            if (address.length() > 0) address.append(", ");
+            address.append(dealer.getDistrict());
+        }
+        if (dealer.getProvinceOrCity() != null) {
+            if (address.length() > 0) address.append(", ");
+            address.append(dealer.getProvinceOrCity());
+        }
+        return address.toString();
     }
 }

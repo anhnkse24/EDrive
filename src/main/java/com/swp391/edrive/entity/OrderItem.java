@@ -36,6 +36,9 @@ public class OrderItem {
     @Column(precision = 20, scale = 2)
     private BigDecimal discountAmount;
 
+    @Column(name = "discount", precision = 20, scale = 2)
+    private BigDecimal discount;
+
     @Column(precision = 20, scale = 2)
     private BigDecimal totalPrice;
 }
