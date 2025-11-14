@@ -9,6 +9,10 @@ import java.util.Optional;
 
 public interface QuotationService {
     QuotationResponse createQuotation(QuotationRequest quotationRequest, User createdByUser);
+
+    // Cập nhật trạng thái quotation (ACCEPTED/REJECTED)
+    QuotationResponse updateQuotationStatus(Long quotationId, String status, String rejectionReason);
+
     List<QuotationResponse> getAllQuotations();
     Optional<QuotationResponse> getQuotationById(Long quotationId);
 }

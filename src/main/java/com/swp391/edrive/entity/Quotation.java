@@ -43,6 +43,10 @@ public class Quotation {
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private QuotationStatus quotationStatus; // Trạng thái báo giá
+
     // ====== Giá sau khuyến mãi ======
     @Column(precision = 14, scale = 2)
     private BigDecimal promotionDiscountAmount; // Tổng giảm giá từ khuyến mãi
@@ -74,6 +78,9 @@ public class Quotation {
     void prePersist() {
         createdAt = LocalDateTime.now();
         updatedAt = createdAt;
+        if (quotationStatus == null) {
+            quotationStatus = QuotationStatus.PENDING;
+        }
     }
 
     @PreUpdate

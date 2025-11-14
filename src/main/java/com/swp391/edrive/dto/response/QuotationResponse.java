@@ -48,6 +48,7 @@ public class QuotationResponse {
 
     // Thông tin thanh toán
     private String paymentMethod;
+    private String quotationStatus;  // Trạng thái báo giá: PENDING, ACCEPTED, REJECTED
 
     // Dịch vụ bổ sung
     private AdditionalServicesResponse additionalServices;

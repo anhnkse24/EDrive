@@ -294,6 +294,11 @@ public class OrderServiceImpl implements OrderService {
         Quotation quotation = quotationRepo.findById(req.getQuotationId())
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy báo giá với ID: " + req.getQuotationId()));
 
+        // Kiểm tra quotation phải ở trạng thái ACCEPTED
+        if (quotation.getQuotationStatus() != com.swp391.edrive.enums.QuotationStatus.ACCEPTED) {
+            throw new IllegalStateException("Chỉ có thể tạo đơn hàng từ báo giá đã được chấp nhận (ACCEPTED)");
+        }
+
         // Lấy thông tin Dealer từ Quotation (vì quotation đã có dealer tạo báo giá)
         Dealer dealer = quotation.getDealer();
         if (dealer == null) {

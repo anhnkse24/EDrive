@@ -133,6 +133,7 @@ public class QuotationServiceImpl implements QuotationService {
                 .customerIdCardNo(customer.getIdCardNo())
                 // Thông tin thanh toán
                 .paymentMethod(quotationRequest.getPaymentMethod() != null ? quotationRequest.getPaymentMethod().name() : null)
+                .quotationStatus(savedQuotation.getQuotationStatus() != null ? savedQuotation.getQuotationStatus().name() : "PENDING")
                 // Dịch vụ bổ sung
                 .additionalServices(additionalServicesResponse)
                 // Chi tiết giá
@@ -291,6 +292,7 @@ public class QuotationServiceImpl implements QuotationService {
                 .customerAddress(customer.getAddress())
                 .customerIdCardNo(customer.getIdCardNo())
                 // Thông tin thanh toán
+                .quotationStatus(quotation.getQuotationStatus() != null ? quotation.getQuotationStatus().name() : "PENDING")
                 .paymentMethod(quotation.getPaymentMethod() != null ? quotation.getPaymentMethod().name() : null)
                 .additionalServices(additionalServicesResponse)
                 // Chi tiết giá
@@ -299,5 +301,34 @@ public class QuotationServiceImpl implements QuotationService {
                 .additionalServicesTotal(additionalServicesTotal)
                 .grandTotal(quotation.getPriceAfterPromotion())
                 .build();
+    }
+
+    @Override
+    public QuotationResponse updateQuotationStatus(Long quotationId, String status, String rejectionReason) {
+        // Tìm quotation
+        Quotation quotation = quotationRepository.findById(quotationId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy báo giá với ID: " + quotationId));
+
+        // Kiểm tra trạng thái hiện tại phải là PENDING
+        if (quotation.getQuotationStatus() != com.swp391.edrive.enums.QuotationStatus.PENDING) {
+            throw new IllegalStateException("Chỉ có thể cập nhật trạng thái cho báo giá đang ở trạng thái PENDING");
+        }
+
+        // Validate status
+        if (!"ACCEPTED".equals(status) && !"REJECTED".equals(status)) {
+            throw new IllegalArgumentException("Trạng thái chỉ có thể là ACCEPTED hoặc REJECTED");
+        }
+
+        // Cập nhật status
+        if ("ACCEPTED".equals(status)) {
+            quotation.setQuotationStatus(com.swp391.edrive.enums.QuotationStatus.ACCEPTED);
+        } else {
+            quotation.setQuotationStatus(com.swp391.edrive.enums.QuotationStatus.REJECTED);
+            // Có thể lưu lý do từ chối vào note field nếu cần (hiện tại entity chưa có)
+        }
+
+        // Lưu và trả về response
+        Quotation savedQuotation = quotationRepository.save(quotation);
+        return convertToQuotationResponse(savedQuotation);
     }
 }

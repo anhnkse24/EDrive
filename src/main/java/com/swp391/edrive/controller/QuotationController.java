@@ -2,6 +2,7 @@ package com.swp391.edrive.controller;
 
 
 import com.swp391.edrive.dto.request.QuotationRequest;
+import com.swp391.edrive.dto.request.QuotationStatusUpdateRequest;
 import com.swp391.edrive.dto.response.QuotationResponse;
 import com.swp391.edrive.dto.response.ResponseObject;
 import com.swp391.edrive.entity.User;
@@ -54,6 +55,36 @@ public class QuotationController {
             return ResponseEntity.badRequest().body(errorResponse);
         }
     }
+    @Operation(summary = "Cập nhật trạng thái báo giá", description = "Dealer/Admin cập nhật trạng thái báo giá từ PENDING sang ACCEPTED hoặc REJECTED")
+    @PutMapping("/update-status")
+    public ResponseEntity<ResponseObject<QuotationResponse>> updateQuotationStatus(@RequestBody QuotationStatusUpdateRequest request) {
+        try {
+            QuotationResponse quotationResponse = quotationService.updateQuotationStatus(
+                    request.getQuotationId(),
+                    request.getStatus(),
+                    request.getRejectionReason()
+            );
+
+            String message = "ACCEPTED".equals(request.getStatus())
+                    ? "Chấp nhận báo giá thành công"
+                    : "Từ chối báo giá thành công";
+
+            ResponseObject<QuotationResponse> response = new ResponseObject<>(
+                    200,
+                    message,
+                    quotationResponse
+            );
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ResponseObject<QuotationResponse> errorResponse = new ResponseObject<>(
+                    400,
+                    "Có lỗi xảy ra: " + e.getMessage(),
+                    null
+            );
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
 
     @Operation(summary = "Lấy danh sách tất cả báo giá")
     @GetMapping
