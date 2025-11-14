@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Customer", description = "API quản lý khách hàng theo Dealer")
 @SecurityRequirements
 @SecurityRequirement(name = "api")
-
+@PreAuthorize("hasRole('DEALER_MANAGER') or hasRole('DEALER_STAFF')")
 public class CustomerController {
 
     private final CustomerService customerService;
