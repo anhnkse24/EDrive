@@ -25,13 +25,17 @@ public class OrderResponse {
     private BigDecimal subtotal;
     private BigDecimal totalDiscount;
     private BigDecimal vatAmount;
-    private BigDecimal totalPrice;
+    private BigDecimal totalPrice;       // Tổng giá trị order (100%)
+    private BigDecimal depositAmount;    // Tiền cọc 7%
+    private BigDecimal remainingAmount;  // Số tiền còn lại phải thanh toán (93%)
 
     private OrderStatus orderStatus;
     private PaymentStatus paymentStatus;
 
     private String deliveryAddress;
     private String deliveryNote;
+
+    private AdditionalServicesResponse additionalServices;
 
     private List<OrderItemResponse> orderItems;
 

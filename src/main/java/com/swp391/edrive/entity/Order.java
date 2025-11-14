@@ -48,6 +48,9 @@ public class Order {
     @Column
     private String paymentImage;
 
+    // Dịch vụ bổ sung (chỉ áp dụng khi khách hàng đặt xe từ đại lý)
+    @Embedded
+    private AdditionalServices additionalServices;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<OrderItem> orderItems;
@@ -55,18 +58,4 @@ public class Order {
     @OneToMany(mappedBy = "order")
     private List<Payment> payments;
 
-    @Column
-    private LocalDateTime paymentExpiryTime;
-
-
-    @PrePersist
-    protected void onCreate() {
-        orderDate = LocalDate.now();
-        // Set payment expiry time to 10 minutes from creation
-        paymentExpiryTime = LocalDateTime.now().plusMinutes(10);
-        if (paymentStatus == null) {
-            paymentStatus = PaymentStatus.CHỜ_DUYỆT;
-        }
-
-    }
 }

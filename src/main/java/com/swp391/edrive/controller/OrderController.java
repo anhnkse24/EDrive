@@ -1,6 +1,7 @@
 package com.swp391.edrive.controller;
 
 import com.swp391.edrive.dto.request.OrderCreateRequest;
+import com.swp391.edrive.dto.request.QuotationToOrderRequest;
 import com.swp391.edrive.dto.response.OrderResponse;
 import com.swp391.edrive.dto.response.OrderSummaryResponse;
 import com.swp391.edrive.dto.response.ResponseObject;
@@ -36,6 +37,23 @@ public class OrderController {
         Long dealerId = user.getDealer().getDealerId();
         return orderService.createOrder(req, dealerId, user);
     }
+
+    // 2) Tạo Order từ Quotation
+    @Operation(summary = "Tạo Order từ Quotation", description = "Chuyển đổi một báo giá thành đơn hàng chính thức")
+    @PostMapping("/from-quotation")
+    public ResponseObject<OrderResponse> createFromQuotation(@RequestBody QuotationToOrderRequest req) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) authentication.getPrincipal();
+
+        // Không cần lấy dealerId từ user, sẽ lấy từ quotation
+        OrderResponse result = orderService.createOrderFromQuotation(req, null, user);
+        return ResponseObject.<OrderResponse>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Tạo đơn hàng từ báo giá thành công")
+                .data(result)
+                .build();
+    }
+
     @GetMapping
     public ResponseObject<List<OrderResponse>> getAllOrders() {
         List<OrderResponse> result = orderService.getAllOrders();

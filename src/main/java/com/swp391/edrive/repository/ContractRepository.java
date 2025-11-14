@@ -11,4 +11,5 @@ import java.util.List;
 public interface ContractRepository extends JpaRepository<Contract, Long> {
     List<Contract> findByDealer_DealerId(Long dealerId);
     List<Contract> findByStatus(ContractStatus status);
+    boolean existsByOrder_OrderId(String orderId);
 }

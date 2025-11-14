@@ -8,10 +8,12 @@ public class OrderSummaryResponse {
     public String orderId;
 
     // ==== GIÁ TIỀN ====
-    public BigDecimal subtotal;       // Tạm tính (chưa VAT, chưa chiết khấu)
-    public BigDecimal dealerDiscount; // Tổng chiết khấu
-    public BigDecimal vatAmount;      // VAT
-    public BigDecimal grandTotal;     // Tổng thanh toán cuối cùng
+    public BigDecimal subtotal;        // Tạm tính (chưa VAT, chưa chiết khấu)
+    public BigDecimal dealerDiscount;  // Tổng chiết khấu
+    public BigDecimal vatAmount;       // VAT
+    public BigDecimal grandTotal;      // Tổng thanh toán cuối cùng (100%)
+    public BigDecimal depositAmount;   // Tiền cọc 7%
+    public BigDecimal remainingAmount; // Số tiền còn lại phải thanh toán (93%)
 
     // ==== THÔNG TIN ĐƠN HÀNG ====
     public LocalDate desiredDeliveryDate;

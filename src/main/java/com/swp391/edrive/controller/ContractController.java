@@ -1,14 +1,18 @@
 package com.swp391.edrive.controller;
 
+import com.swp391.edrive.dto.request.ContractApprovalRequest;
+import com.swp391.edrive.dto.request.ContractFromOrderRequest;
 import com.swp391.edrive.dto.request.ContractRequest;
 import com.swp391.edrive.dto.response.ContractFileResponse;
 import com.swp391.edrive.dto.response.ContractResponse;
 import com.swp391.edrive.dto.response.ResponseObject;
 import com.swp391.edrive.entity.Contract;
 import com.swp391.edrive.service.ContractService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.FileSystemResource;import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.FileSystemResource;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -32,6 +36,37 @@ public class ContractController {
     @PostMapping
     public ResponseEntity<ContractResponse> create(@RequestBody ContractRequest req) {
         return ResponseEntity.ok(service.create(req));
+    }
+
+    @Operation(summary = "Tạo hợp đồng từ Order", description = "Tạo hợp đồng từ đơn hàng đã thanh toán, payment status chuyển sang ĐÃ_CỌC")
+    @PostMapping("/from-order")
+    public ResponseObject<ContractResponse> createFromOrder(@RequestBody ContractFromOrderRequest req) {
+        ContractResponse result = service.createContractFromOrder(req.getOrderId());
+        return ResponseObject.<ContractResponse>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Tạo hợp đồng thành công. Trạng thái thanh toán đã chuyển sang ĐÃ_CỌC")
+                .data(result)
+                .build();
+    }
+
+    @Operation(summary = "Admin duyệt hoặc từ chối hợp đồng", description = "Admin approve/reject hợp đồng đang ở trạng thái CHỜ_DUYỆT")
+    @PostMapping("/review")
+    public ResponseObject<ContractResponse> reviewContract(@RequestBody ContractApprovalRequest req) {
+        ContractResponse result = service.reviewContract(
+                req.getContractId(),
+                req.getApproved(),
+                req.getRejectionReason()
+        );
+
+        String message = req.getApproved()
+                ? "Phê duyệt hợp đồng thành công"
+                : "Từ chối hợp đồng thành công";
+
+        return ResponseObject.<ContractResponse>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message(message)
+                .data(result)
+                .build();
     }
 
     @PutMapping("/{id}/submit")

@@ -6,14 +6,12 @@ import lombok.Setter;
 @Getter
 @Setter
 public class DealerInventoryDTO {
-    private Long vehicleId;
     private String modelName;
     private String version;
     private String colorName;
     private Integer quantity;
 
-    public DealerInventoryDTO(Long vehicleId, String modelName, String version, String colorName, Integer quantity) {
-        this.vehicleId = vehicleId;
+    public DealerInventoryDTO(String modelName, String version, String colorName, Integer quantity) {
         this.modelName = modelName;
         this.version = version;
         this.colorName = colorName;

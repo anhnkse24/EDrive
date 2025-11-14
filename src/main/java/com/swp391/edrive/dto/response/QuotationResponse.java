@@ -13,6 +13,11 @@ import java.time.LocalDate;
 public class QuotationResponse {
     private Long quotationId;
 
+    // Thông tin đại lý và người tạo
+    private Long dealerId;
+    private String dealerName;
+    private String createdByUserName;  // Tên người tạo báo giá
+
     // Thông tin xe đầy đủ
     private Long vehicleId;
     private String modelName;

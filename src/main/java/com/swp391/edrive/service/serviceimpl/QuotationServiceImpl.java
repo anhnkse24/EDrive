@@ -4,10 +4,7 @@ import com.swp391.edrive.dto.request.AdditionalServicesRequest;
 import com.swp391.edrive.dto.request.QuotationRequest;
 import com.swp391.edrive.dto.response.AdditionalServicesResponse;
 import com.swp391.edrive.dto.response.QuotationResponse;
-import com.swp391.edrive.entity.AdditionalServices;
-import com.swp391.edrive.entity.Customer;
-import com.swp391.edrive.entity.Quotation;
-import com.swp391.edrive.entity.Vehicle;
+import com.swp391.edrive.entity.*;
 import com.swp391.edrive.repository.CustomerRepository;
 import com.swp391.edrive.repository.QuotationRepository;
 import com.swp391.edrive.repository.VehicleRepository;
@@ -17,6 +14,9 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class QuotationServiceImpl implements QuotationService {
@@ -39,7 +39,14 @@ public class QuotationServiceImpl implements QuotationService {
     private static final BigDecimal CAMERA_360_PRICE = new BigDecimal("18000000");
 
     @Override
-    public QuotationResponse createQuotation(QuotationRequest quotationRequest) {
+    public QuotationResponse createQuotation(QuotationRequest quotationRequest, User createdByUser) {
+        // Kiểm tra user có dealer không
+        if (createdByUser.getDealer() == null) {
+            throw new RuntimeException("User không thuộc đại lý nào. Chỉ nhân viên đại lý mới có thể tạo báo giá");
+        }
+
+        Dealer dealer = createdByUser.getDealer();
+
         // Lấy thông tin xe
         Vehicle vehicle = vehicleRepository.findById(quotationRequest.getVehicleId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy xe với ID: " + quotationRequest.getVehicleId()));
@@ -78,6 +85,7 @@ public class QuotationServiceImpl implements QuotationService {
 
         // Tạo báo giá
         Quotation quotation = new Quotation();
+        quotation.setDealer(dealer);  // Lưu thông tin dealer
         quotation.setVehicle(vehicle);
         quotation.setCustomer(customer);
         quotation.setQuotedPrice(unitPrice.doubleValue());
@@ -93,6 +101,10 @@ public class QuotationServiceImpl implements QuotationService {
         // Chuyển đổi sang Response
         return QuotationResponse.builder()
                 .quotationId(savedQuotation.getQuotationId())
+                // Thông tin đại lý và người tạo
+                .dealerId(dealer.getDealerId())
+                .dealerName(dealer.getDealerName())
+                .createdByUserName(createdByUser.getFullName())
                 // Thông tin xe
                 .vehicleId(vehicle.getVehicleId())
                 .modelName(vehicle.getModelName())
@@ -193,6 +205,21 @@ public class QuotationServiceImpl implements QuotationService {
         return total;
     }
 
+    @Override
+    public List<QuotationResponse> getAllQuotations() {
+        List<Quotation> quotations = quotationRepository.findAll(); // Lấy tất cả báo giá
+        return quotations.stream()
+                .map(this::convertToQuotationResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<QuotationResponse> getQuotationById(Long quotationId) {
+        Optional<Quotation> quotation = quotationRepository.findById(quotationId);
+        return quotation.map(this::convertToQuotationResponse);
+    }
+
+
     /**
      * Xây dựng response cho dịch vụ bổ sung
      */
@@ -211,6 +238,66 @@ public class QuotationServiceImpl implements QuotationService {
                 .has360Camera(services.getHas360Camera())
                 .camera360Price(services.getCamera360Price())
                 .totalServicesPrice(total)
+                .build();
+    }
+
+    private QuotationResponse convertToQuotationResponse(Quotation quotation) {
+        Vehicle vehicle = quotation.getVehicle();
+        Customer customer = quotation.getCustomer();
+        Dealer dealer = quotation.getDealer();
+
+        // Lấy thông tin về dịch vụ bổ sung
+        AdditionalServicesResponse additionalServicesResponse = null;
+        BigDecimal additionalServicesTotal = BigDecimal.ZERO;
+
+        if (quotation.getAdditionalServices() != null) {
+            additionalServicesTotal = calculateAdditionalServicesTotal(quotation.getAdditionalServices());
+            additionalServicesResponse = buildAdditionalServicesResponse(
+                    quotation.getAdditionalServices(),
+                    additionalServicesTotal
+            );
+        }
+
+        return QuotationResponse.builder()
+                .quotationId(quotation.getQuotationId())
+                // Thông tin đại lý (có thể null nếu báo giá cũ)
+                .dealerId(dealer != null ? dealer.getDealerId() : null)
+                .dealerName(dealer != null ? dealer.getDealerName() : null)
+                .createdByUserName(null)  // Không lưu thông tin user trong DB nên để null
+                // Thông tin xe
+                .vehicleId(vehicle.getVehicleId())
+                .modelName(vehicle.getModelName())
+                .version(vehicle.getVersion())
+                .batteryCapacityKwh(vehicle.getBatteryCapacityKwh())
+                .rangeKm(vehicle.getRangeKm())
+                .maxSpeedKmh(vehicle.getMaxSpeedKmh())
+                .chargingTimeHours(vehicle.getChargingTimeHours())
+                .seatingCapacity(vehicle.getSeatingCapacity())
+                .motorPowerKw(vehicle.getMotorPowerKw())
+                .weightKg(vehicle.getWeightKg())
+                .lengthMm(vehicle.getLengthMm())
+                .widthMm(vehicle.getWidthMm())
+                .heightMm(vehicle.getHeightMm())
+                .imageUrl(vehicle.getImageUrl())
+                .manufactureYear(vehicle.getManufactureYear())
+                .vehicleStatus(vehicle.getStatus() != null ? vehicle.getStatus().toString() : null)
+                // Thông tin khách hàng
+                .customerId(customer.getCustomerId())
+                .customerFullName(customer.getFullName())
+                .customerDob(customer.getDob())
+                .customerGender(customer.getGender())
+                .customerEmail(customer.getEmail())
+                .customerPhone(customer.getPhone())
+                .customerAddress(customer.getAddress())
+                .customerIdCardNo(customer.getIdCardNo())
+                // Thông tin thanh toán
+                .paymentMethod(quotation.getPaymentMethod() != null ? quotation.getPaymentMethod().name() : null)
+                .additionalServices(additionalServicesResponse)
+                // Chi tiết giá
+                .unitPrice(quotation.getUnitPrice())
+                .promotionDiscountAmount(quotation.getPromotionDiscountAmount())
+                .additionalServicesTotal(additionalServicesTotal)
+                .grandTotal(quotation.getPriceAfterPromotion())
                 .build();
     }
 }

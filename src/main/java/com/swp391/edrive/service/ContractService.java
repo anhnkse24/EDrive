@@ -10,6 +10,13 @@ import java.util.List;
 
 public interface ContractService {
     ContractResponse create(ContractRequest req);
+
+    // Tạo hợp đồng từ Order (payment status → ĐÃ_CỌC)
+    ContractResponse createContractFromOrder(String orderId);
+
+    // Admin duyệt hoặc từ chối hợp đồng
+    ContractResponse reviewContract(Long contractId, Boolean approved, String rejectionReason);
+
     ContractResponse submitToManufacturer(Long contractId);
     ContractResponse approve(Long contractId, String note);
     ContractResponse reject(Long contractId, String note);
