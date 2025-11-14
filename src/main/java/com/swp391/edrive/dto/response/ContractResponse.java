@@ -51,4 +51,10 @@ public class ContractResponse {
 
     private String pdfUrl;
     private LocalDateTime pdfUploadedAt;
+
+    // Signature fields
+    private String manufacturerSignatureData;
+    private LocalDateTime manufacturerSignedAt;
+    private String dealerSignatureData;
+    private LocalDateTime dealerSignedAt;
 }

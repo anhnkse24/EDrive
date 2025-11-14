@@ -19,5 +19,5 @@ public class ResponseObject<U> {
     private String message;   // Thông báo mô tả ngắn gọn
 
     @JsonProperty("data")
-    private Object data;      // Dữ liệu trả về (DTO, List, Map...)
+    private U data;           // Dữ liệu trả về (DTO, List, Map...)
 }

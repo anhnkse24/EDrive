@@ -72,9 +72,40 @@ public class Contract {
 
     private String manufacturerNote;
 
+    // Digital signature fields
+    @Lob
+    @Column(name = "dealer_signature")
+    private String dealerSignature;
+
+    @Column(name = "dealer_signed_at")
+    private LocalDateTime dealerSignedAt;
+
+    @Lob
+    @Column(name = "manufacturer_signature")
+    private String manufacturerSignature;
+
+    @Column(name = "manufacturer_signed_at")
+    private LocalDateTime manufacturerSignedAt;
+
+    // Payment receipt fields
+    @Column(name = "payment_receipt_filename")
+    private String paymentReceiptFilename;
+
+    @Column(name = "payment_receipt_url")
+    private String paymentReceiptUrl;
+
+    @Column(name = "payment_receipt_uploaded_at")
+    private LocalDateTime paymentReceiptUploadedAt;
+
+    @Column(name = "payment_verified_at")
+    private LocalDateTime paymentVerifiedAt;
+
+    @Column(name = "payment_verified_by")
+    private String paymentVerifiedBy;
+
     @PrePersist
     void onCreate() {
-        if (status == null) status = ContractStatus.BẢN_NHÁP;
+        if (status == null) status = ContractStatus.DRAFT;
         if (contractCode == null) {
             contractCode = "CT-" + DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
                     .format(LocalDateTime.now()) + "-" + (int)(Math.random()*9000+1000);

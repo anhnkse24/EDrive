@@ -165,6 +165,10 @@ public class ContractMapper implements IContractMapper {
                 .updatedAt(c.getUpdatedAt())
                 .pdfUrl(pdfUrl)
                 .pdfUploadedAt(c.getPdfUploadedAt())
+                .manufacturerSignatureData(c.getManufacturerSignature())
+                .manufacturerSignedAt(c.getManufacturerSignedAt())
+                .dealerSignatureData(c.getDealerSignature())
+                .dealerSignedAt(c.getDealerSignedAt())
                 .build();
     }
 
