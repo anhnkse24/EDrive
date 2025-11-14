@@ -21,7 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "Promotions", description = "API quản lý khuyến mãi (CRUD + Dealer)")
 @SecurityRequirement(name = "api")
-@PreAuthorize("hasRole('DEALER_MANAGER')")
+@PreAuthorize("hasRole('DEALER_MANAGER') or hasRole('DEALER_STAFF')")
 public class PromotionController {
 
     private final PromotionService promotionService;

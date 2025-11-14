@@ -73,8 +73,7 @@ public class SecurityConfig {
                                 "/api/vehicles/**",
                                 "/api/vehicles/search/**",
                                 "/chat",
-                                "/api/feedbacks/**",
-                                "/api/promotions/**"
+                                "/api/feedbacks/**"
 
                         )
                         .permitAll() // Các endpoint không cần xác thực

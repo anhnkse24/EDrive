@@ -57,8 +57,7 @@ public class Filter extends OncePerRequestFilter {
             "/api/testdrives",
             "/api/vehicles/**",
             "/api/vehicles/search/**",
-            "/chat",
-            "/api/promotions/**"
+            "/chat"
     );
 
     // kiểm tra xem request có thuộc danh sách publicAPI
