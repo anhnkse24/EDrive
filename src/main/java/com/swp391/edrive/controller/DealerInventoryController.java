@@ -16,7 +16,6 @@ import java.util.List;
 @RequestMapping("/dealer-inventory")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "api")
-@PreAuthorize("hasRole('DEALER_MANAGER') or hasRole('DEALER_STAFF')")
 public class DealerInventoryController {
 
     private final DealerInventoryService dealerInventoryService;

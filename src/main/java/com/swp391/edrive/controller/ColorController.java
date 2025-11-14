@@ -19,7 +19,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/colors")
 @SecurityRequirement(name = "api")
-@PreAuthorize("hasRole('ADMIN')")
 public class ColorController {
 
     private final ColorService colorService;

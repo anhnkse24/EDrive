@@ -23,7 +23,6 @@ import java.util.List;
         name = "Manufacturer Inventory",
         description = "Quản lý tồn kho của các hãng xe (Manufacturer Inventory CRUD + Summary)"
 )
-@PreAuthorize("hasRole('ADMIN') or hasRole('EVM_STAFF')")
 public class ManufacturerInventoryController {
 
     private final ManufacturerInventoryService manufacturerInventoryService;

@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Customer", description = "API quản lý khách hàng theo Dealer")
 @SecurityRequirements
 @SecurityRequirement(name = "api")
-@PreAuthorize("hasRole('DEALER_MANAGER') or hasRole('DEALER_STAFF')")
 public class CustomerController {
 
     private final CustomerService customerService;

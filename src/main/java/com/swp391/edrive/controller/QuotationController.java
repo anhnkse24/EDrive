@@ -23,7 +23,6 @@ import java.util.Optional;
 @RequestMapping("/api/quotations")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "api")
-@PreAuthorize("hasRole('DEALER_MANAGER') or hasRole('DEALER_STAFF')")
 public class QuotationController {
 
     private final QuotationService quotationService;

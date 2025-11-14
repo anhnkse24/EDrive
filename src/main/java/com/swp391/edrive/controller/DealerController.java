@@ -20,7 +20,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "Dealer Management", description = "Quản lý thông tin đại lý (Dealer CRUD)")
 @SecurityRequirement(name = "api")
-@PreAuthorize("hasRole('ADMIN')")
 public class DealerController {
 
     private final DealerService dealerService;
