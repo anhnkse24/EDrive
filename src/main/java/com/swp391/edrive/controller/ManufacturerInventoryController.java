@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,7 @@ import java.util.List;
         name = "Manufacturer Inventory",
         description = "Quản lý tồn kho của các hãng xe (Manufacturer Inventory CRUD + Summary)"
 )
+@PreAuthorize("hasRole('ADMIN') or hasRole('EVM_STAFF')")
 public class ManufacturerInventoryController {
 
     private final ManufacturerInventoryService manufacturerInventoryService;

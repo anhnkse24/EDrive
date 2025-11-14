@@ -2,6 +2,7 @@ package com.swp391.edrive.service.serviceimpl;
 
 import com.swp391.edrive.dto.request.ContractRequest;
 import com.swp391.edrive.dto.response.ContractFileResponse;
+import com.swp391.edrive.dto.response.ContractListResponse;
 import com.swp391.edrive.dto.response.CustomerContractResponse;
 import com.swp391.edrive.dto.response.ManufacturerContractResponse;
 import com.swp391.edrive.entity.*;
@@ -55,7 +56,7 @@ public class ContractServiceImpl implements ContractService {
             }
         }
 
-        return com.swp391.edrive.dto.response.ContractListResponse.builder()
+        return ContractListResponse.builder()
                 .manufacturerContracts(manufacturerContracts)
                 .customerContracts(customerContracts)
                 .build();
