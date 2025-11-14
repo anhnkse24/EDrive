@@ -21,7 +21,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @SecurityRequirement(name = "api")
 @Tag(name = "Test Drive Management", description = "Quản lý lịch lái thử xe (CRUD)")
-@PreAuthorize("hasRole('DEALER_MANAGER') or hasRole('DEALER_STAFF')")
 public class TestDriveController {
 
     private final TestDriveService testDriveService;
