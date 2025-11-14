@@ -59,11 +59,11 @@ public class TestDriveServiceImpl implements TestDriveService {
                 dealer,
                 vehicle,
                 request.getScheduleDatetime(),
-                request.getStatus() != null ? request.getStatus() : TestDriveStatus.PENDING
+                TestDriveStatus.PENDING // Luôn tạo với status PENDING
         );
 
-        testDrive.setCancelReason(request.getCancelReason());
         testDriveRepository.save(testDrive);
+
         String message = String.format(
                 "Khách hàng %s vừa đặt lịch lái thử xe %s vào lúc %s",
                 customer.getFullName(),
@@ -93,12 +93,8 @@ public class TestDriveServiceImpl implements TestDriveService {
         if (!testDrive.getDealer().getDealerId().equals(dealerId))
             throw new EntityNotFoundException("Không có quyền cập nhật lịch lái thử của Dealer khác");
 
-        if (request.getScheduleDatetime() != null)
-            testDrive.setScheduleDatetime(request.getScheduleDatetime());
-        if (request.getStatus() != null)
-            testDrive.setStatus(request.getStatus());
-        if (request.getCancelReason() != null)
-            testDrive.setCancelReason(request.getCancelReason());
+        // Chỉ cập nhật thời gian lái thử
+        testDrive.setScheduleDatetime(request.getScheduleDatetime());
 
         testDriveRepository.save(testDrive);
         return mapToResponse(testDrive);
