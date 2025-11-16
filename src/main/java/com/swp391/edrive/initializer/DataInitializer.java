@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -898,60 +899,6 @@ public class DataInitializer implements CommandLineRunner {
             dealerInventoryRepository.saveAll(dealerInventories);
             System.out.println("✅ Đã khởi tạo " + dealerInventories.size() + " dealer inventories");
         }
-// =================== SEED PROMOTIONS ===================
-        if (promotionRepository.count() == 0) {
-            List<Promotion> promotions = new ArrayList<>();
-
-            Promotion promo1 = new Promotion();
-            promo1.setTitle("Khuyến mãi đầu năm - VinFast VF 8");
-            promo1.setDescription("Giảm giá đặc biệt cho mẫu VF 8 trong tháng khai xuân! Nhận ngay 5% giảm giá khi đặt xe trước 30/3.");
-            promo1.setDiscountType(DiscountType.PERCENTAGE);
-            promo1.setDiscountValue(5.0);
-            promo1.setStartDate(LocalDate.now().minusDays(10));
-            promo1.setEndDate(LocalDate.now().plusDays(20));
-            promo1.setApplicableTo(PromoTarget.CUSTOMER);
-            promo1.setDealer(dealersInDb.get(0)); // Đại lý Hà Nội
-            promo1.getVehicles().add(vehicles.get(0)); // VF8
-
-            Promotion promo2 = new Promotion();
-            promo2.setTitle("Siêu ưu đãi Tesla Model 3");
-            promo2.setDescription("Tặng gói sạc nhanh và giảm 100 triệu cho khách hàng mua Tesla Model 3 trong tháng này.");
-            promo2.setDiscountType(DiscountType.PERCENTAGE);
-            promo2.setDiscountValue(100_000_000.0);
-            promo2.setStartDate(LocalDate.now().minusDays(5));
-            promo2.setEndDate(LocalDate.now().plusDays(25));
-            promo2.setApplicableTo(PromoTarget.CUSTOMER);
-            promo2.setDealer(dealersInDb.get(1)); // HCM
-            promo2.getVehicles().add(vehicles.get(3)); // Model 3
-
-            Promotion promo3 = new Promotion();
-            promo3.setTitle("Chương trình tri ân đại lý");
-            promo3.setDescription("Giảm 10% giá nhập xe VinFast cho tất cả đại lý trong hệ thống.");
-            promo3.setDiscountType(DiscountType.PERCENTAGE);
-            promo3.setDiscountValue(10.0);
-            promo3.setStartDate(LocalDate.now());
-            promo3.setEndDate(LocalDate.now().plusDays(45));
-            promo3.setApplicableTo(PromoTarget.DEALER);
-            promo3.setDealer(dealersInDb.get(2)); // Đà Nẵng
-            promo3.getVehicles().add(vehicles.get(0));
-            promo3.getVehicles().add(vehicles.get(1)); // VF8, vf9_blue
-
-            Promotion promo4 = new Promotion();
-            promo4.setTitle("Toàn quốc - Mua xe BYD nhận quà");
-            promo4.setDescription("Áp dụng toàn quốc: Khách hàng mua xe BYD bất kỳ sẽ nhận phiếu quà tặng trị giá 20 triệu đồng.");
-            promo4.setDiscountType(DiscountType.FIXED_AMOUNT);
-            promo4.setDiscountValue(20_000_000.0);
-            promo4.setStartDate(LocalDate.now().minusDays(15));
-            promo4.setEndDate(LocalDate.now().plusDays(60));
-            promo4.setApplicableTo(PromoTarget.ALL);
-            promo4.setDealer(dealersInDb.get(4)); // Cần Thơ
-            promo4.getVehicles().add(vehicles.get(5)); // Han
-            promo4.getVehicles().add(vehicles.get(6)); // Atto 3
-
-            promotions.addAll(List.of(promo1, promo2, promo3, promo4));
-            promotionRepository.saveAll(promotions);
-            System.out.println("✅ Đã khởi tạo " + promotions.size() + " promotions");
-        }
         // =================== SEED CUSTOMERS ===================
         if (customerRepository.count() == 0) {
             List<Dealer> dealers = dealerRepository.findAll();
@@ -1125,6 +1072,100 @@ public class DataInitializer implements CommandLineRunner {
                 System.out.println("✅ Đã khởi tạo 7 đơn hàng mẫu (OrderCustomer + StatusOrderCustomer)");
             }
         }
+        // =================== SEED PROMOTIONS ===================
+        if (promotionRepository.count() == 0) {
+            List<Promotion> promotions = new ArrayList<>();
+
+            // Lấy dealer mẫu
+            Dealer dealer1 = dealersInDb.get(0);
+            Dealer dealer2 = dealersInDb.get(1);
+            Dealer dealer3 = dealersInDb.get(2);
+            Dealer dealer4 = dealersInDb.get(3);
+
+            // Lấy customer mẫu
+            List<Customer> customersDealer1 = customerRepository.findByDealer_DealerId(dealer1.getDealerId());
+            List<Customer> customersDealer2 = customerRepository.findByDealer_DealerId(dealer2.getDealerId());
+
+            // ================= Promo 1 =================
+            Promotion promo1 = new Promotion();
+            promo1.setTitle("Khuyến mãi đầu năm - VinFast VF 8");
+            promo1.setDescription("Giảm giá đặc biệt cho mẫu VF 8 trong tháng khai xuân! Nhận ngay 5% giảm giá khi đặt xe trước 30/3.");
+            promo1.setDiscountType(DiscountType.PERCENTAGE);
+            promo1.setDiscountValue(5.0);
+            promo1.setStartDate(LocalDate.now().minusDays(10));
+            promo1.setEndDate(LocalDate.now().plusDays(20));
+            promo1.setApplicableTo(PromoTarget.CUSTOMER);
+            promo1.setDealer(dealer1);
+
+            Set<Customer> promo1Customers =
+                    new HashSet<>(customersDealer1.subList(0, Math.min(3, customersDealer1.size())));
+
+            // Gán 2 chiều
+            promo1.setCustomers(promo1Customers);
+
+
+            // ================= Promo 2 =================
+            Promotion promo2 = new Promotion();
+            promo2.setTitle("Siêu ưu đãi Tesla Model 3");
+            promo2.setDescription("Tặng gói sạc nhanh và giảm 100 triệu cho khách hàng mua Tesla Model 3 trong tháng này.");
+            promo2.setDiscountType(DiscountType.FIXED_AMOUNT);
+            promo2.setDiscountValue(100_000_000.0);
+            promo2.setStartDate(LocalDate.now().minusDays(5));
+            promo2.setEndDate(LocalDate.now().plusDays(25));
+            promo2.setApplicableTo(PromoTarget.CUSTOMER);
+            promo2.setDealer(dealer2);
+
+            Set<Customer> promo2Customers =
+                    new HashSet<>(customersDealer2.subList(0, Math.min(2, customersDealer2.size())));
+
+            promo2.setCustomers(promo2Customers);
+
+
+            // ================= Promo 3 =================
+            Promotion promo3 = new Promotion();
+            promo3.setTitle("Chương trình tri ân đại lý");
+            promo3.setDescription("Giảm 10% giá nhập xe VinFast cho tất cả đại lý trong hệ thống.");
+            promo3.setDiscountType(DiscountType.PERCENTAGE);
+            promo3.setDiscountValue(10.0);
+            promo3.setStartDate(LocalDate.now());
+            promo3.setEndDate(LocalDate.now().plusDays(45));
+            promo3.setApplicableTo(PromoTarget.VEHICLE);
+            promo3.setDealer(dealer3);
+
+            promo3.setVehicles(vehicles.stream()
+                    .filter(v -> dealerInventoryRepository.existsByDealer_DealerIdAndVehicle_VehicleId(
+                            dealer3.getDealerId(), v.getVehicleId()))
+                    .limit(2)
+                    .collect(Collectors.toSet())
+            );
+
+
+            // ================= Promo 4 =================
+            Promotion promo4 = new Promotion();
+            promo4.setTitle("Toàn quốc - Mua xe BYD nhận quà");
+            promo4.setDescription("Áp dụng toàn quốc: Khách hàng mua xe BYD bất kỳ sẽ nhận phiếu quà tặng trị giá 20 triệu đồng.");
+            promo4.setDiscountType(DiscountType.FIXED_AMOUNT);
+            promo4.setDiscountValue(20_000_000.0);
+            promo4.setStartDate(LocalDate.now().minusDays(15));
+            promo4.setEndDate(LocalDate.now().plusDays(60));
+            promo4.setApplicableTo(PromoTarget.VEHICLE);
+            promo4.setDealer(dealer4);
+
+            promo4.setVehicles(vehicles.stream()
+                    .filter(v -> dealerInventoryRepository.existsByDealer_DealerIdAndVehicle_VehicleId(
+                            dealer4.getDealerId(), v.getVehicleId()))
+                    .limit(3)
+                    .collect(Collectors.toSet())
+            );
+
+            promotions.addAll(List.of(promo1, promo2, promo3, promo4));
+
+            promotionRepository.saveAll(promotions);
+
+            System.out.println("✅ Đã khởi tạo " + promotions.size() + " promotions");
+        }
+
+
 
 // =================== SEED TEST DRIVES ===================
         if (testDriveRepository.count() == 0) {

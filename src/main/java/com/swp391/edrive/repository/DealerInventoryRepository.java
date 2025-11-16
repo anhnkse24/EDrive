@@ -17,4 +17,6 @@ public interface DealerInventoryRepository extends JpaRepository<DealerInventory
 
     Optional<DealerInventory> findByDealer_DealerIdAndVehicle_VehicleId(Long dealerId, Long vehicleId);
     List<DealerInventory> findByDealer_DealerId(Long dealerId);
+    boolean existsByDealer_DealerIdAndVehicle_VehicleId(Long dealerId, Long vehicleId);
+
 }

@@ -6,7 +6,9 @@
     import lombok.Setter;
 
     import java.time.LocalDate;
+    import java.util.HashSet;
     import java.util.List;
+    import java.util.Set;
 
     @Entity
     @Table(name = "customers")
@@ -51,6 +53,8 @@
         @OneToMany(mappedBy = "customer")
         private List<Feedback> feedbacks;
 
+        @ManyToMany(mappedBy = "customers")
+        private Set<Promotion> promotions = new HashSet<>();
 
         @ManyToOne
         @JoinColumn(name = "dealer_id", nullable = false)

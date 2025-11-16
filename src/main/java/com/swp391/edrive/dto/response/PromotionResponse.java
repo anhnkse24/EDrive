@@ -23,4 +23,5 @@ public class PromotionResponse {
 
     private Long dealerId;
     private List<Long> vehicleIds;
+    private List<Long> customerIds;
 }

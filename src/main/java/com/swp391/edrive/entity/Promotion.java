@@ -48,4 +48,12 @@ public class Promotion {
             inverseJoinColumns = @JoinColumn(name = "vehicle_id")
     )
     private Set<Vehicle> vehicles = new HashSet<>();
+    @ManyToMany
+    @JoinTable(
+            name = "customer_promotion",
+            joinColumns = @JoinColumn(name = "promotion_id"),
+            inverseJoinColumns = @JoinColumn(name = "customer_id")
+    )
+    private Set<Customer> customers = new HashSet<>();
+
 }
