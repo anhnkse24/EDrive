@@ -6,16 +6,19 @@ import com.swp391.edrive.dto.response.VehicleResponse;
 import com.swp391.edrive.enums.VehicleStatus;
 import com.swp391.edrive.service.VehicleService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/vehicles")
+@SecurityRequirement(name = "api")
 @Tag(name = "Vehicles", description = "API quản lý danh sách xe")
 public class VehicleController {
 
@@ -25,13 +28,20 @@ public class VehicleController {
         this.vehicleService = vehicleService;   
     }
 
+//    @Operation(summary = "Lấy danh sách tất cả xe")
+//    @GetMapping
+//    public ResponseEntity<ResponseObject> getAllVehicles(
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "10") int size) {
+//
+//        List<VehicleResponse> vehicles = vehicleService.getAllVehicles(page, size);
+//        return ResponseEntity.ok(new ResponseObject(200, "Vehicle list retrieved successfully", vehicles));
+//    }
+
     @Operation(summary = "Lấy danh sách tất cả xe")
     @GetMapping
-    public ResponseEntity<ResponseObject> getAllVehicles(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-
-        List<VehicleResponse> vehicles = vehicleService.getAllVehicles(page, size);
+    public ResponseEntity<ResponseObject> getAllVehicles() {
+        List<VehicleResponse> vehicles = vehicleService.getAllVehicles();
         return ResponseEntity.ok(new ResponseObject(200, "Vehicle list retrieved successfully", vehicles));
     }
 
@@ -113,8 +123,8 @@ public class VehicleController {
     @Operation(summary = "Tìm xe theo giá (min/max hoặc khoảng)")
     @GetMapping("/search/price")
     public ResponseEntity<ResponseObject> findByPrice(
-            @RequestParam(required = false) Double minPrice,
-            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
@@ -129,6 +139,8 @@ public class VehicleController {
 
     @Operation(summary = "Cập nhật thông tin xe")
     @PutMapping("/{id}")
+    @SecurityRequirement(name = "api")
+
     public ResponseEntity<ResponseObject> update(@PathVariable Long id, @Valid @RequestBody VehicleUpsertRequest req) {
         try {
             VehicleResponse updated = vehicleService.updateVehicle(id, req);
@@ -139,9 +151,10 @@ public class VehicleController {
         }
     }
 
-    // ====== DELETE ======
     @Operation(summary = "Xoá xe")
     @DeleteMapping("/{id}")
+    @SecurityRequirement(name = "api")
+
     public ResponseEntity<ResponseObject> delete(@PathVariable Long id) {
         try {
             vehicleService.deleteVehicle(id);
@@ -152,11 +165,19 @@ public class VehicleController {
         }
     }
 
-    @Operation(summary = "Thêm xe")
     @PostMapping
+    @SecurityRequirement(name = "api")
     public ResponseEntity<ResponseObject> create(@Valid @RequestBody VehicleUpsertRequest req) {
-        VehicleResponse created = vehicleService.createVehicle(req);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new ResponseObject(201, "Vehicle created", created));
+        try {
+            List<VehicleResponse> createdVehicles = vehicleService.createVehicle(req);
+
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new ResponseObject(201, "Vehicles created", createdVehicles));
+
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new ResponseObject(409, ex.getMessage(), null));
+        }
     }
+
 }

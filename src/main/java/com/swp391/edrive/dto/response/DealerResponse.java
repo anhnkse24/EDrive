@@ -1,0 +1,27 @@
+package com.swp391.edrive.dto.response;
+
+import lombok.*;
+
+import java.util.Set;
+
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class DealerResponse {
+    private Long ownerUserId;
+    private Long dealerId;
+    private String dealerName;
+    private  String dealerEmail;
+
+    private String houseNumberAndStreet;
+    private String wardOrCommune;
+    private String district;
+    private String provinceOrCity;
+
+    private String contactPerson;
+    private String contactPhone;
+    private Set<String> roles;
+
+}

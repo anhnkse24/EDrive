@@ -1,65 +1,101 @@
 package com.swp391.edrive.config;
 
-import lombok.RequiredArgsConstructor;
+
+import com.swp391.edrive.service.AuthenticationService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsUtils;
 
 @Configuration
-@EnableWebSecurity
 @EnableMethodSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final AuthenticationService authenticationService;
+    private final Filter filter;
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        // Cho Swagger public
-                        .requestMatchers(
-                                "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/v3/api-docs/**",
-                                "/api-docs/**"
-                        ).permitAll()
-                        // Auth endpoints public
-                        .requestMatchers("/api/auth/**").permitAll()
-                        // Tạm thời cho GET public với vehicle nếu bạn muốn (tuỳ)
-                        .requestMatchers(HttpMethod.GET, "/api/vehicles/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/test-drive/available").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/test-drive/book").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .formLogin(form -> form.disable()) // Không dùng form login HTML cho API
-                .httpBasic(basic -> basic.disable())
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
-        return http.build();
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration)
-            throws Exception {
-        return configuration.getAuthenticationManager();
+    @Lazy
+    @Autowired
+    public SecurityConfig(AuthenticationService authenticationService, Filter filter) {
+        this.authenticationService = authenticationService;
+        this.filter = filter;
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // mã hoá mạnh
+        return new BCryptPasswordEncoder();
     }
 
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http
+          )
+            throws Exception {
+        return http.cors(Customizer.withDefaults())
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(auth -> auth
+
+                        // Cho phép truy cập các endpoint công khai
+                        .requestMatchers(CorsUtils::isPreFlightRequest)
+                        .permitAll() // Cho phép CORS pre-flight requests
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/api/auth/login",
+                                "/api/auth/register",
+                                "/api/auth/refresh-token",
+                                "/api/auth/google-login",
+                                "/api/auth/facebook-login",
+                                "/api/auth/reset-password",
+                                "/api/auth/forgot-password",
+                                "/api/auth/payments/vnpay-return",
+                                "/api/auth/verify",
+                                "/api/testdrives",
+                                "/api/vehicles/**",
+                                "/api/vehicles/search/**",
+                                "/chat",
+                                "/api/feedbacks/**",
+                                "/api/testdrives/**",
+                                "/api/contracts/**",
+                                "/api/colors/**",
+                                "/api/dealer/{dealerId}/customers/**",
+                                "/api/dealers/**",
+                                "/dealer-inventory/**",
+                                "/api/admin/discount-policies/**",
+                                "/api/feedbacks/**",
+                                "/api/manufacturer-inventory/**",
+                                "/api/orders/**",
+                                "/api/quotations/**",
+                                "/api/promotions/**"
+                        )
+                        .permitAll() // Các endpoint không cần xác thực
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**")
+                        .permitAll() // Cho phép truy cập Swagger
+                        // Tất cả các request khác cần xác thực
+                        .anyRequest()
+                        .authenticated())
+                .userDetailsService(authenticationService)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class)
+                .build();
+    }
 }

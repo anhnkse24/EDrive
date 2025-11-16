@@ -6,8 +6,9 @@ import com.swp391.edrive.entity.User;
 import java.util.Optional;
 
 public interface RefreshTokenService {
-    RefreshToken createRefreshToken(User user);
-    boolean isExpired(RefreshToken token);
     Optional<RefreshToken> findByToken(String token);
-    void delete(RefreshToken token);
+
+    RefreshToken createRefreshToken(User user);
+
+    RefreshToken verifyExpiration(RefreshToken token);
 }

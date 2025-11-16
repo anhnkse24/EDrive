@@ -6,7 +6,9 @@
     import lombok.Setter;
 
     import java.time.LocalDate;
+    import java.util.HashSet;
     import java.util.List;
+    import java.util.Set;
 
     @Entity
     @Table(name = "customers")
@@ -51,12 +53,12 @@
         @OneToMany(mappedBy = "customer")
         private List<Feedback> feedbacks;
 
-        @OneToMany(mappedBy = "customer")
-        private List<Quotation> quotations;
+        @ManyToMany(mappedBy = "customers")
+        private Set<Promotion> promotions = new HashSet<>();
 
-        @OneToMany(mappedBy = "customer")
-        private List<Order> orders;
-
-        @OneToMany(mappedBy = "customer")
-        private List<CustomerDebt> customerDebts;
+        @ManyToOne
+        @JoinColumn(name = "dealer_id", nullable = false)
+        private Dealer dealer;
+        @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+        private List<OrderCustomer> orderCustomers;
     }

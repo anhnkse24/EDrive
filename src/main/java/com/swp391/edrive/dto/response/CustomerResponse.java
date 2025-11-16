@@ -16,4 +16,7 @@ public class CustomerResponse {
     private String phone;
     private String address;
     private String idCardNo;
+
+    private Long dealerId;
+    private String dealerName;
 }

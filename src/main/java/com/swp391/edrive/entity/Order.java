@@ -1,21 +1,24 @@
 package com.swp391.edrive.entity;
 
 import com.swp391.edrive.enums.OrderStatus;
-import com.swp391.edrive.enums.PaymentType;
+import com.swp391.edrive.enums.PaymentStatus;
 import jakarta.persistence.*;
-import java.time.LocalDate;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 @Entity
 @Table(name = "orders")
+@Getter
+@Setter
 public class Order {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long orderId;
-
-    @ManyToOne
-    @JoinColumn(name = "quotation_id")
-    private Quotation quotation;
+    private String orderId;
 
     @ManyToOne
     @JoinColumn(name = "dealer_id")
@@ -23,14 +26,42 @@ public class Order {
 
     @ManyToOne
     @JoinColumn(name = "customer_id")
-    private Customer customer;
+    private Customer customer;  // Khách hàng (nếu order từ quotation)
+
+    @ManyToOne
+    @JoinColumn(name = "created_by")
+    private User createdBy;
 
     private LocalDate orderDate;
-    private Double totalPrice;
+    private LocalDate desiredDeliveryDate;
+    private LocalDate actualDeliveryDate;
 
-    @Enumerated(EnumType.STRING)
-    private PaymentType paymentMethod;
+    // Các trường tính toán
+    private BigDecimal subtotal;
+    private BigDecimal totalDiscount;
+    private BigDecimal vatAmount;
+    private BigDecimal totalPrice;
 
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus paymentStatus;
+
+    private String deliveryAddress;
+    private String deliveryNote;
+
+    @Column
+    private String paymentImage;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<OrderItem> orderItems = new ArrayList<>();
+    // Dịch vụ bổ sung (chỉ áp dụng khi khách hàng đặt xe từ đại lý)
+    @Embedded
+    private AdditionalServices additionalServices;
+
+    @OneToMany(mappedBy = "order")
+    private List<Payment> payments;
+
 }

@@ -2,6 +2,9 @@ package com.swp391.edrive.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,11 +24,32 @@ public class Dealer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long dealerId;
 
+    @Column(nullable = false, length = 100)
     private String dealerName;
-    private String address;
+
+    @Column(nullable = false, length = 100)
+    private String dealerEmail;
+
+    @Column(length = 150)
+    private String houseNumberAndStreet;
+
+    @Column(length = 100)
+    private String wardOrCommune;
+
+    @Column(length = 100)
+    private String district;
+
+    @Column(length = 100)
+    private String provinceOrCity;
+
+    @Column(nullable = false, length = 100)
     private String contactPerson;
+
+    @Column(length = 100)
     private String phone;
-    private Integer contractId;
+
+    @Column(length = 500)
+    private String businessLicenseUrl;
 
     @OneToMany(mappedBy = "dealer")
     @JsonIgnore
@@ -33,19 +57,7 @@ public class Dealer {
 
     @OneToMany(mappedBy = "dealer")
     @JsonIgnore
-    private List<Inventory> inventories;
-
-    @OneToMany(mappedBy = "dealer")
-    @JsonIgnore
-    private List<PricingPolicy> pricingPolicies;
-
-    @OneToMany(mappedBy = "dealer")
-    @JsonIgnore
     private List<TestDrive> testDrives;
-
-    @OneToMany(mappedBy = "dealer")
-    @JsonIgnore
-    private List<Quotation> quotations;
 
     @OneToMany(mappedBy = "dealer")
     @JsonIgnore
@@ -53,9 +65,17 @@ public class Dealer {
 
     @OneToMany(mappedBy = "dealer")
     @JsonIgnore
-    private List<Contract> contracts;
+    private List<DealerInventory> dealerInventories;
 
     @OneToMany(mappedBy = "dealer")
     @JsonIgnore
-    private List<DealerDebt> dealerDebts;
+    private List<Quotation> quotations;
+
+    @OneToMany(mappedBy = "dealer")
+    @JsonIgnore
+    private List<Contract> contracts;
+
+    @ManyToOne
+    @JoinColumn(name = "owner_user_id")
+    private User ownerUser;
 }

@@ -1,14 +1,14 @@
 package com.swp391.edrive.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
+import lombok.*;
 
 import java.math.BigDecimal;
 
 @Data
 @AllArgsConstructor
 @Getter
+@Setter
+@Builder
 public class VehicleResponse {
     private Long vehicleId;
     private String modelName;
@@ -25,6 +25,8 @@ public class VehicleResponse {
     private Integer widthMm;
     private Integer heightMm;
     private BigDecimal priceRetail;
+    private BigDecimal finalPrice;
     private String status;
     private Integer manufactureYear;
+    private String imageUrl;
 }
