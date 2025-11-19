@@ -63,9 +63,6 @@ public class Quotation {
     )
     private Set<Promotion> promotions;
 
-    // ====== Bảo hiểm ======
-
-
     // ====== Dịch vụ bổ sung ======
     @OneToMany(mappedBy = "quotation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<QuotationService> quotationServices;

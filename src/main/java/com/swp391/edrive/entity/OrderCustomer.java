@@ -18,7 +18,6 @@ public class OrderCustomer {
 
     private String orderCode;
 
-    // ✅ Thay vì lưu thông tin xe thủ công — liên kết thẳng Vehicle
     @ManyToOne
     @JoinColumn(name = "vehicle_id")
     private Vehicle vehicle;

@@ -95,7 +95,6 @@ public class TestDriveServiceImpl implements TestDriveService {
         if (!testDrive.getDealer().getDealerId().equals(dealerId))
             throw new EntityNotFoundException("Không có quyền cập nhật lịch lái thử của Dealer khác");
 
-        // Chỉ cập nhật thời gian lái thử
         testDrive.setScheduleDatetime(request.getScheduleDatetime());
 
         testDriveRepository.save(testDrive);

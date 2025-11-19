@@ -2,7 +2,6 @@ package com.swp391.edrive.service;
 
 import com.swp391.edrive.dto.request.VehicleUpsertRequest;
 import com.swp391.edrive.dto.response.VehicleResponse;
-import com.swp391.edrive.entity.Vehicle;
 import com.swp391.edrive.enums.VehicleStatus;
 
 import java.math.BigDecimal;

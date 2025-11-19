@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Builder
 public class UnverifiedUserResponse {
     private Long userId;
-    private Long dealerId;  // Thêm dealerId để verify
+    private Long dealerId;
     private String username;
     private String fullName;
     private String email;

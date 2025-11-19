@@ -96,7 +96,6 @@ public class ColorServiceImpl implements ColorService {
                 .toList();
     }
 
-    // mapper
     private ColorResponse toResponse(Color c, boolean inUse) {
         return ColorResponse.builder()
                 .colorId(c.getColorId())

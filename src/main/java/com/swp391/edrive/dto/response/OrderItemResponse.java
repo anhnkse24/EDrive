@@ -5,10 +5,10 @@ import java.math.BigDecimal;
 
 public class OrderItemResponse {
     public Long vehicleId;
-    public String vehicleName;      // Model name
-    public String vehicleVersion;   // Version
-    public String colorName;        // Color
-    public String vehicleImageUrl;  // Image URL
+    public String vehicleName;
+    public String vehicleVersion;
+    public String colorName;
+    public String vehicleImageUrl;
     public Integer quantity;
     public BigDecimal unitPrice;
     public BigDecimal itemSubtotal;

@@ -19,7 +19,6 @@ public class DealerInventoryServiceImpl implements DealerInventoryService {
 
     @Override
     public DealerInventoryDTO updateDealerInventory(Long dealerId, Long vehicleId, int quantity) {
-        // Find existing inventory or create new one
         DealerInventory inventory = dealerInventoryRepository
                 .findByDealer_DealerIdAndVehicle_VehicleId(dealerId, vehicleId)
                 .orElseThrow(() -> new RuntimeException("DealerInventory not found for dealerId: " + dealerId + " and vehicleId: " + vehicleId));
@@ -39,7 +38,6 @@ public class DealerInventoryServiceImpl implements DealerInventoryService {
     public List<DealerInventoryDTO> getDealerInventoryByDealerId(Long dealerId) {
         List<DealerInventory> inventories = dealerInventoryRepository.findByDealer_DealerId(dealerId);
 
-        // Map DealerInventory entities to DealerInventoryDTO
         return inventories.stream()
                 .map(inv -> new DealerInventoryDTO(
                         inv.getVehicle().getModelName(),
