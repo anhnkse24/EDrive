@@ -121,48 +121,50 @@ public class TestDriveServiceImpl implements TestDriveService {
         if (!testDrive.getDealer().getDealerId().equals(dealerId))
             throw new EntityNotFoundException("Không có quyền thay đổi trạng thái lịch lái thử của Dealer khác");
 
-        testDrive.setStatus(request.getStatus());
+        if (request.getStatus() != null) {
+
+            testDrive.setStatus(request.getStatus());
+
+            if (request.getStatus() == TestDriveStatus.COMPLETED) {
+                testDrive.setCompletedAt(LocalDateTime.now());
+            }
+
+            if (request.getStatus() == TestDriveStatus.CANCELLED
+                    && request.getCancelReason() != null
+                    && !request.getCancelReason().trim().isEmpty()) {
+                testDrive.setCancelReason(request.getCancelReason());
+            }
+
+            String statusMessage = getStatusMessage(request.getStatus());
+            String message = String.format(
+                    "Lịch lái thử xe %s của bạn đã được chuyển sang trạng thái: %s",
+                    testDrive.getVehicle().getModelName(),
+                    statusMessage
+            );
+
+            if (request.getStatus() == TestDriveStatus.CANCELLED && request.getCancelReason() != null) {
+                message += ". Lý do: " + request.getCancelReason();
+            }
+
+            notificationRepository.save(
+                    Notification.builder()
+                            .dealer(testDrive.getDealer())
+                            .title("Cập nhật trạng thái lịch lái thử")
+                            .message(message)
+                            .isRead(false)
+                            .createdAt(LocalDateTime.now())
+                            .build()
+            );
+        }
 
         if (request.getStatusForStaff() != null) {
             testDrive.setStatusForStaff(request.getStatusForStaff());
         }
 
-        // Nếu status là COMPLETED, tự động set completedAt
-        if (request.getStatus() == TestDriveStatus.COMPLETED) {
-            testDrive.setCompletedAt(LocalDateTime.now());
-        }
-
-        // Nếu status là CANCELLED, lưu lý do hủy
-        if (request.getStatus() == TestDriveStatus.CANCELLED && request.getCancelReason() != null) {
-            testDrive.setCancelReason(request.getCancelReason());
-        }
-
         testDriveRepository.save(testDrive);
-
-        // Tạo thông báo cho khách hàng về việc thay đổi trạng thái
-        String statusMessage = getStatusMessage(request.getStatus());
-        String message = String.format(
-                "Lịch lái thử xe %s của bạn đã được chuyển sang trạng thái: %s",
-                testDrive.getVehicle().getModelName(),
-                statusMessage
-        );
-
-        if (request.getStatus() == TestDriveStatus.CANCELLED && request.getCancelReason() != null) {
-            message += ". Lý do: " + request.getCancelReason();
-        }
-
-        Notification notification = Notification.builder()
-                .dealer(testDrive.getDealer())
-                .title("Cập nhật trạng thái lịch lái thử")
-                .message(message)
-                .isRead(false)
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        notificationRepository.save(notification);
-
         return mapToResponse(testDrive);
     }
+
 
     private String getStatusMessage(TestDriveStatus status) {
         switch (status) {

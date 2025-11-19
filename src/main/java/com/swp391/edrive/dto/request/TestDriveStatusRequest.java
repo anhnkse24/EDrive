@@ -9,13 +9,26 @@ import lombok.Data;
 @Data
 public class TestDriveStatusRequest {
 
-    @NotNull(message = "Status không được để trống")
     private TestDriveStatus status;
 
-    @NotNull(message = "StatusForStaff không được để trống")
     private TestDriveStatusForStaff statusForStaff;
 
     @Size(max = 500, message = "Lý do hủy không được vượt quá 500 ký tự")
     private String cancelReason;
+
+    public void setStatus(String value) {
+        if (value == null || value.isBlank()) {
+            this.status = null;
+        } else {
+            this.status = TestDriveStatus.valueOf(value);
+        }
+    }
+    public void setStatusForStaff(String value) {
+        if (value == null || value.isBlank()) {
+            this.statusForStaff = null;
+        } else {
+            this.statusForStaff = TestDriveStatusForStaff.valueOf(value);
+        }
+    }
 }
 
