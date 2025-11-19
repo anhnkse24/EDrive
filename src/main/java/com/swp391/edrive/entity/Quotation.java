@@ -9,6 +9,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -66,8 +67,8 @@ public class Quotation {
 
 
     // ====== Dịch vụ bổ sung ======
-    @Embedded  // Nhúng AdditionalServices vào Quotation
-    private AdditionalServices additionalServices;
+    @OneToMany(mappedBy = "quotation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<QuotationService> quotationServices;
 
     // ====== Ngày tạo và ngày hết hạn báo giá ======
     private LocalDateTime createdAt;

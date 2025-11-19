@@ -38,21 +38,21 @@ public class OrderController {
         return orderService.createOrder(req, dealerId, user);
     }
 
-    // 2) Tạo Order từ Quotation
-    @Operation(summary = "Tạo Order từ Quotation", description = "Chuyển đổi một báo giá thành đơn hàng chính thức")
-    @PostMapping("/from-quotation")
-    public ResponseObject<OrderResponse> createFromQuotation(@RequestBody QuotationToOrderRequest req) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = (User) authentication.getPrincipal();
-
-        // Không cần lấy dealerId từ user, sẽ lấy từ quotation
-        OrderResponse result = orderService.createOrderFromQuotation(req, null, user);
-        return ResponseObject.<OrderResponse>builder()
-                .statusCode(HttpStatus.OK.value())
-                .message("Tạo đơn hàng từ báo giá thành công")
-                .data(result)
-                .build();
-    }
+//    // 2) Tạo Order từ Quotation
+//    @Operation(summary = "Tạo Order từ Quotation", description = "Chuyển đổi một báo giá thành đơn hàng chính thức")
+//    @PostMapping("/from-quotation")
+//    public ResponseObject<OrderResponse> createFromQuotation(@RequestBody QuotationToOrderRequest req) {
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        User user = (User) authentication.getPrincipal();
+//
+//        // Không cần lấy dealerId từ user, sẽ lấy từ quotation
+//        OrderResponse result = orderService.createOrderFromQuotation(req, null, user);
+//        return ResponseObject.<OrderResponse>builder()
+//                .statusCode(HttpStatus.OK.value())
+//                .message("Tạo đơn hàng từ báo giá thành công")
+//                .data(result)
+//                .build();
+//    }
 
     @GetMapping
     public ResponseObject<List<OrderResponse>> getAllOrders() {

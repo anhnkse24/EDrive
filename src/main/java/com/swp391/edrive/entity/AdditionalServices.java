@@ -1,31 +1,48 @@
 package com.swp391.edrive.entity;
 
-import jakarta.persistence.Embeddable;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@Embeddable  // Đánh dấu lớp này có thể nhúng vào entity khác
+@Entity
+@Table(name = "additional_services")
 public class AdditionalServices {
 
-    private Boolean hasTintFilm;  // Phim cách nhiệt cao cấp
-    private BigDecimal tintFilmPrice;  // Giá trị của dịch vụ phim cách nhiệt
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long serviceId;
 
-    private Boolean hasWallboxCharger; // Bộ sạc Wallbox 7kW
-    private BigDecimal wallboxChargerPrice; // Giá trị của dịch vụ bộ sạc Wallbox
+    @Column(nullable = false, length = 100)
+    private String serviceName;  // Tên dịch vụ (VD: "Phim cách nhiệt cao cấp", "Bộ sạc Wallbox 7kW")
 
-    private Boolean hasWarrantyExtension; // Gói bảo hành mở rộng 2 năm
-    private BigDecimal warrantyExtensionPrice; // Giá trị của dịch vụ bảo hành mở rộng
+    @Column(columnDefinition = "TEXT")
+    private String description;  // Mô tả chi tiết dịch vụ
 
-    private Boolean hasPPF; // PPF toàn xe
-    private BigDecimal ppfPrice; // Giá trị của dịch vụ PPF toàn xe
+    @Column(precision = 14, scale = 2, nullable = false)
+    private BigDecimal price;  // Giá của dịch vụ
 
-    private Boolean hasCeramicCoating; // Phủ Ceramic 9H
-    private BigDecimal ceramicCoatingPrice; // Giá trị của dịch vụ phủ Ceramic 9H
+    @Column(nullable = false)
+    private Boolean isActive = true;  // Trạng thái dịch vụ (có đang hoạt động không)
 
-    private Boolean has360Camera; // Camera hành trình 360
-    private BigDecimal camera360Price; // Giá trị của dịch vụ Camera hành trình 360
+    @Column(length = 50)
+    private String category;  // Danh mục dịch vụ (VD: "Bảo vệ", "Sạc điện", "Bảo hành", "Camera")
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    void prePersist() {
+        createdAt = LocalDateTime.now();
+        updatedAt = createdAt;
+    }
+
+    @PreUpdate
+    void preUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }

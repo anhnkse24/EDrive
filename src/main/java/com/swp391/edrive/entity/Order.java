@@ -48,10 +48,6 @@ public class Order {
     @Column
     private String paymentImage;
 
-    // Dịch vụ bổ sung (chỉ áp dụng khi khách hàng đặt xe từ đại lý)
-    @Embedded
-    private AdditionalServices additionalServices;
-
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<OrderItem> orderItems;
 

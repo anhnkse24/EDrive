@@ -14,9 +14,6 @@ import java.util.List;
 public interface OrderService {
     OrderSummaryResponse createOrder(OrderCreateRequest req, Long dealerId, User createdBy);
 
-    // Tạo order từ quotation
-    OrderResponse createOrderFromQuotation(QuotationToOrderRequest req, Long dealerId, User createdBy);
-
     List<OrderResponse> getAllOrders();
     OrderResponse getOrderById(String orderId);
     List<OrderResponse> getOrdersByStatus(OrderStatus status);

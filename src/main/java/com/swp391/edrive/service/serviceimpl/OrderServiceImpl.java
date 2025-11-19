@@ -123,10 +123,6 @@ public class OrderServiceImpl implements OrderService {
         res.setDeliveryNote(order.getDeliveryNote());
         res.setPaymentStatus(order.getPaymentStatus());
 
-        // Map AdditionalServices nếu có
-        if (order.getAdditionalServices() != null) {
-            res.setAdditionalServices(mapToAdditionalServicesResponse(order.getAdditionalServices()));
-        }
 
         if (order.getOrderItems() != null) {
             res.setOrderItems(
@@ -154,38 +150,6 @@ public class OrderServiceImpl implements OrderService {
             );
         }
         return res;
-    }
-
-    private AdditionalServicesResponse mapToAdditionalServicesResponse(AdditionalServices services) {
-        if (services == null) {
-            return null;
-        }
-
-        AdditionalServicesResponse response = new AdditionalServicesResponse();
-        response.setHasTintFilm(services.getHasTintFilm());
-        response.setTintFilmPrice(services.getTintFilmPrice());
-        response.setHasWallboxCharger(services.getHasWallboxCharger());
-        response.setWallboxChargerPrice(services.getWallboxChargerPrice());
-        response.setHasWarrantyExtension(services.getHasWarrantyExtension());
-        response.setWarrantyExtensionPrice(services.getWarrantyExtensionPrice());
-        response.setHasPPF(services.getHasPPF());
-        response.setPpfPrice(services.getPpfPrice());
-        response.setHasCeramicCoating(services.getHasCeramicCoating());
-        response.setCeramicCoatingPrice(services.getCeramicCoatingPrice());
-        response.setHas360Camera(services.getHas360Camera());
-        response.setCamera360Price(services.getCamera360Price());
-
-        // Tính tổng
-        BigDecimal total = BigDecimal.ZERO;
-        if (services.getHasTintFilm()) total = total.add(services.getTintFilmPrice());
-        if (services.getHasWallboxCharger()) total = total.add(services.getWallboxChargerPrice());
-        if (services.getHasWarrantyExtension()) total = total.add(services.getWarrantyExtensionPrice());
-        if (services.getHasPPF()) total = total.add(services.getPpfPrice());
-        if (services.getHasCeramicCoating()) total = total.add(services.getCeramicCoatingPrice());
-        if (services.getHas360Camera()) total = total.add(services.getCamera360Price());
-        response.setTotalServicesPrice(total);
-
-        return response;
     }
 
     @Override
@@ -282,154 +246,6 @@ public class OrderServiceImpl implements OrderService {
         return buildOrderSummaryResponse(savedOrder, orderItems);
     }
 
-    @Override
-    @Transactional
-    public OrderResponse createOrderFromQuotation(QuotationToOrderRequest req, Long dealerId, User createdBy) {
-        // Validate input
-        if (req.getQuotationId() == null) {
-            throw new IllegalArgumentException("ID báo giá là bắt buộc");
-        }
-
-        // Lấy thông tin báo giá
-        Quotation quotation = quotationRepo.findById(req.getQuotationId())
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy báo giá với ID: " + req.getQuotationId()));
-
-        // Kiểm tra quotation phải ở trạng thái ACCEPTED
-        if (quotation.getQuotationStatus() != com.swp391.edrive.enums.QuotationStatus.ACCEPTED) {
-            throw new IllegalStateException("Chỉ có thể tạo đơn hàng từ báo giá đã được chấp nhận (ACCEPTED)");
-        }
-
-        // Lấy thông tin Dealer từ Quotation (vì quotation đã có dealer tạo báo giá)
-        Dealer dealer = quotation.getDealer();
-        if (dealer == null) {
-            throw new IllegalArgumentException("Báo giá không có thông tin đại lý");
-        }
-
-        // Kiểm tra tồn kho
-        Vehicle vehicle = quotation.getVehicle();
-        validateManufacturerInventory(vehicle, 1); // Quotation thường là 1 xe
-
-        // Tạo Order mới từ Quotation
-        Order order = new Order();
-        order.setOrderId(UUID.randomUUID().toString());
-        order.setOrderDate(LocalDate.now());
-        order.setDealer(dealer);
-        order.setCreatedBy(createdBy);
-        order.setStatus(OrderStatus.CHỜ_DUYỆT);
-        order.setPaymentStatus(PaymentStatus.CHỜ_DUYỆT);
-        order.setDesiredDeliveryDate(req.getDesiredDeliveryDate());
-        order.setDeliveryAddress(req.getDeliveryAddress());
-        order.setDeliveryNote(req.getDeliveryNote());
-
-        // Lấy giá trị từ Quotation
-        BigDecimal unitPrice = quotation.getUnitPrice();
-        BigDecimal promotionDiscount = quotation.getPromotionDiscountAmount() != null ?
-                quotation.getPromotionDiscountAmount() : BigDecimal.ZERO;
-
-        // Tính toán giá cho 1 xe
-        BigDecimal itemSubtotal = unitPrice;
-        BigDecimal itemTotal = itemSubtotal.subtract(promotionDiscount);
-
-        // Xử lý Additional Services từ Quotation
-        BigDecimal additionalServicesTotal = BigDecimal.ZERO;
-        if (quotation.getAdditionalServices() != null) {
-            AdditionalServices services = quotation.getAdditionalServices();
-            order.setAdditionalServices(services);
-
-            // Tính tổng giá dịch vụ bổ sung
-            if (services.getHasTintFilm()) additionalServicesTotal = additionalServicesTotal.add(services.getTintFilmPrice());
-            if (services.getHasWallboxCharger()) additionalServicesTotal = additionalServicesTotal.add(services.getWallboxChargerPrice());
-            if (services.getHasWarrantyExtension()) additionalServicesTotal = additionalServicesTotal.add(services.getWarrantyExtensionPrice());
-            if (services.getHasPPF()) additionalServicesTotal = additionalServicesTotal.add(services.getPpfPrice());
-            if (services.getHasCeramicCoating()) additionalServicesTotal = additionalServicesTotal.add(services.getCeramicCoatingPrice());
-            if (services.getHas360Camera()) additionalServicesTotal = additionalServicesTotal.add(services.getCamera360Price());
-        }
-
-        // Tính VAT: (Giá xe sau giảm giá + Dịch vụ bổ sung) * 10%
-        BigDecimal totalBeforeVat = itemTotal.add(additionalServicesTotal);
-        BigDecimal vatAmount = totalBeforeVat.multiply(vatRate).setScale(0, RoundingMode.HALF_UP);
-
-        // Tổng cuối cùng
-        BigDecimal grandTotal = totalBeforeVat.add(vatAmount);
-
-        // Set giá trị cho Order
-        order.setSubtotal(itemSubtotal);
-        order.setTotalDiscount(promotionDiscount);
-        order.setVatAmount(vatAmount);
-        order.setTotalPrice(grandTotal);
-
-        // Tạo OrderItem
-        OrderItem orderItem = new OrderItem();
-        orderItem.setOrder(order);
-        orderItem.setVehicle(vehicle);
-        orderItem.setQuantity(1); // Quotation thường là 1 xe
-        orderItem.setUnitPrice(unitPrice);
-        orderItem.setDiscountRate(promotionDiscount.divide(itemSubtotal, 4, RoundingMode.HALF_UP)); // Tính % chiết khấu
-        orderItem.setDiscountAmount(promotionDiscount);
-        orderItem.setTotalPrice(itemTotal);
-
-        // Lưu Order trước
-        Order savedOrder = orderRepo.save(order);
-
-        // Lưu OrderItem sau
-        OrderItem savedOrderItem = orderItemRepo.save(orderItem);
-
-        // Tạo thông báo cho admin
-        notificationService.createAdminNotificationForDealerOrder(savedOrder.getOrderId());
-
-        // Tạo OrderResponse thủ công với savedOrderItem
-        OrderResponse response = new OrderResponse();
-        response.setOrderId(savedOrder.getOrderId());
-        response.setDealerId(savedOrder.getDealer().getDealerId());
-        response.setDealerName(savedOrder.getDealer().getDealerName());
-        response.setOrderDate(savedOrder.getOrderDate());
-        response.setDesiredDeliveryDate(savedOrder.getDesiredDeliveryDate());
-        response.setActualDeliveryDate(savedOrder.getActualDeliveryDate());
-        response.setSubtotal(savedOrder.getSubtotal());
-        response.setTotalDiscount(savedOrder.getTotalDiscount());
-        response.setVatAmount(savedOrder.getVatAmount());
-        response.setTotalPrice(savedOrder.getTotalPrice());
-
-        // Tính tiền cọc 7%
-        BigDecimal depositAmount = savedOrder.getTotalPrice()
-                .multiply(new BigDecimal("0.07"))
-                .setScale(0, RoundingMode.HALF_UP);
-        response.setDepositAmount(depositAmount);
-
-        // Tính số tiền còn lại
-        response.setRemainingAmount(savedOrder.getTotalPrice().subtract(depositAmount));
-
-        response.setOrderStatus(savedOrder.getStatus());
-        response.setPaymentStatus(savedOrder.getPaymentStatus());
-        response.setDeliveryAddress(savedOrder.getDeliveryAddress());
-        response.setDeliveryNote(savedOrder.getDeliveryNote());
-
-        // Map AdditionalServices
-        if (savedOrder.getAdditionalServices() != null) {
-            response.setAdditionalServices(mapToAdditionalServicesResponse(savedOrder.getAdditionalServices()));
-        }
-
-        // Tạo OrderItemResponse từ savedOrderItem
-        OrderItemResponse itemResponse = new OrderItemResponse();
-        itemResponse.vehicleId = savedOrderItem.getVehicle().getVehicleId();
-        itemResponse.vehicleName = savedOrderItem.getVehicle().getModelName();
-        itemResponse.vehicleVersion = savedOrderItem.getVehicle().getVersion();
-        itemResponse.vehicleImageUrl = savedOrderItem.getVehicle().getImageUrl();
-        if (savedOrderItem.getVehicle().getColor() != null) {
-            itemResponse.colorName = savedOrderItem.getVehicle().getColor().getColorName();
-        }
-        itemResponse.quantity = savedOrderItem.getQuantity();
-        itemResponse.unitPrice = savedOrderItem.getUnitPrice();
-        itemResponse.itemSubtotal = savedOrderItem.getUnitPrice().multiply(
-                BigDecimal.valueOf(savedOrderItem.getQuantity())
-        );
-        itemResponse.itemDiscount = savedOrderItem.getDiscountAmount();
-        itemResponse.itemTotal = savedOrderItem.getTotalPrice();
-
-        response.setOrderItems(List.of(itemResponse));
-
-        return response;
-    }
 
 
     private void validate(OrderCreateRequest req) {
