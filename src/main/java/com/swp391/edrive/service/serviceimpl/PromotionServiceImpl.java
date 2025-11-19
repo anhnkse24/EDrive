@@ -2,7 +2,6 @@ package com.swp391.edrive.service.serviceimpl;
 
 import com.swp391.edrive.dto.request.PromotionRequest;
 import com.swp391.edrive.dto.response.PromotionResponse;
-import com.swp391.edrive.entity.Customer;
 import com.swp391.edrive.entity.Dealer;
 import com.swp391.edrive.entity.Promotion;
 import com.swp391.edrive.entity.Vehicle;
@@ -112,15 +111,10 @@ public class PromotionServiceImpl implements PromotionService {
                             dealer.getDealerId(), v.getVehicleId()
                     );
 
-            if (!belongsToDealer) {
-                throw new IllegalArgumentException(
-                        "Vehicle ID " + v.getVehicleId() + " không thuộc quản lý của dealer này."
-                );
-            }
+
         }
 
         promo.setVehicles(vehicles);
-        promo.setCustomers(new HashSet<>());
 
         return promo;
     }
