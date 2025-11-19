@@ -213,7 +213,6 @@ public class VehicleServiceImpl implements VehicleService {
                 .heightMm(v.getHeightMm())
                 .priceRetail(v.getPriceRetail())
                 .imageUrl(v.getImageUrl())
-                .finalPrice(calculateDiscountedPrice(v))
                 .status(v.getStatus() != null ? v.getStatus().name() : null)
                 .manufactureYear(v.getManufactureYear())
                 .build();

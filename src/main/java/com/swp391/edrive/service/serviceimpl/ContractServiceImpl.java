@@ -7,6 +7,7 @@ import com.swp391.edrive.enums.ContractStatus;
 import com.swp391.edrive.mapper.contract.IContractMapper;
 import com.swp391.edrive.repository.*;
 import com.swp391.edrive.service.ContractService;
+import com.swp391.edrive.service.NotificationService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ public class ContractServiceImpl implements ContractService {
     private final OrderRepository orderRepo;
     private final ManufacturerInventoryRepository manufacturerInventoryRepo;
     private final DealerInventoryRepository dealerInventoryRepo;
+    private final NotificationService notificationService;
 
     @Override
     public List<ContractResponse> getAllContracts() {
@@ -341,6 +343,8 @@ public class ContractServiceImpl implements ContractService {
             contract.setPdfFilename(filename);
             contract.setPdfUploadedAt(LocalDateTime.now());
             contractRepo.save(contract);
+
+            notificationService.createNotificationForUploadedContract(contract);
 
             String fileUrl = "http://localhost:8080/uploads/contracts/" + filename;
             Dealer dealer = contract.getDealer();

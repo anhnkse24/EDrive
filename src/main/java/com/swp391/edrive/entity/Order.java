@@ -3,11 +3,14 @@ package com.swp391.edrive.entity;
 import com.swp391.edrive.enums.OrderStatus;
 import com.swp391.edrive.enums.PaymentStatus;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 @Entity
 @Table(name = "orders")
@@ -20,6 +23,10 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "dealer_id")
     private Dealer dealer;
+
+    @ManyToOne
+    @JoinColumn(name = "customer_id")
+    private Customer customer;  // Khách hàng (nếu order từ quotation)
 
     @ManyToOne
     @JoinColumn(name = "created_by")
