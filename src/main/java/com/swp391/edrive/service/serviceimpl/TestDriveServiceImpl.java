@@ -5,6 +5,7 @@ import com.swp391.edrive.dto.request.TestDriveStatusRequest;
 import com.swp391.edrive.dto.response.TestDriveResponse;
 import com.swp391.edrive.entity.*;
 import com.swp391.edrive.enums.TestDriveStatus;
+import com.swp391.edrive.enums.TestDriveStatusForStaff;
 import com.swp391.edrive.repository.*;
 import com.swp391.edrive.service.TestDriveService;
 import jakarta.persistence.EntityNotFoundException;
@@ -59,7 +60,8 @@ public class TestDriveServiceImpl implements TestDriveService {
                 dealer,
                 vehicle,
                 request.getScheduleDatetime(),
-                TestDriveStatus.PENDING // Luôn tạo với status PENDING
+                TestDriveStatus.PENDING,
+                TestDriveStatusForStaff.PENDING
         );
 
         testDriveRepository.save(testDrive);
@@ -120,6 +122,10 @@ public class TestDriveServiceImpl implements TestDriveService {
             throw new EntityNotFoundException("Không có quyền thay đổi trạng thái lịch lái thử của Dealer khác");
 
         testDrive.setStatus(request.getStatus());
+
+        if (request.getStatusForStaff() != null) {
+            testDrive.setStatusForStaff(request.getStatusForStaff());
+        }
 
         // Nếu status là COMPLETED, tự động set completedAt
         if (request.getStatus() == TestDriveStatus.COMPLETED) {
@@ -185,6 +191,7 @@ public class TestDriveServiceImpl implements TestDriveService {
                 .scheduleDatetime(testDrive.getScheduleDatetime())
                 .completedAt(testDrive.getCompletedAt())
                 .status(testDrive.getStatus())
+                .statusForStaff(testDrive.getStatusForStaff())
                 .cancelReason(testDrive.getCancelReason())
                 .build();
     }

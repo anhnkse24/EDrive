@@ -1,6 +1,7 @@
 package com.swp391.edrive.dto.response;
 
 import com.swp391.edrive.enums.TestDriveStatus;
+import com.swp391.edrive.enums.TestDriveStatusForStaff;
 import lombok.Builder;
 import lombok.Data;
 
@@ -19,5 +20,6 @@ public class TestDriveResponse {
     private LocalDateTime scheduleDatetime;
     private LocalDateTime completedAt;
     private TestDriveStatus status;
+    private TestDriveStatusForStaff statusForStaff;
     private String cancelReason;
 }

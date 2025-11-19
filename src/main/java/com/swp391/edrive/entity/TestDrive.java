@@ -1,6 +1,7 @@
 package com.swp391.edrive.entity;
 
 import com.swp391.edrive.enums.TestDriveStatus;
+import com.swp391.edrive.enums.TestDriveStatusForStaff;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -48,11 +49,15 @@ public class TestDrive {
     @Enumerated(EnumType.STRING)
     private TestDriveStatus status;
 
-    public TestDrive(Customer customer, Dealer dealer, Vehicle vehicle, LocalDateTime scheduleDatetime, TestDriveStatus status) {
+    @Enumerated(EnumType.STRING)
+    private TestDriveStatusForStaff statusForStaff;
+
+    public TestDrive(Customer customer, Dealer dealer, Vehicle vehicle, LocalDateTime scheduleDatetime, TestDriveStatus status,  TestDriveStatusForStaff statusForStaff) {
         this.customer = customer;
         this.dealer = dealer;
         this.vehicle = vehicle;
         this.scheduleDatetime = scheduleDatetime;
         this.status = status;
+        this.statusForStaff = statusForStaff;
     }
 }
