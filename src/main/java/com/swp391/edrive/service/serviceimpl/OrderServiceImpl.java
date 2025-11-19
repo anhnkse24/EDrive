@@ -234,11 +234,13 @@ public class OrderServiceImpl implements OrderService {
         order.setVatAmount(vatAmount);
         order.setTotalPrice(grandTotal);
 
+        order.setOrderItems(orderItems);
+
         // Lưu đơn hàng và các item
         Order savedOrder = orderRepo.save(order);
         orderItemRepo.saveAll(orderItems);
 
-        notificationService.createAdminNotificationForDealerOrder(order.getOrderId());
+        notificationService.createAdminNotificationForDealerOrder(savedOrder.getOrderId());
 
         // Trả về thông tin chi tiết đơn hàng
         return buildOrderSummaryResponse(savedOrder, orderItems);
@@ -380,7 +382,7 @@ public class OrderServiceImpl implements OrderService {
 
             order.setPaymentImage(uploadFile.getAbsolutePath());
             orderRepo.save(order);
-
+            notificationService.createAdminNotificationForUploadedBill(orderId);
             return "Tải lên hóa đơn thành công. Tệp: " + uploadFile.getAbsolutePath();
         } catch (IOException e) {
             throw new RuntimeException("Lỗi khi tải lên tệp hóa đơn: " + e.getMessage(), e);

@@ -7,6 +7,7 @@ import com.swp391.edrive.entity.*;
 import com.swp391.edrive.enums.TestDriveStatus;
 import com.swp391.edrive.enums.TestDriveStatusForStaff;
 import com.swp391.edrive.repository.*;
+import com.swp391.edrive.service.NotificationService;
 import com.swp391.edrive.service.TestDriveService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class TestDriveServiceImpl implements TestDriveService {
     private final DealerRepository dealerRepository;
     private final VehicleRepository vehicleRepository;
     private final NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
 
     @Override
     public List<TestDriveResponse> getAllTestDrives() {
@@ -73,15 +75,8 @@ public class TestDriveServiceImpl implements TestDriveService {
                 request.getScheduleDatetime()
         );
 
-        Notification notification = Notification.builder()
-                .dealer(dealer)
-                .title("Lịch lái thử mới")
-                .message(message)
-                .isRead(false)
-                .createdAt(LocalDateTime.now())
-                .build();
+        notificationService.createNotificationForTestDrive(dealerId, testDrive.getTestdriveId());
 
-        notificationRepository.save(notification);
 
 
         return mapToResponse(testDrive);
