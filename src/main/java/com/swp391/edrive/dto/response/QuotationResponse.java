@@ -53,10 +53,6 @@ public class QuotationResponse {
     // Dịch vụ bổ sung (MỚI - danh sách dịch vụ động)
     private List<SelectedServiceResponse> selectedServices;
 
-    // Dịch vụ bổ sung (CŨ - deprecated, giữ lại để tương thích)
-    @Deprecated
-    private AdditionalServicesResponse additionalServices;
-
     // Khuyến mãi đã áp dụng
     private List<AppliedPromotionResponse> appliedPromotions;
 

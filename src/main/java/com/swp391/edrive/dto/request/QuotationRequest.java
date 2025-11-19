@@ -16,4 +16,7 @@ public class QuotationRequest {
 
     // Danh sách ID dịch vụ được chọn từ catalog
     private List<Long> selectedServiceIds; // Danh sách ID các dịch vụ được chọn
+
+    // Danh sách ID promotion được chọn bởi nhân viên
+    private List<Long> selectedPromotionIds; // Danh sách ID các promotion được nhân viên chọn
 }

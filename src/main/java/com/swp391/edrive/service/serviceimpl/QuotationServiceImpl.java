@@ -60,8 +60,14 @@ public class QuotationServiceImpl implements QuotationService {
         // Tính toán giá trị báo giá
         BigDecimal unitPrice = vehicle.getPriceRetail(); // Giá xe ban đầu
 
-        // Tìm các promotion phù hợp và tính giảm giá
-        PromotionCalculationResult promotionResult = calculatePromotionDiscountWithDetails(vehicle, customer, dealer, unitPrice);
+        // Áp dụng promotion được nhân viên chọn (thay vì tự động tìm)
+        PromotionCalculationResult promotionResult = applySelectedPromotions(
+            quotationRequest.getSelectedPromotionIds(),
+            vehicle,
+            customer,
+            dealer,
+            unitPrice
+        );
         BigDecimal promotionDiscountAmount = promotionResult.getTotalDiscount();
         List<AppliedPromotionInfo> appliedPromotions = promotionResult.getAppliedPromotions();
 
@@ -186,7 +192,6 @@ public class QuotationServiceImpl implements QuotationService {
                 .quotationStatus(savedQuotation.getQuotationStatus() != null ? savedQuotation.getQuotationStatus().name() : "PENDING")
                 // Dịch vụ bổ sung
                 .selectedServices(selectedServiceResponses)
-                .additionalServices(null) // Deprecated field, set to null
                 // Khuyến mãi đã áp dụng
                 .appliedPromotions(buildAppliedPromotionsResponse(appliedPromotions))
                 // Chi tiết giá
@@ -248,58 +253,85 @@ public class QuotationServiceImpl implements QuotationService {
     }
 
     /**
-     * Tính toán giảm giá từ các promotion phù hợp (trả về chi tiết)
+     * Áp dụng các promotion được nhân viên chọn (thay vì tự động tìm)
      */
-    private PromotionCalculationResult calculatePromotionDiscountWithDetails(Vehicle vehicle, Customer customer, Dealer dealer, BigDecimal unitPrice) {
-        // Lấy tất cả promotion đang hoạt động của dealer
-        List<Promotion> dealerPromotions = promotionRepository.findByDealer_DealerId(dealer.getDealerId());
+    private PromotionCalculationResult applySelectedPromotions(
+            List<Long> selectedPromotionIds,
+            Vehicle vehicle,
+            Customer customer,
+            Dealer dealer,
+            BigDecimal unitPrice) {
 
-        LocalDate today = LocalDate.now();
         BigDecimal totalDiscount = BigDecimal.ZERO;
         List<AppliedPromotionInfo> appliedPromotions = new java.util.ArrayList<>();
 
-        for (Promotion promo : dealerPromotions) {
-            // Kiểm tra promotion còn hiệu lực
+        // Nếu không chọn promotion nào, trả về kết quả rỗng
+        if (selectedPromotionIds == null || selectedPromotionIds.isEmpty()) {
+            return new PromotionCalculationResult(BigDecimal.ZERO, appliedPromotions);
+        }
+
+        // Lấy các promotion được chọn
+        List<Promotion> selectedPromotions = promotionRepository.findAllById(selectedPromotionIds);
+
+        // Kiểm tra tất cả promotion có tồn tại
+        if (selectedPromotions.size() != selectedPromotionIds.size()) {
+            throw new RuntimeException("Một số khuyến mãi không tồn tại trong hệ thống");
+        }
+
+        LocalDate today = LocalDate.now();
+
+        for (Promotion promo : selectedPromotions) {
+            // Validation 1: Kiểm tra promotion thuộc về dealer
+            if (!promo.getDealer().getDealerId().equals(dealer.getDealerId())) {
+                throw new RuntimeException("Khuyến mãi '" + promo.getTitle() + "' không thuộc về đại lý này");
+            }
+
+            // Validation 2: Kiểm tra promotion còn hiệu lực
             if (promo.getStartDate() != null && today.isBefore(promo.getStartDate())) {
-                continue; // Chưa bắt đầu
+                throw new RuntimeException("Khuyến mãi '" + promo.getTitle() + "' chưa bắt đầu");
             }
             if (promo.getEndDate() != null && today.isAfter(promo.getEndDate())) {
-                continue; // Đã hết hạn
+                throw new RuntimeException("Khuyến mãi '" + promo.getTitle() + "' đã hết hạn");
             }
 
-            // Kiểm tra promotion có áp dụng cho vehicle hoặc customer không
+            // Validation 3: Kiểm tra promotion có áp dụng được cho vehicle/customer không
             boolean isApplicable = false;
+            String notApplicableReason = "";
 
             if (promo.getApplicableTo() == PromoTarget.VEHICLE) {
-                // Kiểm tra xe có trong danh sách vehicles của promotion không
                 if (promo.getVehicles() != null && promo.getVehicles().contains(vehicle)) {
                     isApplicable = true;
+                } else {
+                    notApplicableReason = "không áp dụng cho xe " + vehicle.getModelName();
                 }
             } else if (promo.getApplicableTo() == PromoTarget.CUSTOMER) {
-                // Kiểm tra customer có trong danh sách customers của promotion không
                 if (promo.getCustomers() != null && promo.getCustomers().contains(customer)) {
                     isApplicable = true;
+                } else {
+                    notApplicableReason = "không áp dụng cho khách hàng " + customer.getFullName();
                 }
             }
 
-            // Nếu áp dụng được, tính giảm giá
-            if (isApplicable) {
-                BigDecimal discount = BigDecimal.ZERO;
-
-                if (promo.getDiscountType() == DiscountType.PERCENTAGE) {
-                    // Giảm theo phần trăm
-                    discount = unitPrice.multiply(BigDecimal.valueOf(promo.getDiscountValue()))
-                            .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-                } else if (promo.getDiscountType() == DiscountType.FIXED_AMOUNT) {
-                    // Giảm số tiền cố định
-                    discount = BigDecimal.valueOf(promo.getDiscountValue());
-                }
-
-                totalDiscount = totalDiscount.add(discount);
-
-                // Lưu thông tin promotion đã áp dụng
-                appliedPromotions.add(new AppliedPromotionInfo(promo, discount));
+            if (!isApplicable) {
+                throw new RuntimeException("Khuyến mãi '" + promo.getTitle() + "' " + notApplicableReason);
             }
+
+            // Tính giảm giá
+            BigDecimal discount = BigDecimal.ZERO;
+
+            if (promo.getDiscountType() == DiscountType.PERCENTAGE) {
+                // Giảm theo phần trăm
+                discount = unitPrice.multiply(BigDecimal.valueOf(promo.getDiscountValue()))
+                        .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+            } else if (promo.getDiscountType() == DiscountType.FIXED_AMOUNT) {
+                // Giảm số tiền cố định
+                discount = BigDecimal.valueOf(promo.getDiscountValue());
+            }
+
+            totalDiscount = totalDiscount.add(discount);
+
+            // Lưu thông tin promotion đã áp dụng
+            appliedPromotions.add(new AppliedPromotionInfo(promo, discount));
         }
 
         // Đảm bảo tổng giảm giá không vượt quá giá xe
@@ -476,7 +508,6 @@ public class QuotationServiceImpl implements QuotationService {
                 .quotationStatus(quotation.getQuotationStatus() != null ? quotation.getQuotationStatus().name() : "PENDING")
                 // Dịch vụ bổ sung
                 .selectedServices(selectedServiceResponses)
-                .additionalServices(null)
                 // Khuyến mãi đã áp dụng
                 .appliedPromotions(appliedPromotionsResponse)
                 // Chi tiết giá
