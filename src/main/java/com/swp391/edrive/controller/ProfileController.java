@@ -23,9 +23,6 @@ public class ProfileController {
 
     private final ProfileService profileService;
 
-    /**
-     * 📘 Xem hồ sơ của người dùng hiện tại
-     */
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Lấy hồ sơ của người dùng hiện tại")
@@ -34,9 +31,6 @@ public class ProfileController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * ✏️ Cập nhật hồ sơ cá nhân
-     */
     @PutMapping("/me")
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Cập nhật hồ sơ người dùng hiện tại")

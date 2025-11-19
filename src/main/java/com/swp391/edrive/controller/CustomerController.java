@@ -1,7 +1,6 @@
 package com.swp391.edrive.controller;
 
 import com.swp391.edrive.dto.request.CustomerRequest;
-import com.swp391.edrive.dto.response.CustomerResponse;
 import com.swp391.edrive.dto.response.ResponseObject;
 import com.swp391.edrive.service.CustomerService;
 import io.swagger.v3.oas.annotations.Operation;

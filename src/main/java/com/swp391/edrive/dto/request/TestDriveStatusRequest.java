@@ -2,7 +2,6 @@ package com.swp391.edrive.dto.request;
 
 import com.swp391.edrive.enums.TestDriveStatus;
 import com.swp391.edrive.enums.TestDriveStatusForStaff;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 

@@ -16,20 +16,19 @@ public class Profile {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long profileId;
 
-    private String fullName;        // Họ và tên
-    private String username;        // Tên đăng nhập
-    private String email;           // Email
-    private String phoneNumber;     // Số điện thoại
-    private String agencyName;      // Tên đại lý
-    private String contactPerson;   // Người liên hệ
-    private String agencyPhone;     // SĐT đại lý
-    private String streetAddress;   // Số nhà và tên đường
-    private String ward;            // Phường/Xã
-    private String district;        // Quận/Huyện
-    private String city;            // Tỉnh/Thành phố
-    private String fullAddress;     // Địa chỉ đầy đủ
+    private String fullName;
+    private String username;
+    private String email;
+    private String phoneNumber;
+    private String agencyName;
+    private String contactPerson;
+    private String agencyPhone;
+    private String streetAddress;
+    private String ward;
+    private String district;
+    private String city;
+    private String fullAddress;
 
-    // Quan hệ (tuỳ chọn) nếu profile thuộc về một Dealer
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dealer_id")
     private Dealer dealer;

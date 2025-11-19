@@ -21,10 +21,10 @@ public class AdditionalServices {
     private String serviceName;  // Tên dịch vụ (VD: "Phim cách nhiệt cao cấp", "Bộ sạc Wallbox 7kW")
 
     @Column(columnDefinition = "TEXT")
-    private String description;  // Mô tả chi tiết dịch vụ
+    private String description;
 
     @Column(precision = 14, scale = 2, nullable = false)
-    private BigDecimal price;  // Giá của dịch vụ
+    private BigDecimal price;
 
     @Column(nullable = false)
     private Boolean isActive = true;  // Trạng thái dịch vụ (có đang hoạt động không)

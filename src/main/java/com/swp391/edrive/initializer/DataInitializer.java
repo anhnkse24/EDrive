@@ -3,6 +3,7 @@ package com.swp391.edrive.initializer;
 import com.swp391.edrive.entity.*;
 import com.swp391.edrive.enums.DiscountType;
 import com.swp391.edrive.enums.PromoTarget;
+import com.swp391.edrive.enums.TestDriveStatusForStaff;
 import com.swp391.edrive.enums.VehicleStatus;
 import com.swp391.edrive.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -1191,6 +1192,7 @@ public class DataInitializer implements CommandLineRunner {
                 td1.setVehicle(vehicle1);
                 td1.setScheduleDatetime(LocalDateTime.now().plusDays(2));
                 td1.setStatus(com.swp391.edrive.enums.TestDriveStatus.PENDING);
+                td1.setStatusForStaff(com.swp391.edrive.enums.TestDriveStatusForStaff.PENDING);
 
                 // TestDrive 2 — Completed
                 TestDrive td2 = new TestDrive();
@@ -1200,6 +1202,8 @@ public class DataInitializer implements CommandLineRunner {
                 td2.setScheduleDatetime(LocalDateTime.now().minusDays(1));
                 td2.setCompletedAt(LocalDateTime.now().minusHours(3));
                 td2.setStatus(com.swp391.edrive.enums.TestDriveStatus.COMPLETED);
+                td2.setStatusForStaff(TestDriveStatusForStaff.COMPLETED);
+
 
                 // TestDrive 3 — Cancelled
                 TestDrive td3 = new TestDrive();
@@ -1208,6 +1212,7 @@ public class DataInitializer implements CommandLineRunner {
                 td3.setVehicle(vehicle2);
                 td3.setScheduleDatetime(LocalDateTime.now().plusDays(5));
                 td3.setStatus(com.swp391.edrive.enums.TestDriveStatus.CANCELLED);
+                td3.setStatusForStaff(TestDriveStatusForStaff.CANCELLED);
                 td3.setCancelReason("Khách bận công tác, hủy lịch.");
 
                 testDriveRepository.saveAll(List.of(td1, td2, td3));

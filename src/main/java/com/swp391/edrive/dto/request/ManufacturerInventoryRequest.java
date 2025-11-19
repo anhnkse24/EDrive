@@ -5,9 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * Request dùng cho việc tạo mới và cập nhật kho xe của nhà sản xuất.
- */
 @Getter
 @Setter
 public class ManufacturerInventoryRequest {

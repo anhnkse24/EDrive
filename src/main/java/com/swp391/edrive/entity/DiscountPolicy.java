@@ -30,6 +30,6 @@ public class DiscountPolicy {
     private Boolean isActive = true;
 
     @Column(length = 500)
-    private String description; // Mô tả chính sách chiết khấu
+    private String description;
 }
 

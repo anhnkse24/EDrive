@@ -31,7 +31,6 @@ public class ProfileServiceImpl implements ProfileService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
-        // ✅ Cập nhật thông tin người dùng
         if (req.getFullName() != null && !req.getFullName().isBlank())
             user.setFullName(req.getFullName());
         if (req.getEmail() != null && !req.getEmail().isBlank())

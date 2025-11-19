@@ -1,7 +1,5 @@
 package com.swp391.edrive.dto.response;
 
-import com.swp391.edrive.entity.Dealer;
-import com.swp391.edrive.entity.User;
 import lombok.Builder;
 import lombok.Data;
 

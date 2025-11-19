@@ -28,7 +28,7 @@ public class VerificationToken {
     public VerificationToken(String token, User user) {
         this.token = token;
         this.user = user;
-        this.expiryDate = null; // No expiration for dealer verification tokens
+        this.expiryDate = null;
     }
 
     public VerificationToken(String token, User user, int hoursValid) {
@@ -38,7 +38,6 @@ public class VerificationToken {
     }
 
     public boolean isExpired() {
-        // If expiryDate is null, token never expires (for dealer registration)
         if (expiryDate == null) {
             return false;
         }
