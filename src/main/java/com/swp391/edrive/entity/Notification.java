@@ -18,7 +18,7 @@ public class Notification {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "dealer_id", nullable = false)
+    @JoinColumn(name = "dealer_id")
     private Dealer dealer;
 
     private String title;
@@ -26,4 +26,6 @@ public class Notification {
     private Boolean isRead = false;
 
     private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(nullable = false)
+    private String receiverType;
 }
