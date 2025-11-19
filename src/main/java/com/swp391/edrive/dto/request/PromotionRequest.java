@@ -33,5 +33,4 @@ public class PromotionRequest {
 
     private Set<Long> vehicleIds;
 
-    private Set<Long> customerIds;
 }

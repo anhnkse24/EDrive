@@ -24,7 +24,6 @@ public class PromotionServiceImpl implements PromotionService {
     private final PromotionRepository promotionRepository;
     private final VehicleRepository vehicleRepository;
     private final DealerRepository dealerRepository;
-    private final CustomerRepository customerRepository;
     private final DealerInventoryRepository dealerInventoryRepository;
 
 
@@ -87,91 +86,44 @@ public class PromotionServiceImpl implements PromotionService {
 
     private Promotion mapRequestToEntity(PromotionRequest req, Promotion promo, Dealer dealer) {
 
-        // Set các field cơ bản
         promo.setTitle(req.getTitle());
         promo.setDescription(req.getDescription());
         promo.setDiscountType(req.getDiscountType());
         promo.setDiscountValue(req.getDiscountValue());
         promo.setStartDate(req.getStartDate());
         promo.setEndDate(req.getEndDate());
-        promo.setApplicableTo(req.getApplicableTo());
+        promo.setApplicableTo(PromoTarget.VEHICLE);
 
-        // Không cho gửi customerIds và vehicleIds cùng lúc
-        if (req.getCustomerIds() != null && !req.getCustomerIds().isEmpty() &&
-                req.getVehicleIds() != null && !req.getVehicleIds().isEmpty()) {
-
-            throw new IllegalArgumentException("Không thể gửi cả customerIds và vehicleIds cùng lúc.");
+        if (req.getVehicleIds() == null || req.getVehicleIds().isEmpty()) {
+            throw new IllegalArgumentException("Phải cung cấp vehicleIds cho khuyến mãi.");
         }
 
-        // ========================= CUSTOMER =========================
-        if (req.getApplicableTo() == PromoTarget.CUSTOMER) {
+        List<Vehicle> existingVehicles = vehicleRepository.findAllById(req.getVehicleIds());
 
-            if (req.getCustomerIds() == null || req.getCustomerIds().isEmpty()) {
-                throw new IllegalArgumentException("Phải cung cấp customerIds khi applicableTo = CUSTOMER");
-            }
+        if (existingVehicles.size() != req.getVehicleIds().size()) {
+            throw new IllegalArgumentException("Một hoặc nhiều vehicleId không tồn tại trong hệ thống.");
+        }
 
-            // Lấy danh sách customer tồn tại
-            List<Customer> existingCustomers = customerRepository.findAllById(req.getCustomerIds());
+        Set<Vehicle> vehicles = new HashSet<>(existingVehicles);
 
-            // Check ID không tồn tại
-            if (existingCustomers.size() != req.getCustomerIds().size()) {
-                throw new IllegalArgumentException("Một hoặc nhiều customerId không tồn tại trong hệ thống.");
-            }
-
-            // Check customer thuộc dealer
-            for (Customer cus : existingCustomers) {
-                if (!cus.getDealer().getDealerId().equals(dealer.getDealerId())) {
-                    throw new IllegalArgumentException(
-                            "Customer ID " + cus.getCustomerId() + " không thuộc dealer này."
+        for (Vehicle v : vehicles) {
+            boolean belongsToDealer =
+                    dealerInventoryRepository.existsByDealer_DealerIdAndVehicle_VehicleId(
+                            dealer.getDealerId(), v.getVehicleId()
                     );
-                }
-            }
 
-            promo.setCustomers(new HashSet<>(existingCustomers));
-            promo.setVehicles(new HashSet<>());
-            return promo;
+            if (!belongsToDealer) {
+                throw new IllegalArgumentException(
+                        "Vehicle ID " + v.getVehicleId() + " không thuộc quản lý của dealer này."
+                );
+            }
         }
 
-        // ========================= VEHICLE =========================
-        if (req.getApplicableTo() == PromoTarget.VEHICLE) {
-
-            if (req.getVehicleIds() == null || req.getVehicleIds().isEmpty()) {
-                throw new IllegalArgumentException("Phải cung cấp vehicleIds khi applicableTo = VEHICLE");
-            }
-
-            // Lấy danh sách vehicle tồn tại
-            List<Vehicle> existingVehicles = vehicleRepository.findAllById(req.getVehicleIds());
-
-            // Check ID không tồn tại
-            if (existingVehicles.size() != req.getVehicleIds().size()) {
-                throw new IllegalArgumentException("Một hoặc nhiều vehicleId không tồn tại trong hệ thống.");
-            }
-
-            Set<Vehicle> vehicles = new HashSet<>(existingVehicles);
-
-            // Check vehicle thuộc dealer qua DealerInventory
-            for (Vehicle v : vehicles) {
-                boolean belongsToDealer =
-                        dealerInventoryRepository.existsByDealer_DealerIdAndVehicle_VehicleId(
-                                dealer.getDealerId(), v.getVehicleId()
-                        );
-
-                if (!belongsToDealer) {
-                    throw new IllegalArgumentException(
-                            "Vehicle ID " + v.getVehicleId() + " không thuộc quản lý của dealer này."
-                    );
-                }
-            }
-
-            promo.setVehicles(vehicles);
-            promo.setCustomers(new HashSet<>());
-            return promo;
-        }
+        promo.setVehicles(vehicles);
+        promo.setCustomers(new HashSet<>());
 
         return promo;
     }
-
-
 
     private PromotionResponse toResponse(Promotion promo) {
         return PromotionResponse.builder()
@@ -188,11 +140,6 @@ public class PromotionServiceImpl implements PromotionService {
                         .stream()
                         .map(Vehicle::getVehicleId)
                         .collect(Collectors.toList()))
-                .customerIds(
-                        promo.getCustomers().stream()
-                                .map(Customer::getCustomerId)
-                                .collect(Collectors.toList())
-                )
                 .build();
     }
 }

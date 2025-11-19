@@ -146,8 +146,6 @@ public class VehicleServiceImpl implements VehicleService {
     }
 
 
-
-
     // === UPDATE ===
     @Override
     @Transactional

@@ -1088,10 +1088,6 @@ public class DataInitializer implements CommandLineRunner {
             Dealer dealer3 = dealersInDb.get(2);
             Dealer dealer4 = dealersInDb.get(3);
 
-            // Lấy customer mẫu
-            List<Customer> customersDealer1 = customerRepository.findByDealer_DealerId(dealer1.getDealerId());
-            List<Customer> customersDealer2 = customerRepository.findByDealer_DealerId(dealer2.getDealerId());
-
             // ================= Promo 1 =================
             Promotion promo1 = new Promotion();
             promo1.setTitle("Khuyến mãi đầu năm - VinFast VF 8");
@@ -1100,14 +1096,17 @@ public class DataInitializer implements CommandLineRunner {
             promo1.setDiscountValue(5.0);
             promo1.setStartDate(LocalDate.now().minusDays(10));
             promo1.setEndDate(LocalDate.now().plusDays(20));
-            promo1.setApplicableTo(PromoTarget.CUSTOMER);
+            promo1.setApplicableTo(PromoTarget.VEHICLE);
             promo1.setDealer(dealer1);
 
-            Set<Customer> promo1Customers =
-                    new HashSet<>(customersDealer1.subList(0, Math.min(3, customersDealer1.size())));
-
-            // Gán 2 chiều
-            promo1.setCustomers(promo1Customers);
+            // Gắn 2 vehicle cho dealer 1
+            promo1.setVehicles(
+                    vehicles.stream()
+                            .filter(v -> dealerInventoryRepository.existsByDealer_DealerIdAndVehicle_VehicleId(
+                                    dealer1.getDealerId(), v.getVehicleId()))
+                            .limit(2)
+                            .collect(Collectors.toSet())
+            );
 
 
             // ================= Promo 2 =================
@@ -1118,13 +1117,16 @@ public class DataInitializer implements CommandLineRunner {
             promo2.setDiscountValue(100_000_000.0);
             promo2.setStartDate(LocalDate.now().minusDays(5));
             promo2.setEndDate(LocalDate.now().plusDays(25));
-            promo2.setApplicableTo(PromoTarget.CUSTOMER);
+            promo2.setApplicableTo(PromoTarget.VEHICLE);
             promo2.setDealer(dealer2);
 
-            Set<Customer> promo2Customers =
-                    new HashSet<>(customersDealer2.subList(0, Math.min(2, customersDealer2.size())));
-
-            promo2.setCustomers(promo2Customers);
+            promo2.setVehicles(
+                    vehicles.stream()
+                            .filter(v -> dealerInventoryRepository.existsByDealer_DealerIdAndVehicle_VehicleId(
+                                    dealer2.getDealerId(), v.getVehicleId()))
+                            .limit(2)
+                            .collect(Collectors.toSet())
+            );
 
 
             // ================= Promo 3 =================
@@ -1138,11 +1140,12 @@ public class DataInitializer implements CommandLineRunner {
             promo3.setApplicableTo(PromoTarget.VEHICLE);
             promo3.setDealer(dealer3);
 
-            promo3.setVehicles(vehicles.stream()
-                    .filter(v -> dealerInventoryRepository.existsByDealer_DealerIdAndVehicle_VehicleId(
-                            dealer3.getDealerId(), v.getVehicleId()))
-                    .limit(2)
-                    .collect(Collectors.toSet())
+            promo3.setVehicles(
+                    vehicles.stream()
+                            .filter(v -> dealerInventoryRepository.existsByDealer_DealerIdAndVehicle_VehicleId(
+                                    dealer3.getDealerId(), v.getVehicleId()))
+                            .limit(3)
+                            .collect(Collectors.toSet())
             );
 
 
@@ -1157,15 +1160,15 @@ public class DataInitializer implements CommandLineRunner {
             promo4.setApplicableTo(PromoTarget.VEHICLE);
             promo4.setDealer(dealer4);
 
-            promo4.setVehicles(vehicles.stream()
-                    .filter(v -> dealerInventoryRepository.existsByDealer_DealerIdAndVehicle_VehicleId(
-                            dealer4.getDealerId(), v.getVehicleId()))
-                    .limit(3)
-                    .collect(Collectors.toSet())
+            promo4.setVehicles(
+                    vehicles.stream()
+                            .filter(v -> dealerInventoryRepository.existsByDealer_DealerIdAndVehicle_VehicleId(
+                                    dealer4.getDealerId(), v.getVehicleId()))
+                            .limit(3)
+                            .collect(Collectors.toSet())
             );
 
             promotions.addAll(List.of(promo1, promo2, promo3, promo4));
-
             promotionRepository.saveAll(promotions);
 
             System.out.println("✅ Đã khởi tạo " + promotions.size() + " promotions");

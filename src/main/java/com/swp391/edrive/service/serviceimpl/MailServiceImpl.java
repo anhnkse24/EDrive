@@ -22,7 +22,7 @@ public class MailServiceImpl implements MailService {
     public void sendDealerApprovalRequestToAdmin(String adminEmail, String dealerName, String fullName, String email, String phone, String address, String verificationToken) {
         SimpleMailMessage msg = new SimpleMailMessage();
         msg.setTo(adminEmail);
-        msg.setSubject("🔔 Yêu cầu phê duyệt đại lý mới: " + dealerName);
+        msg.setSubject("Yêu cầu phê duyệt đại lý mới: " + dealerName);
         
         String verificationUrl = dealerVerificationUrl + "?token=" + verificationToken;
         

@@ -56,9 +56,6 @@ public class CustomerServiceImpl implements CustomerService {
         return toResponse(customerRepository.save(c));
     }
 
-    // =============================
-    // DELETE
-    // =============================
     @Override
     @Transactional
     public void deleteCustomer(Long dealerId, Long customerId) {

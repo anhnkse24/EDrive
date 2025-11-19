@@ -228,7 +228,7 @@ public class QuotationServiceImpl implements QuotationService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy báo giá với ID: " + quotationId));
 
         // Kiểm tra trạng thái hiện tại phải là PENDING
-        if (quotation.getQuotationStatus() != QuotationStatus.PENDING) {
+        if (quotation.getQuotationStatus() != com.swp391.edrive.enums.QuotationStatus.PENDING) {
             throw new IllegalStateException("Chỉ có thể cập nhật trạng thái cho báo giá đang ở trạng thái PENDING");
         }
 
@@ -239,9 +239,9 @@ public class QuotationServiceImpl implements QuotationService {
 
         // Cập nhật status
         if ("ACCEPTED".equals(status)) {
-            quotation.setQuotationStatus(QuotationStatus.ACCEPTED);
+            quotation.setQuotationStatus(com.swp391.edrive.enums.QuotationStatus.ACCEPTED);
         } else {
-            quotation.setQuotationStatus(QuotationStatus.REJECTED);
+            quotation.setQuotationStatus(com.swp391.edrive.enums.QuotationStatus.REJECTED);
             // Có thể lưu lý do từ chối vào note field nếu cần (hiện tại entity chưa có)
         }
 
@@ -302,12 +302,7 @@ public class QuotationServiceImpl implements QuotationService {
                 } else {
                     notApplicableReason = "không áp dụng cho xe " + vehicle.getModelName();
                 }
-            } else if (promo.getApplicableTo() == PromoTarget.CUSTOMER) {
-                if (promo.getCustomers() != null && promo.getCustomers().contains(customer)) {
-                    isApplicable = true;
-                } else {
-                    notApplicableReason = "không áp dụng cho khách hàng " + customer.getFullName();
-                }
+
             }
 
             if (!isApplicable) {
