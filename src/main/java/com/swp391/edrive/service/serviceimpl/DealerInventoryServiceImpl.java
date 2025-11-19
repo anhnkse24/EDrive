@@ -27,6 +27,7 @@ public class DealerInventoryServiceImpl implements DealerInventoryService {
         DealerInventory updated = dealerInventoryRepository.save(inventory);
 
         return new DealerInventoryDTO(
+                updated.getVehicle().getVehicleId(),
                 updated.getVehicle().getModelName(),
                 updated.getVehicle().getVersion(),
                 updated.getVehicle().getColor() != null ? updated.getVehicle().getColor().getColorName() : null,
@@ -40,6 +41,7 @@ public class DealerInventoryServiceImpl implements DealerInventoryService {
 
         return inventories.stream()
                 .map(inv -> new DealerInventoryDTO(
+                        inv.getVehicle().getVehicleId(),
                         inv.getVehicle().getModelName(),
                         inv.getVehicle().getVersion(),
                         inv.getVehicle().getColor() != null ? inv.getVehicle().getColor().getColorName() : null,
