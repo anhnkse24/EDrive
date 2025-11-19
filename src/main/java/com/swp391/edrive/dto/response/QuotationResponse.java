@@ -4,6 +4,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
@@ -34,7 +35,6 @@ public class QuotationResponse {
     private Integer heightMm;
     private String imageUrl;
     private Integer manufactureYear;
-    private String vehicleStatus;
 
     // Thông tin khách hàng đầy đủ
     private Long customerId;
@@ -48,13 +48,20 @@ public class QuotationResponse {
 
     // Thông tin thanh toán
     private String paymentMethod;
-    private String quotationStatus;  // Trạng thái báo giá: PENDING, ACCEPTED, REJECTED
+    private String quotationStatus;
 
-    // Dịch vụ bổ sung
+    // Dịch vụ bổ sung (MỚI - danh sách dịch vụ động)
+    private List<SelectedServiceResponse> selectedServices;
+
+    // Dịch vụ bổ sung (CŨ - deprecated, giữ lại để tương thích)
+    @Deprecated
     private AdditionalServicesResponse additionalServices;
 
+    // Khuyến mãi đã áp dụng
+    private List<AppliedPromotionResponse> appliedPromotions;
+
     // Chi tiết giá
-    private BigDecimal unitPrice;              // Giá gốc
+    private BigDecimal unitPrice;
     private BigDecimal promotionDiscountAmount; // Giá giảm từ khuyến mãi
     private BigDecimal additionalServicesTotal; // Tổng giá dịch vụ bổ sung
     private BigDecimal vatAmount;               // Phí VAT (10%)

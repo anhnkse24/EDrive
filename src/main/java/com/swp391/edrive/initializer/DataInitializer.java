@@ -35,10 +35,15 @@ public class DataInitializer implements CommandLineRunner {
     private final FeedbackRepository feedbackRepository;
     private final ColorRepository colorRepository;
     private final DealerInventoryRepository dealerInventoryRepository;
+    private final com.swp391.edrive.repository.AdditionalServicesRepository additionalServicesRepository;
 
 
     @Override
     public void run(String... args) throws Exception {
+        // ========== 0) SEED ADDITIONAL SERVICES (Dịch vụ bổ sung) ==========
+        initAdditionalServices();
+
+
         // ========== 1) SEED ROLES & USERS (chạy luôn, không phụ thuộc dữ liệu khác) ==========
         // 1.1 Roles
         Role adminRole = roleRepository.findById("ADMIN")
@@ -1277,6 +1282,118 @@ public class DataInitializer implements CommandLineRunner {
                     c.setHexCode(hexCode);
                     return colorRepository.save(c);
                 });
+    }
+
+    /**
+     * Khởi tạo các dịch vụ bổ sung (Additional Services)
+     */
+    private void initAdditionalServices() {
+        System.out.println("========== Initializing Additional Services ==========");
+
+        // Kiểm tra đã có dịch vụ chưa
+        if (additionalServicesRepository.count() > 0) {
+            System.out.println("Additional Services already exist. Skipping initialization.");
+            return;
+        }
+
+        List<AdditionalServices> services = new ArrayList<>();
+
+        // 1. Phim cách nhiệt cao cấp
+        AdditionalServices service1 = new AdditionalServices();
+        service1.setServiceName("Phim cách nhiệt cao cấp 3M");
+        service1.setDescription("Phim cách nhiệt 3M chính hãng, bảo vệ khỏi tia UV, giảm nhiệt độ trong xe, bảo hành 5 năm");
+        service1.setPrice(new BigDecimal("8500000"));
+        service1.setIsActive(true);
+        service1.setCategory("Bảo vệ");
+        services.add(service1);
+
+        // 2. Bộ sạc Wallbox 7kW
+        AdditionalServices service2 = new AdditionalServices();
+        service2.setServiceName("Bộ sạc Wallbox 7kW");
+        service2.setDescription("Bộ sạc nhanh tại nhà công suất 7kW, sạc đầy trong 6-8 tiếng, tiết kiệm điện năng");
+        service2.setPrice(new BigDecimal("15000000"));
+        service2.setIsActive(true);
+        service2.setCategory("Sạc điện");
+        services.add(service2);
+
+        // 3. Gói bảo hành mở rộng 2 năm
+        AdditionalServices service3 = new AdditionalServices();
+        service3.setServiceName("Gói bảo hành mở rộng 2 năm");
+        service3.setDescription("Bảo hành mở rộng chính hãng thêm 2 năm, bao gồm phụ tùng và công sửa chữa");
+        service3.setPrice(new BigDecimal("25000000"));
+        service3.setIsActive(true);
+        service3.setCategory("Bảo hành");
+        services.add(service3);
+
+        // 4. PPF toàn xe
+        AdditionalServices service4 = new AdditionalServices();
+        service4.setServiceName("PPF toàn xe");
+        service4.setDescription("Phim bảo vệ sơn toàn xe (Paint Protection Film), chống trầy xước, ố vàng và ăn mòn hóa chất");
+        service4.setPrice(new BigDecimal("45000000"));
+        service4.setIsActive(true);
+        service4.setCategory("Bảo vệ");
+        services.add(service4);
+
+        // 5. Phủ Ceramic 9H
+        AdditionalServices service5 = new AdditionalServices();
+        service5.setServiceName("Phủ Ceramic 9H");
+        service5.setDescription("Phủ nano ceramic 9H cao cấp, bảo vệ bề mặt sơn, chống bám bẩn và dễ vệ sinh");
+        service5.setPrice(new BigDecimal("12000000"));
+        service5.setIsActive(true);
+        service5.setCategory("Bảo vệ");
+        services.add(service5);
+
+        // 6. Camera hành trình 360
+        AdditionalServices service6 = new AdditionalServices();
+        service6.setServiceName("Camera hành trình 360");
+        service6.setDescription("Camera hành trình 360 độ chính hãng, ghi hình toàn cảnh xung quanh xe, hỗ trợ đỗ xe an toàn");
+        service6.setPrice(new BigDecimal("18000000"));
+        service6.setIsActive(true);
+        service6.setCategory("Camera");
+        services.add(service6);
+
+        // 7. Lót sàn cao su 3D
+        AdditionalServices service7 = new AdditionalServices();
+        service7.setServiceName("Lót sàn cao su 3D");
+        service7.setDescription("Lót sàn cao su 3D chuyên dụng, chống thấm nước, dễ vệ sinh và bền bỉ");
+        service7.setPrice(new BigDecimal("3500000"));
+        service7.setIsActive(true);
+        service7.setCategory("Nội thất");
+        services.add(service7);
+
+        // 8. Bọc ghế da cao cấp
+        AdditionalServices service8 = new AdditionalServices();
+        service8.setServiceName("Bọc ghế da Nappa cao cấp");
+        service8.setDescription("Bọc ghế da Nappa cao cấp, thoáng khí, sang trọng và êm ái");
+        service8.setPrice(new BigDecimal("28000000"));
+        service8.setIsActive(true);
+        service8.setCategory("Nội thất");
+        services.add(service8);
+
+        // 9. Hệ thống âm thanh nâng cấp
+        AdditionalServices service9 = new AdditionalServices();
+        service9.setServiceName("Hệ thống âm thanh Bose 12 loa");
+        service9.setDescription("Hệ thống âm thanh Bose 12 loa cao cấp, chất lượng âm thanh vượt trội, trải nghiệm giải trí đỉnh cao");
+        service9.setPrice(new BigDecimal("35000000"));
+        service9.setIsActive(true);
+        service9.setCategory("Giải trí");
+        services.add(service9);
+
+        // 10. Cốp điện tự động
+        AdditionalServices service10 = new AdditionalServices();
+        service10.setServiceName("Cốp điện tự động");
+        service10.setDescription("Cốp điện tự động thông minh, mở/đóng bằng cảm biến chân, tiện lợi khi mang đồ");
+        service10.setPrice(new BigDecimal("15000000"));
+        service10.setIsActive(true);
+        service10.setCategory("Tiện nghi");
+        services.add(service10);
+
+        // Lưu tất cả vào database
+        additionalServicesRepository.saveAll(services);
+
+        System.out.println("✓ Đã khởi tạo " + services.size() + " dịch vụ bổ sung");
+        services.forEach(s -> System.out.println("  - " + s.getServiceName() + ": " + s.getPrice() + " VNĐ"));
+        System.out.println("========== Additional Services Initialization Complete ==========");
     }
 
 }

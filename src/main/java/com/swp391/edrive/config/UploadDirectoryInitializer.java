@@ -9,10 +9,6 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-/**
- * Automatically initializes the upload directory when the application starts.
- * This ensures that all team members don't need to manually create the directory.
- */
 @Slf4j
 @Component
 public class UploadDirectoryInitializer {
