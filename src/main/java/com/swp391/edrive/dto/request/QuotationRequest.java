@@ -12,8 +12,6 @@ import java.util.List;
 public class QuotationRequest {
     private Long vehicleId;            // ID của chiếc xe
     private Long customerId;           // ID của khách hàng
-    private PaymentMethod paymentMethod; // Phương thức thanh toán (Trả thẳng, trả góp)
-
     // Danh sách ID dịch vụ được chọn từ catalog
     private List<Long> selectedServiceIds; // Danh sách ID các dịch vụ được chọn
 

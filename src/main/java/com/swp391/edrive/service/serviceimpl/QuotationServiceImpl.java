@@ -122,7 +122,6 @@ public class QuotationServiceImpl implements QuotationService {
         quotation.setUnitPrice(unitPrice);
         quotation.setPromotionDiscountAmount(promotionDiscountAmount);
         quotation.setPriceAfterPromotion(grandTotal);
-        quotation.setPaymentMethod(quotationRequest.getPaymentMethod());
 
         // Lưu các promotion đã áp dụng
         if (!appliedPromotions.isEmpty()) {
@@ -188,7 +187,6 @@ public class QuotationServiceImpl implements QuotationService {
                 .customerAddress(customer.getAddress())
                 .customerIdCardNo(customer.getIdCardNo())
                 // Thông tin thanh toán
-                .paymentMethod(quotationRequest.getPaymentMethod() != null ? quotationRequest.getPaymentMethod().name() : null)
                 .quotationStatus(savedQuotation.getQuotationStatus() != null ? savedQuotation.getQuotationStatus().name() : "PENDING")
                 // Dịch vụ bổ sung
                 .selectedServices(selectedServiceResponses)
