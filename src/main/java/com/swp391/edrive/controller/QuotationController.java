@@ -25,6 +25,7 @@ import java.util.Optional;
 public class QuotationController {
 
     private final QuotationService quotationService;
+    private final com.swp391.edrive.service.QuotationPdfService quotationPdfService;
 
 
     @Operation(summary = "Tạo báo giá")
@@ -103,6 +104,63 @@ public class QuotationController {
             return ResponseEntity.ok(new ResponseObject<>(200, "Quotation retrieved successfully", quotationResponse.get()));
         } else {
             return ResponseEntity.status(404).body(new ResponseObject<>(404, "Quotation not found", null));
+        }
+    }
+
+    @Operation(summary = "Export báo giá ra PDF", description = "Tải xuống báo giá dưới dạng file PDF")
+    @GetMapping("/{quotationId}/export-pdf")
+    public ResponseEntity<byte[]> exportQuotationToPdf(@PathVariable Long quotationId) {
+        try {
+            // Generate PDF
+            java.io.ByteArrayOutputStream pdfStream = quotationPdfService.generateQuotationPdf(quotationId);
+            byte[] pdfBytes = pdfStream.toByteArray();
+
+            // Set headers
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDisposition(
+                ContentDisposition.builder("attachment")
+                    .filename("Bao-gia-" + quotationId + ".pdf")
+                    .build()
+            );
+            headers.setContentLength(pdfBytes.length);
+
+            return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+
+        } catch (RuntimeException e) {
+            // Return error as plain text
+            byte[] errorBytes = ("Lỗi: " + e.getMessage()).getBytes();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.TEXT_PLAIN);
+            return new ResponseEntity<>(errorBytes, headers, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Operation(summary = "Xem trước PDF trong browser", description = "Hiển thị PDF báo giá trực tiếp trong browser")
+    @GetMapping("/{quotationId}/preview-pdf")
+    public ResponseEntity<byte[]> previewQuotationPdf(@PathVariable Long quotationId) {
+        try {
+            // Generate PDF
+            java.io.ByteArrayOutputStream pdfStream = quotationPdfService.generateQuotationPdf(quotationId);
+            byte[] pdfBytes = pdfStream.toByteArray();
+
+            // Set headers for inline display
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDisposition(
+                ContentDisposition.builder("inline")
+                    .filename("Bao-gia-" + quotationId + ".pdf")
+                    .build()
+            );
+            headers.setContentLength(pdfBytes.length);
+
+            return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+
+        } catch (RuntimeException e) {
+            byte[] errorBytes = ("Lỗi: " + e.getMessage()).getBytes();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.TEXT_PLAIN);
+            return new ResponseEntity<>(errorBytes, headers, HttpStatus.BAD_REQUEST);
         }
     }
 }

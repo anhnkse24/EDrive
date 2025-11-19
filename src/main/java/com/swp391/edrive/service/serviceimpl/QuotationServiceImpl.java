@@ -1,11 +1,13 @@
 package com.swp391.edrive.service.serviceimpl;
 
 import com.swp391.edrive.dto.request.QuotationRequest;
-import com.swp391.edrive.dto.response.AdditionalServicesResponse;
 import com.swp391.edrive.dto.response.AppliedPromotionResponse;
 import com.swp391.edrive.dto.response.QuotationResponse;
 import com.swp391.edrive.dto.response.SelectedServiceResponse;
 import com.swp391.edrive.entity.*;
+import com.swp391.edrive.enums.DiscountType;
+import com.swp391.edrive.enums.PromoTarget;
+import com.swp391.edrive.enums.QuotationStatus;
 import com.swp391.edrive.repository.*;
 import com.swp391.edrive.service.QuotationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,7 +70,7 @@ public class QuotationServiceImpl implements QuotationService {
 
         // Xử lý dịch vụ bổ sung từ database (chỉ hỗ trợ selectedServiceIds)
         BigDecimal additionalServicesTotal = BigDecimal.ZERO;
-        List<com.swp391.edrive.dto.response.SelectedServiceResponse> selectedServiceResponses = null;
+        List<SelectedServiceResponse> selectedServiceResponses = null;
 
         if (quotationRequest.getSelectedServiceIds() != null && !quotationRequest.getSelectedServiceIds().isEmpty()) {
             // Lấy các dịch vụ từ database
@@ -131,10 +133,10 @@ public class QuotationServiceImpl implements QuotationService {
         if (quotationRequest.getSelectedServiceIds() != null && !quotationRequest.getSelectedServiceIds().isEmpty()) {
             List<AdditionalServices> selectedServices = additionalServicesRepository.findAllById(quotationRequest.getSelectedServiceIds());
 
-            List<com.swp391.edrive.entity.QuotationService> quotationServices = new java.util.ArrayList<>();
+            List<QuotationServices> quotationServices = new java.util.ArrayList<>();
             for (AdditionalServices service : selectedServices) {
                 if (service.getIsActive()) {
-                    com.swp391.edrive.entity.QuotationService qs = new com.swp391.edrive.entity.QuotationService();
+                    QuotationServices qs = new QuotationServices();
                     qs.setQuotation(savedQuotation);
                     qs.setService(service);
                     qs.setPriceAtSelection(service.getPrice()); // Lưu giá tại thời điểm chọn
@@ -223,7 +225,7 @@ public class QuotationServiceImpl implements QuotationService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy báo giá với ID: " + quotationId));
 
         // Kiểm tra trạng thái hiện tại phải là PENDING
-        if (quotation.getQuotationStatus() != com.swp391.edrive.enums.QuotationStatus.PENDING) {
+        if (quotation.getQuotationStatus() != QuotationStatus.PENDING) {
             throw new IllegalStateException("Chỉ có thể cập nhật trạng thái cho báo giá đang ở trạng thái PENDING");
         }
 
@@ -234,9 +236,9 @@ public class QuotationServiceImpl implements QuotationService {
 
         // Cập nhật status
         if ("ACCEPTED".equals(status)) {
-            quotation.setQuotationStatus(com.swp391.edrive.enums.QuotationStatus.ACCEPTED);
+            quotation.setQuotationStatus(QuotationStatus.ACCEPTED);
         } else {
-            quotation.setQuotationStatus(com.swp391.edrive.enums.QuotationStatus.REJECTED);
+            quotation.setQuotationStatus(QuotationStatus.REJECTED);
             // Có thể lưu lý do từ chối vào note field nếu cần (hiện tại entity chưa có)
         }
 
@@ -268,12 +270,12 @@ public class QuotationServiceImpl implements QuotationService {
             // Kiểm tra promotion có áp dụng cho vehicle hoặc customer không
             boolean isApplicable = false;
 
-            if (promo.getApplicableTo() == com.swp391.edrive.enums.PromoTarget.VEHICLE) {
+            if (promo.getApplicableTo() == PromoTarget.VEHICLE) {
                 // Kiểm tra xe có trong danh sách vehicles của promotion không
                 if (promo.getVehicles() != null && promo.getVehicles().contains(vehicle)) {
                     isApplicable = true;
                 }
-            } else if (promo.getApplicableTo() == com.swp391.edrive.enums.PromoTarget.CUSTOMER) {
+            } else if (promo.getApplicableTo() == PromoTarget.CUSTOMER) {
                 // Kiểm tra customer có trong danh sách customers của promotion không
                 if (promo.getCustomers() != null && promo.getCustomers().contains(customer)) {
                     isApplicable = true;
@@ -284,11 +286,11 @@ public class QuotationServiceImpl implements QuotationService {
             if (isApplicable) {
                 BigDecimal discount = BigDecimal.ZERO;
 
-                if (promo.getDiscountType() == com.swp391.edrive.enums.DiscountType.PERCENTAGE) {
+                if (promo.getDiscountType() == DiscountType.PERCENTAGE) {
                     // Giảm theo phần trăm
                     discount = unitPrice.multiply(BigDecimal.valueOf(promo.getDiscountValue()))
                             .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-                } else if (promo.getDiscountType() == com.swp391.edrive.enums.DiscountType.FIXED_AMOUNT) {
+                } else if (promo.getDiscountType() == DiscountType.FIXED_AMOUNT) {
                     // Giảm số tiền cố định
                     discount = BigDecimal.valueOf(promo.getDiscountValue());
                 }
@@ -311,13 +313,13 @@ public class QuotationServiceImpl implements QuotationService {
     /**
      * Build response list cho applied promotions
      */
-    private List<com.swp391.edrive.dto.response.AppliedPromotionResponse> buildAppliedPromotionsResponse(List<AppliedPromotionInfo> appliedPromotions) {
+    private List<AppliedPromotionResponse> buildAppliedPromotionsResponse(List<AppliedPromotionInfo> appliedPromotions) {
         if (appliedPromotions == null || appliedPromotions.isEmpty()) {
             return null;
         }
 
         return appliedPromotions.stream()
-                .map(info -> com.swp391.edrive.dto.response.AppliedPromotionResponse.builder()
+                .map(info -> AppliedPromotionResponse.builder()
                         .title(info.getPromotion().getTitle())
                         .description(info.getPromotion().getDescription())
                         .discountType(info.getPromotion().getDiscountType().name())
@@ -376,7 +378,7 @@ public class QuotationServiceImpl implements QuotationService {
      */
     private List<SelectedServiceResponse> buildSelectedServicesResponse(List<AdditionalServices> services) {
         return services.stream()
-                .map(service -> com.swp391.edrive.dto.response.SelectedServiceResponse.builder()
+                .map(service -> SelectedServiceResponse.builder()
                         .serviceId(service.getServiceId())
                         .serviceName(service.getServiceName())
                         .price(service.getPrice())
@@ -400,7 +402,7 @@ public class QuotationServiceImpl implements QuotationService {
 
         // Tính tổng dịch vụ bổ sung từ quotationServices
         BigDecimal additionalServicesTotal = BigDecimal.ZERO;
-        List<com.swp391.edrive.dto.response.SelectedServiceResponse> selectedServiceResponses = null;
+        List<SelectedServiceResponse> selectedServiceResponses = null;
 
         if (quotation.getQuotationServices() != null && !quotation.getQuotationServices().isEmpty()) {
             additionalServicesTotal = quotation.getQuotationServices().stream()
@@ -409,7 +411,7 @@ public class QuotationServiceImpl implements QuotationService {
 
             // Build list of selected services
             selectedServiceResponses = quotation.getQuotationServices().stream()
-                    .map(qs -> com.swp391.edrive.dto.response.SelectedServiceResponse.builder()
+                    .map(qs -> SelectedServiceResponse.builder()
                             .serviceId(qs.getService().getServiceId())
                             .serviceName(qs.getService().getServiceName())
                             .price(qs.getPriceAtSelection())
@@ -427,7 +429,7 @@ public class QuotationServiceImpl implements QuotationService {
         List<AppliedPromotionResponse> appliedPromotionsResponse = null;
         if (quotation.getPromotions() != null && !quotation.getPromotions().isEmpty()) {
             appliedPromotionsResponse = quotation.getPromotions().stream()
-                    .map(promo -> com.swp391.edrive.dto.response.AppliedPromotionResponse.builder()
+                    .map(promo -> AppliedPromotionResponse.builder()
                             .title(promo.getTitle())
                             .description(promo.getDescription())
                             .discountType(promo.getDiscountType().name())

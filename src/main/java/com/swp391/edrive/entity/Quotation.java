@@ -65,7 +65,7 @@ public class Quotation {
 
     // ====== Dịch vụ bổ sung ======
     @OneToMany(mappedBy = "quotation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<QuotationService> quotationServices;
+    private List<QuotationServices> quotationServices;
 
     // ====== Ngày tạo và ngày hết hạn báo giá ======
     private LocalDateTime createdAt;

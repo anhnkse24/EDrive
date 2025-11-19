@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 @Setter
 @Entity
 @Table(name = "quotation_services")
-public class QuotationService {
+public class QuotationServices {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
