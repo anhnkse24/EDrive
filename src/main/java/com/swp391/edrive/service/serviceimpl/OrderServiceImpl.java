@@ -125,7 +125,7 @@ public class OrderServiceImpl implements OrderService {
         if (order.getOrderItems() != null) {
             res.setOrderItems(
                     order.getOrderItems().stream().map(item -> {
-                        var itemRes = new com.swp391.edrive.dto.response.OrderItemResponse();
+                        var itemRes = new OrderItemResponse();
                         itemRes.vehicleId = item.getVehicle().getVehicleId();
                         itemRes.vehicleName = item.getVehicle().getModelName();
                         itemRes.vehicleVersion = item.getVehicle().getVersion();

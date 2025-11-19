@@ -2,6 +2,7 @@ package com.swp391.edrive.service.serviceimpl;
 
 import com.swp391.edrive.entity.*;
 import com.swp391.edrive.enums.OrderStatus;
+import com.swp391.edrive.enums.PaymentStatus;
 import com.swp391.edrive.repository.*;
 import com.swp391.edrive.service.DeliveryService;
 import lombok.RequiredArgsConstructor;
@@ -26,9 +27,14 @@ public class DeliveryServiceImpl implements DeliveryService {
         Order order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
 
-        // Chỉ xử lý orders đang ở trạng thái PROCESSING
+        // Validation 1: Chỉ xử lý orders đang ở trạng thái ĐÃ_XÁC_NHẬN
         if (order.getStatus() != OrderStatus.ĐÃ_XÁC_NHẬN) {
-            throw new IllegalStateException("Only ĐÃ_XÁC_NHẬN orders can be delivered");
+            throw new IllegalStateException("Chỉ có thể giao hàng cho đơn hàng đã được xác nhận. Trạng thái hiện tại: " + order.getStatus());
+        }
+
+        // Validation 2: Kiểm tra order đã được thanh toán chưa (đã qua markOrderAsPaid)
+        if (order.getPaymentStatus() != PaymentStatus.ĐÃ_THANH_TOÁN) {
+            throw new IllegalStateException("Không thể giao hàng cho đơn hàng chưa được thanh toán. Vui lòng xác nhận thanh toán trước.");
         }
 
         // Cập nhật số lượng kho cho từng item

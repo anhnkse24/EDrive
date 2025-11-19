@@ -4,6 +4,7 @@ import com.swp391.edrive.dto.request.ContractRequest;
 import com.swp391.edrive.dto.response.*;
 import com.swp391.edrive.entity.*;
 import com.swp391.edrive.enums.ContractStatus;
+import com.swp391.edrive.enums.PaymentStatus;
 import com.swp391.edrive.mapper.contract.IContractMapper;
 import com.swp391.edrive.repository.*;
 import com.swp391.edrive.service.ContractService;
@@ -76,9 +77,6 @@ public class ContractServiceImpl implements ContractService {
                         "Insufficient manufacturer inventory for vehicle: " + vehicle.getModelName() +
                                 ". Available: " + manufacturerInventory.getQuantity() + ", Requested: " + quantity);
             }
-            manufacturerInventory.setQuantity(manufacturerInventory.getQuantity() - quantity);
-            manufacturerInventory.setLastUpdated(LocalDateTime.now());
-            manufacturerInventoryRepo.save(manufacturerInventory);
 
             // Cộng vào kho đại lý
             DealerInventory dealerInventory = dealerInventoryRepo
@@ -134,7 +132,7 @@ public class ContractServiceImpl implements ContractService {
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy đơn hàng với ID: " + orderId));
 
         // Kiểm tra payment status (cho phép CHỜ_DUYỆT - dành cho khách hàng đã cọc)
-        if (order.getPaymentStatus() != com.swp391.edrive.enums.PaymentStatus.CHỜ_DUYỆT) {
+        if (order.getPaymentStatus() != PaymentStatus.CHỜ_DUYỆT) {
             throw new IllegalStateException("Chỉ có thể tạo hợp đồng cho đơn hàng đang chờ duyệt (đã cọc)");
         }
 
@@ -176,7 +174,7 @@ public class ContractServiceImpl implements ContractService {
         Contract savedContract = contractRepo.save(contract);
 
         // Cập nhật payment status của order thành ĐÃ_CỌC (khách hàng đã cọc 7%)
-        order.setPaymentStatus(com.swp391.edrive.enums.PaymentStatus.ĐÃ_CỌC);
+        order.setPaymentStatus(PaymentStatus.ĐÃ_CỌC);
         orderRepo.save(order);
 
         ContractResponse response = mapper.toResponse(savedContract);
@@ -253,7 +251,7 @@ public class ContractServiceImpl implements ContractService {
 
             // Hoàn lại trạng thái payment của order về ĐÃ_THANH_TOÁN
             Order order = contract.getOrder();
-            order.setPaymentStatus(com.swp391.edrive.enums.PaymentStatus.ĐÃ_THANH_TOÁN);
+            order.setPaymentStatus(PaymentStatus.ĐÃ_THANH_TOÁN);
             orderRepo.save(order);
         }
 
