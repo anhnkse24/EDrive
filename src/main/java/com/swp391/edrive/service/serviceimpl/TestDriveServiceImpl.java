@@ -54,6 +54,7 @@ public class TestDriveServiceImpl implements TestDriveService {
 
         Customer customer = customerRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy khách hàng"));
+
         Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy xe"));
 
@@ -68,16 +69,7 @@ public class TestDriveServiceImpl implements TestDriveService {
 
         testDriveRepository.save(testDrive);
 
-        String message = String.format(
-                "Khách hàng %s vừa đặt lịch lái thử xe %s vào lúc %s",
-                customer.getFullName(),
-                vehicle.getModelName(),
-                request.getScheduleDatetime()
-        );
-
         notificationService.createNotificationForTestDrive(dealerId, testDrive.getTestdriveId());
-
-
 
         return mapToResponse(testDrive);
     }
@@ -152,7 +144,16 @@ public class TestDriveServiceImpl implements TestDriveService {
             );
         }
 
+        // --- Trạng thái staff ---
         if (request.getStatusForStaff() != null) {
+
+            if (request.getStatusForStaff() == TestDriveStatusForStaff.COMPLETED) {
+
+                if (testDrive.getScheduleDatetime().isAfter(LocalDateTime.now())) {
+                    throw new IllegalStateException("không thể hoàn thành vì ngày lái thử chưa đến.");
+                }
+            }
+
             testDrive.setStatusForStaff(request.getStatusForStaff());
         }
 
