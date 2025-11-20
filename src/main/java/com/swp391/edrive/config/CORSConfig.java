@@ -1,37 +1,28 @@
-//package com.swp391.edrive.config;
-//
-//import org.springframework.context.annotation.Bean;
-//import org.springframework.context.annotation.Configuration;
-//import org.springframework.web.servlet.config.annotation.CorsRegistry;
-//import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-//
-//@Configuration
-//public class CORSConfig {
-////    @Bean
-////    public WebMvcConfigurer corsConfigurer() {
-////        return new WebMvcConfigurer() {
-////            @Override
-////            public void addCorsMappings(CorsRegistry registry) {
-////                registry.addMapping("/**")
-////                        .allowedOrigins("*")
-////                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS");
-////            }
-////        };
-////    }
-//
-//    @Bean
-//    public WebMvcConfigurer corsConfigurer() {
-//        return new WebMvcConfigurer() {
-//            @Override
-//            public void addCorsMappings(CorsRegistry registry) {
-//                registry.addMapping("/**")
-//                        .allowedOrigins("http://localhost:3000", "http://localhost:5173") // PRODUCTION: liệt kê domain FE
-//                        .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-//                        .allowedHeaders("*")                  // cho phép Content-Type, Authorization, X-Requested-With...
-//                        .exposedHeaders("Location")           // nếu FE cần đọc
-//                        .allowCredentials(true)               // nếu dùng cookie/Authorization
-//                        .maxAge(3600);                        // cache preflight
-//            }
-//        };
-//    }
-//}
+package com.swp391.edrive.config;
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Configuration
+public class CORSConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+
+        registry.addMapping("/**")
+                .allowedOrigins("http://localhost:5173") // domain của frontend
+                .allowedHeaders("*")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH")
+                .allowCredentials(true)
+                .exposedHeaders(
+                        "Access-Control-Allow-Origin", "Access-Control-Allow-Methods", "Access-Control-Allow-Headers")
+                .maxAge(1440000);
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/");
+    }
+}

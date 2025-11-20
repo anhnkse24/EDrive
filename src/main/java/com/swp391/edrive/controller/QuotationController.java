@@ -1,82 +1,186 @@
 package com.swp391.edrive.controller;
 
-import com.swp391.edrive.dto.request.CreateQuotationRequest;
+
+import com.swp391.edrive.dto.request.QuotationRequest;
+import com.swp391.edrive.dto.request.QuotationStatusUpdateRequest;
 import com.swp391.edrive.dto.response.QuotationResponse;
 import com.swp391.edrive.dto.response.ResponseObject;
-import com.swp391.edrive.enums.QuotationStatus;
+import com.swp391.edrive.entity.User;
+import com.swp391.edrive.service.QuotationPdfService;
 import com.swp391.edrive.service.QuotationService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/quotation")
+@RequestMapping("/api/quotations")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "api")
 public class QuotationController {
+
     private final QuotationService quotationService;
+    private final QuotationPdfService quotationPdfService;
 
-    @Operation(summary = "Tạo báo giá (cho dealer hoặc khách hàng)")
-    @PostMapping
-    public ResponseEntity<ResponseObject> createDraft(@RequestBody CreateQuotationRequest req) {
+
+    @Operation(summary = "Tạo báo giá")
+    @PostMapping("/create")
+    public ResponseEntity<ResponseObject<QuotationResponse>> createQuotation(
+            @RequestBody QuotationRequest quotationRequest) {
+
         try {
-            QuotationResponse data = quotationService.createDraft(req);
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(new ResponseObject(201, "Quotation draft created successfully", data));
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest()
-                    .body(new ResponseObject(400, ex.getMessage(), null));
-        } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ResponseObject(500, "An unexpected error occurred", null));
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            User user = (User) authentication.getPrincipal();
+
+            QuotationResponse data = quotationService.createQuotation(quotationRequest, user);
+
+            return ResponseEntity.ok(
+                    new ResponseObject<>(200, "Báo giá được tạo thành công", data)
+            );
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(
+                    new ResponseObject<>(400, "Có lỗi xảy ra: " + e.getMessage(), null)
+            );
         }
     }
 
-    @Operation(summary = "Lấy tất cả báo giá")
+    @Operation(summary = "Cập nhật trạng thái báo giá")
+    @PutMapping("/update-status")
+    public ResponseEntity<ResponseObject<QuotationResponse>> updateQuotationStatus(
+            @RequestBody QuotationStatusUpdateRequest request) {
+
+        try {
+            QuotationResponse data = quotationService.updateQuotationStatus(
+                    request.getQuotationId(),
+                    request.getStatus(),
+                    request.getRejectionReason()
+            );
+
+            String message = request.getStatus().equals("ACCEPTED")
+                    ? "Chấp nhận báo giá thành công"
+                    : "Từ chối báo giá thành công";
+
+            return ResponseEntity.ok(new ResponseObject<>(200, message, data));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(
+                    new ResponseObject<>(400, "Có lỗi xảy ra: " + e.getMessage(), null)
+            );
+        }
+    }
+
+
+    @Operation(summary = "Lấy danh sách tất cả báo giá")
     @GetMapping
-    public ResponseEntity<ResponseObject> getAll() {
-        List<QuotationResponse> data = quotationService.getAll();
-        return ResponseEntity.ok(new ResponseObject(200, "Quotation list retrieved successfully", data));
+    public ResponseEntity<ResponseObject<List<QuotationResponse>>> getAll() {
+        List<QuotationResponse> list = quotationService.getAllQuotations();
+        return ResponseEntity.ok(
+                new ResponseObject<>(200, "Quotations retrieved successfully", list)
+        );
     }
 
-    @Operation(summary = "Tìm báo giá theo ID")
+    // API Lấy báo giá theo ID
+    @Operation(summary = "Lấy báo giá theo ID")
     @GetMapping("/{id}")
-    public ResponseEntity<ResponseObject> getById(@PathVariable Long id) {
+    public ResponseEntity<ResponseObject<QuotationResponse>> getById(@PathVariable Long id) {
+
+        Optional<QuotationResponse> res = quotationService.getQuotationById(id);
+
+        return res.map(quotation ->
+                ResponseEntity.ok(
+                        new ResponseObject<>(200, "Quotation retrieved successfully", quotation)
+                )
+        ).orElseGet(() ->
+                ResponseEntity.status(404).body(
+                        new ResponseObject<>(404, "Quotation not found", null)
+                )
+        );
+    }
+
+    @Operation(summary = "Export báo giá ra PDF", description = "Tải xuống báo giá dưới dạng file PDF")
+    @GetMapping("/{quotationId}/export-pdf")
+    public ResponseEntity<byte[]> exportQuotationToPdf(@PathVariable Long quotationId) {
         try {
-            QuotationResponse data = quotationService.getById(id);
-            return ResponseEntity.ok(new ResponseObject(200, "Quotation found", data));
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ResponseObject(404, ex.getMessage(), null));
+            // Generate PDF
+            java.io.ByteArrayOutputStream pdfStream = quotationPdfService.generateQuotationPdf(quotationId);
+            byte[] pdfBytes = pdfStream.toByteArray();
+
+            // Set headers
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDisposition(
+                ContentDisposition.builder("attachment")
+                    .filename("Bao-gia-" + quotationId + ".pdf")
+                    .build()
+            );
+            headers.setContentLength(pdfBytes.length);
+
+            return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+
+        } catch (RuntimeException e) {
+            // Return error as plain text
+            byte[] errorBytes = ("Lỗi: " + e.getMessage()).getBytes();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.TEXT_PLAIN);
+            return new ResponseEntity<>(errorBytes, headers, HttpStatus.BAD_REQUEST);
         }
     }
 
-    @Operation(summary = "Tìm báo giá theo đại lý")
-    @GetMapping("/dealer/{dealerId}")
-    public ResponseEntity<ResponseObject> getByDealer(@PathVariable Long dealerId) {
-        List<QuotationResponse> data = quotationService.getByDealer(dealerId);
-        if (data.isEmpty()) {
-            return ResponseEntity.ok(new ResponseObject(200, "No quotations found for this dealer", data));
+    @Operation(summary = "Xem trước PDF trong browser", description = "Hiển thị PDF báo giá trực tiếp trong browser")
+    @GetMapping("/{quotationId}/preview-pdf")
+    public ResponseEntity<byte[]> previewQuotationPdf(@PathVariable Long quotationId) {
+        try {
+            // Generate PDF
+            java.io.ByteArrayOutputStream pdfStream = quotationPdfService.generateQuotationPdf(quotationId);
+            byte[] pdfBytes = pdfStream.toByteArray();
+
+            // Set headers for inline display
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDisposition(
+                ContentDisposition.builder("inline")
+                    .filename("Bao-gia-" + quotationId + ".pdf")
+                    .build()
+            );
+            headers.setContentLength(pdfBytes.length);
+
+            return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+
+        } catch (RuntimeException e) {
+            byte[] errorBytes = ("Lỗi: " + e.getMessage()).getBytes();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.TEXT_PLAIN);
+            return new ResponseEntity<>(errorBytes, headers, HttpStatus.BAD_REQUEST);
         }
-        return ResponseEntity.ok(new ResponseObject(200, "Quotations by dealer retrieved successfully", data));
     }
 
-    @Operation(summary = "Tìm báo giá theo trạng thái")
-    @GetMapping("/status/{status}")
-    public ResponseEntity<ResponseObject> getByStatus(@PathVariable String status) {
+    @Operation(summary = "Gửi email báo giá cho khách hàng",
+               description = "Gửi email kèm PDF báo giá cho khách hàng. Chỉ áp dụng cho báo giá đã được đại lý duyệt (ACCEPTED)")
+    @PostMapping("/{quotationId}/send-email")
+    public ResponseEntity<ResponseObject<String>> sendQuotationEmail(@PathVariable Long quotationId) {
         try {
-            QuotationStatus st = QuotationStatus.valueOf(status.toUpperCase().trim());
-            List<QuotationResponse> data = quotationService.getByStatus(st);
-            if (data.isEmpty()) {
-                return ResponseEntity.ok(new ResponseObject(200, "No quotations found for this status", data));
-            }
-            return ResponseEntity.ok(new ResponseObject(200, "Quotations by status retrieved successfully", data));
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest()
-                    .body(new ResponseObject(400, "Invalid status. Use DRAFT, SENT, APPROVED, CANCELLED, EXPIRED", null));
+            quotationService.sendQuotationEmailToCustomer(quotationId);
+
+            return ResponseEntity.ok(
+                    new ResponseObject<>(200, "Gửi email báo giá thành công",
+                            "Email đã được gửi đến khách hàng kèm file PDF báo giá")
+            );
+        } catch (IllegalStateException e) {
+            // Trường hợp quotation chưa được duyệt
+            return ResponseEntity.badRequest().body(
+                    new ResponseObject<>(400, e.getMessage(), null)
+            );
+        } catch (RuntimeException e) {
+            // Các lỗi khác
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    new ResponseObject<>(500, "Lỗi khi gửi email: " + e.getMessage(), null)
+            );
         }
     }
 }

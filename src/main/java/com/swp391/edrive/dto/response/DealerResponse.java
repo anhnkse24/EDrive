@@ -1,29 +1,27 @@
 package com.swp391.edrive.dto.response;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+
+import java.util.Set;
 
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class DealerResponse {
+    private Long userId;
     private Long dealerId;
     private String dealerName;
+    private  String dealerEmail;
 
-    // Địa chỉ chi tiết
     private String houseNumberAndStreet;
     private String wardOrCommune;
     private String district;
     private String provinceOrCity;
 
-    // Thông tin liên hệ
     private String contactPerson;
-    private String phone;
+    private String contactPhone;
+    private Set<String> roles;
 
-    // Địa chỉ đầy đủ (nếu muốn trả thêm)
-    public String getFullAddress() {
-        return String.format("%s, %s, %s, %s",
-                houseNumberAndStreet, wardOrCommune, district, provinceOrCity);
-    }
 }

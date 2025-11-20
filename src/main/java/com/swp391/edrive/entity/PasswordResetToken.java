@@ -2,7 +2,7 @@ package com.swp391.edrive.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @Entity
 @Getter
@@ -18,8 +18,9 @@ public class PasswordResetToken {
 
     private String token;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id", referencedColumnName = "userId")
     private User user;
 
-    private LocalDateTime expiryDate;
+    private Date expiryDate;
 }

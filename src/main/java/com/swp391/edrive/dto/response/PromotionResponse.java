@@ -21,6 +21,6 @@ public class PromotionResponse {
     private LocalDate endDate;
     private PromoTarget applicableTo;
 
-    // ✅ Sửa từ vehicleId (Long) → vehicleIds (List<Long>)
+    private Long dealerId;
     private List<Long> vehicleIds;
 }

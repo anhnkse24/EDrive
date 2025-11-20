@@ -6,11 +6,9 @@ import com.swp391.edrive.dto.response.CustomerResponse;
 import java.util.List;
 
 public interface CustomerService {
-    CustomerResponse createCustomer(CustomerRequest req);
-    CustomerResponse updateCustomer(Long customerId, CustomerRequest req);
-    void deleteCustomer(Long customerId);
-    CustomerResponse getCustomerById(Long customerId);
-
-    List<CustomerResponse> getAllCustomers();
-
+    CustomerResponse createCustomer(Long dealerId, CustomerRequest request);
+    CustomerResponse updateCustomer(Long dealerId, Long customerId, CustomerRequest request);
+    void deleteCustomer(Long dealerId, Long customerId);
+    CustomerResponse getCustomerById(Long dealerId, Long customerId);
+    List<CustomerResponse> getCustomersByDealer(Long dealerId);
 }

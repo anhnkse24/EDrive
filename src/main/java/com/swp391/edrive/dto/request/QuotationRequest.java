@@ -1,0 +1,20 @@
+package com.swp391.edrive.dto.request;
+
+
+import com.swp391.edrive.enums.PaymentMethod;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.List;
+
+@Getter
+@Setter
+public class QuotationRequest {
+    private Long vehicleId;            // ID của chiếc xe
+    private Long customerId;           // ID của khách hàng
+    // Danh sách ID dịch vụ được chọn từ catalog
+    private List<Long> selectedServiceIds; // Danh sách ID các dịch vụ được chọn
+
+    // Danh sách ID promotion được chọn bởi nhân viên
+    private List<Long> selectedPromotionIds; // Danh sách ID các promotion được nhân viên chọn
+}

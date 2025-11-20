@@ -1,9 +1,6 @@
 package com.swp391.edrive.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,7 +12,10 @@ public class DealerRequest {
     @Size(max = 100, message = "Tên đại lý không được vượt quá 100 ký tự")
     private String dealerName;
 
-    // --- Địa chỉ chi tiết ---
+    @NotBlank(message = "Email của đại lý không được để trống")
+    @Email(message = "Email của đại lý không hợp lệ")
+    private String dealerEmail;
+
     @NotBlank(message = "Số nhà và tên đường không được để trống")
     @Size(max = 100, message = "Số nhà và tên đường không được vượt quá 100 ký tự")
     private String houseNumberAndStreet;
@@ -31,7 +31,6 @@ public class DealerRequest {
     @Size(max = 100, message = "Tỉnh/Thành phố không được vượt quá 100 ký tự")
     private String provinceOrCity;
 
-    // --- Thông tin liên hệ ---
     @NotBlank(message = "Người liên hệ không được để trống")
     @Size(max = 100, message = "Tên người liên hệ không được vượt quá 100 ký tự")
     private String contactPerson;

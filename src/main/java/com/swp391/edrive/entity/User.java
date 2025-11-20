@@ -1,9 +1,16 @@
 package com.swp391.edrive.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.swp391.edrive.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users")
@@ -11,36 +18,92 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 @Builder
-public class User {
+public class User  implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
 
-    @Column(unique = true, nullable = false, length = 50)
+    @Column(unique = true, nullable = false)
     private String username;
-
-    @Column(nullable = false, length = 255)
     private String password;
-
-    @Column(name = "full_name", length = 100)
     private String fullName;
-
-    @Column(length = 100, unique = true)
     private String email;
-
-    @Column(length = 15)
     private String phone;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
-    private UserRole role;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    private int tokenVersion;
+
+    @ManyToOne
     @JoinColumn(name = "dealer_id")
     @JsonBackReference
-    @ToString.Exclude
     private Dealer dealer;
+
+    @Column(name = "is_verify", nullable = false)
+    @Builder.Default
+    private boolean isVerify = false;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_name"))
+    @Builder.Default
+    private Set<Role> roles = new HashSet<>();
+
+    public Set<String> getAllPermissions() {
+        return roles.stream()
+                .flatMap(role -> role.getPermissions().stream())
+                .map(Permission::getCode)
+                .collect(Collectors.toSet());
+    }
+
+
+    public void incrementTokenVersion() {
+        this.tokenVersion++;
+    }
+
+    public boolean hasRole(String roleName) {
+        return roles.stream()
+                .anyMatch(role -> role.getName().equals(roleName));
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        Set<SimpleGrantedAuthority> authorities = new HashSet<>();
+
+        // Thêm roles dưới dạng "ROLE_ADMIN"
+        authorities.addAll(roles.stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
+                .collect(Collectors.toSet()));
+
+        // Thêm trực tiếp permissions
+        authorities.addAll(
+                getAllPermissions().stream()
+                        .map(SimpleGrantedAuthority::new)
+                        .collect(Collectors.toSet()));
+
+        return authorities;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return UserDetails.super.isAccountNonExpired();
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return UserDetails.super.isAccountNonLocked();
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return UserDetails.super.isCredentialsNonExpired();
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return isVerify;
+    }
 }

@@ -31,6 +31,6 @@ public class PromotionRequest {
     @NotNull(message = "Applicable target is required")
     private PromoTarget applicableTo;
 
-    @Size(min = 1, message = "At least one vehicle ID must be provided")
     private Set<Long> vehicleIds;
+
 }

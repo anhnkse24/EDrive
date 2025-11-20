@@ -1,13 +1,12 @@
 package com.swp391.edrive.controller;
 
-import com.swp391.edrive.dto.request.VehicleVersionUpsertRequest;
+import com.swp391.edrive.dto.request.VehicleUpsertRequest;
 import com.swp391.edrive.dto.response.ResponseObject;
-import com.swp391.edrive.dto.response.VehicleColorOptionResponse;
 import com.swp391.edrive.dto.response.VehicleResponse;
 import com.swp391.edrive.enums.VehicleStatus;
-import com.swp391.edrive.service.VehicleQueryService;
 import com.swp391.edrive.service.VehicleService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,39 +19,39 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/vehicles")
-@Tag(name = "Vehicles", description = "API quản lý danh sách xe")
+@SecurityRequirement(name = "api")
 @RequiredArgsConstructor
+@Tag(name = "Vehicles", description = "API quản lý danh sách xe")
 public class VehicleController {
 
     private final VehicleService vehicleService;
-    private final VehicleQueryService vehicleQueryService;
-
 
     @Operation(summary = "Lấy danh sách tất cả xe")
     @GetMapping
-    public ResponseEntity<ResponseObject> getAllVehicles(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-
-        List<VehicleResponse> vehicles = vehicleService.getAllVehicles(page, size);
-        return ResponseEntity.ok(new ResponseObject(200, "Vehicle list retrieved successfully", vehicles));
+    public ResponseEntity<ResponseObject<List<VehicleResponse>>> getAllVehicles() {
+        List<VehicleResponse> vehicles = vehicleService.getAllVehicles();
+        return ResponseEntity.ok(
+                new ResponseObject<>(200, "Lấy danh sách xe thành công", vehicles)
+        );
     }
 
     @Operation(summary = "Tìm xe theo ID")
     @GetMapping("/{id}")
-    public ResponseEntity<ResponseObject> findById(@PathVariable Long id) {
+    public ResponseEntity<ResponseObject<VehicleResponse>> findById(@PathVariable Long id) {
         try {
             VehicleResponse vehicle = vehicleService.findVehicleById(id);
-            return ResponseEntity.ok(new ResponseObject(200, "Vehicle found", vehicle));
+            return ResponseEntity.ok(
+                    new ResponseObject<>(200, "Tìm xe thành công", vehicle)
+            );
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ResponseObject(404, ex.getMessage(), null));
+                    .body(new ResponseObject<>(404, ex.getMessage(), null));
         }
     }
 
     @Operation(summary = "Tìm xe theo trạng thái")
     @GetMapping("/search/status")
-    public ResponseEntity<ResponseObject> findByStatus(
+    public ResponseEntity<ResponseObject<List<VehicleResponse>>> findByStatus(
             @RequestParam String status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
@@ -62,32 +61,36 @@ public class VehicleController {
             st = VehicleStatus.valueOf(status.toUpperCase().trim());
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest()
-                    .body(new ResponseObject(400, "Invalid status. Use AVAILABLE or DISCONTINUED", null));
+                    .body(new ResponseObject<>(400, "Trạng thái không hợp lệ. Chỉ chấp nhận AVAILABLE hoặc DISCONTINUED", null));
         }
 
         List<VehicleResponse> vehicles = vehicleService.findVehicleByStatus(st, page, size);
-        return ResponseEntity.ok(new ResponseObject(200, "Vehicles by status retrieved", vehicles));
+        return ResponseEntity.ok(
+                new ResponseObject<>(200, "Lấy xe theo trạng thái thành công", vehicles)
+        );
     }
 
     @Operation(summary = "Tìm xe theo màu")
     @GetMapping("/search/color")
-    public ResponseEntity<ResponseObject> findByColor(
+    public ResponseEntity<ResponseObject<List<VehicleResponse>>> findByColor(
             @RequestParam String color,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
         if (color == null || color.trim().isEmpty()) {
             return ResponseEntity.badRequest()
-                    .body(new ResponseObject(400, "Color must not be empty", null));
+                    .body(new ResponseObject<>(400, "Màu sắc không được để trống", null));
         }
 
-        List<VehicleResponse> vehicles = vehicleService.findVehicleByColor(color.trim(), page, size); // <<< đổi kiểu
-        return ResponseEntity.ok(new ResponseObject(200, "Vehicles by color retrieved", vehicles));
+        List<VehicleResponse> vehicles = vehicleService.findVehicleByColor(color.trim(), page, size);
+        return ResponseEntity.ok(
+                new ResponseObject<>(200, "Lấy xe theo màu thành công", vehicles)
+        );
     }
 
     @Operation(summary = "Tìm xe theo năm sản xuất (exact hoặc range)")
     @GetMapping("/search/year")
-    public ResponseEntity<ResponseObject> findByYear(
+    public ResponseEntity<ResponseObject<List<VehicleResponse>>> findByYear(
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) Integer fromYear,
             @RequestParam(required = false) Integer toYear,
@@ -95,25 +98,29 @@ public class VehicleController {
             @RequestParam(defaultValue = "10") int size) {
 
         try {
-            List<VehicleResponse> vehicles; // <<< đổi kiểu
+            List<VehicleResponse> vehicles;
+
             if (year != null) {
                 vehicles = vehicleService.findVehicleByManufactureYear(year, page, size);
             } else if (fromYear != null && toYear != null) {
                 vehicles = vehicleService.findVehicleByManufactureYearRange(fromYear, toYear, page, size);
             } else {
                 return ResponseEntity.badRequest()
-                        .body(new ResponseObject(400, "Provide either 'year' or both 'fromYear' & 'toYear'", null));
+                        .body(new ResponseObject<>(400, "Vui lòng cung cấp 'year' hoặc cả 'fromYear' và 'toYear'", null));
             }
-            return ResponseEntity.ok(new ResponseObject(200, "Vehicles by year retrieved", vehicles));
+
+            return ResponseEntity.ok(
+                    new ResponseObject<>(200, "Lấy xe theo năm sản xuất thành công", vehicles)
+            );
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ResponseObject(400, ex.getMessage(), null));
+                    .body(new ResponseObject<>(400, ex.getMessage(), null));
         }
     }
 
     @Operation(summary = "Tìm xe theo giá (min/max hoặc khoảng)")
     @GetMapping("/search/price")
-    public ResponseEntity<ResponseObject> findByPrice(
+    public ResponseEntity<ResponseObject<List<VehicleResponse>>> findByPrice(
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(defaultValue = "0") int page,
@@ -121,52 +128,59 @@ public class VehicleController {
 
         try {
             List<VehicleResponse> vehicles = vehicleService.findVehicleByPrice(minPrice, maxPrice, page, size);
-            return ResponseEntity.ok(new ResponseObject(200, "Vehicles by BASE price retrieved", vehicles)); // ← đổi message
+            return ResponseEntity.ok(
+                    new ResponseObject<>(200, "Lấy xe theo giá thành công", vehicles)
+            );
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ResponseObject(400, ex.getMessage(), null));
+                    .body(new ResponseObject<>(400, ex.getMessage(), null));
         }
     }
 
     @Operation(summary = "Cập nhật thông tin xe")
     @PutMapping("/{id}")
-    public ResponseEntity<ResponseObject> update(@PathVariable Long id, @Valid @RequestBody VehicleVersionUpsertRequest req) {
+    @SecurityRequirement(name = "api")
+    public ResponseEntity<ResponseObject<VehicleResponse>> update(
+            @PathVariable Long id,
+            @Valid @RequestBody VehicleUpsertRequest req) {
         try {
-            VehicleResponse updated = vehicleService.updateVehicle(id, req); // <<< đổi kiểu
-            return ResponseEntity.ok(new ResponseObject(200, "Vehicle updated", updated));
+            VehicleResponse updated = vehicleService.updateVehicle(id, req);
+            return ResponseEntity.ok(
+                    new ResponseObject<>(200, "Cập nhật xe thành công", updated)
+            );
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ResponseObject(404, ex.getMessage(), null));
+                    .body(new ResponseObject<>(404, ex.getMessage(), null));
         }
     }
 
-    @Operation(summary = "Xoá xe")
+    @Operation(summary = "Xóa xe")
     @DeleteMapping("/{id}")
-    public ResponseEntity<ResponseObject> delete(@PathVariable Long id) {
+    @SecurityRequirement(name = "api")
+    public ResponseEntity<ResponseObject<Void>> delete(@PathVariable Long id) {
         try {
             vehicleService.deleteVehicle(id);
-            return ResponseEntity.ok(new ResponseObject(200, "Vehicle deleted", null));
+            return ResponseEntity.ok(
+                    new ResponseObject<>(200, "Xóa xe thành công", null)
+            );
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ResponseObject(404, ex.getMessage(), null));
+                    .body(new ResponseObject<>(404, ex.getMessage(), null));
         }
     }
 
-    @Operation(summary = "Thêm xe")
     @PostMapping
-    public ResponseEntity<ResponseObject> create(@Valid @RequestBody VehicleVersionUpsertRequest req) {
-        VehicleResponse created = vehicleService.createVehicle(req);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new ResponseObject(201, "Vehicle created", created)); // ← 201 thay vì 200
-    }
+    @SecurityRequirement(name = "api")
+    public ResponseEntity<ResponseObject<List<VehicleResponse>>> create(@Valid @RequestBody VehicleUpsertRequest req) {
+        try {
+            List<VehicleResponse> createdVehicles = vehicleService.createVehicle(req);
 
-    @GetMapping("/search/color/options")
-    public ResponseEntity<ResponseObject> findColorOptions(@RequestParam String color) {
-        if (color == null || color.isBlank()) {
-            return ResponseEntity.badRequest()
-                    .body(new ResponseObject(400, "Color must not be empty", null));
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new ResponseObject<>(201, "Tạo xe thành công", createdVehicles));
+
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new ResponseObject<>(409, ex.getMessage(), null));
         }
-        List<VehicleColorOptionResponse> data = vehicleQueryService.searchByColor(color);
-        return ResponseEntity.ok(new ResponseObject(200, "Vehicles by color retrieved", data));
     }
 }

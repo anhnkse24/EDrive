@@ -5,8 +5,10 @@ import com.swp391.edrive.dto.response.PromotionResponse;
 import java.util.List;
 
 public interface PromotionService {
-    PromotionResponse createPromotion(PromotionRequest request);
-    PromotionResponse getPromotionById(Long id);
     List<PromotionResponse> getAllPromotions();
-    void deletePromotion(Long id);
+    List<PromotionResponse> getPromotionsByDealerId(Long dealerId);
+    PromotionResponse getPromotionByIdAndDealerId(Long promotionId, Long dealerId);
+    PromotionResponse createPromotionByDealer(Long dealerId, PromotionRequest req);
+    PromotionResponse updatePromotionByDealer(Long dealerId, Long promotionId, PromotionRequest req);
+    void deletePromotionByDealer(Long dealerId, Long promotionId);
 }

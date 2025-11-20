@@ -1,42 +1,32 @@
 package com.swp391.edrive.entity;
 
-
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "feedback")
+@Getter
+@Setter
 public class Feedback {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long feedbackId;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "customer_id", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "customer_id")
     private Customer customer;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "dealer_id", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "dealer_id")
     private Dealer dealer;
 
-    @NotBlank(message = "Nội dung phản hồi không được để trống")
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(columnDefinition = "TEXT")
     private String content;
 
-    @Min(value = 1, message = "Điểm đánh giá thấp nhất là 1")
-    @Max(value = 5, message = "Điểm đánh giá cao nhất là 5")
-    @Column(nullable = false)
     private Integer rating;
-
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
-
-    @ManyToOne
-    @JoinColumn(name = "test_drive_id")
-    private TestDrive testDrive;
+    private LocalDateTime createdAt;
 }

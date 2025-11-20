@@ -1,6 +1,7 @@
 package com.swp391.edrive.entity;
 
 import com.swp391.edrive.enums.TestDriveStatus;
+import com.swp391.edrive.enums.TestDriveStatusForStaff;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,64 +20,44 @@ public class TestDrive {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "customer_id", nullable = false)
-    private Customer customer;
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "dealer_id", nullable = false)
-    private Dealer dealer;
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "version_id", nullable = false)
-    private VehicleVersion version;
+    private Long testdriveId;
 
     @ManyToOne
-    @JoinColumn(name = "version_color_id")
-    private VersionColor versionColor; // nullable = true
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
 
-    @Column(name = "scheduled_at", nullable = false)
-    private LocalDateTime scheduledAt;  // thời gian hẹn lái thử
+    @ManyToOne
+    @JoinColumn(name = "vehicle_id")
+    private Vehicle vehicle;
+
+    @ManyToOne
+    @JoinColumn(name = "dealer_id")
+    private Dealer dealer;
+
+    @ManyToOne
+    @JoinColumn(name = "dealer_inventory_id")
+    private DealerInventory dealerInventory;
 
     @Column(name = "completed_at")
-    private LocalDateTime completedAt;  // thời gian hoàn tất
+    private LocalDateTime completedAt;
 
     @Column(length = 500)
     private String cancelReason;
 
-    private LocalDateTime confirmedAt;
-
-    private LocalDateTime checkInAt;
-
-    private LocalDateTime cancelledAt;
-
-
-    @Column(name = "customer_full_name", length = 100)
-    private String customerFullName;
-
-    @Column(name = "customer_id_card", length = 20)
-    private String customerIdCard;
-
-    @Column(name = "customer_email", length = 100)
-    private String customerEmail;
-
-    @Column(name = "customer_phone", length = 20)
-    private String customerPhone;
+    private LocalDateTime scheduleDatetime;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 20, nullable = false)
-    private TestDriveStatus status = TestDriveStatus.PENDING;
+    private TestDriveStatus status;
 
-    // Helper constructor cho seed data
-    public TestDrive(Customer customer, Dealer dealer, VehicleVersion version,
-                     LocalDateTime scheduledAt, TestDriveStatus status) {
+    @Enumerated(EnumType.STRING)
+    private TestDriveStatusForStaff statusForStaff;
+
+    public TestDrive(Customer customer, Dealer dealer, Vehicle vehicle, LocalDateTime scheduleDatetime, TestDriveStatus status,  TestDriveStatusForStaff statusForStaff) {
         this.customer = customer;
         this.dealer = dealer;
-        this.version = version;
-        this.scheduledAt = scheduledAt;
+        this.vehicle = vehicle;
+        this.scheduleDatetime = scheduleDatetime;
         this.status = status;
+        this.statusForStaff = statusForStaff;
     }
-
 }

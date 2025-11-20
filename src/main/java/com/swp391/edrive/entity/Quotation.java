@@ -1,108 +1,88 @@
 package com.swp391.edrive.entity;
 
-import com.swp391.edrive.enums.QuotationKind;
+import com.swp391.edrive.enums.PaymentMethod;
 import com.swp391.edrive.enums.QuotationStatus;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Entity
-@Table(
-        name = "quotations",
-        indexes = {
-                @Index(name = "idx_qt_dealer", columnList = "dealer_id"),
-                @Index(name = "idx_qt_customer", columnList = "customer_id"),
-                @Index(name = "idx_qt_created_at", columnList = "created_at")
-        },
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uk_qt_code", columnNames = {"quote_code"})
-        }
-)
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Table(name = "quotations")
+@Getter
+@Setter
 public class Quotation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long quotationId;
 
-    /** Đại lý phát hành báo giá */
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "dealer_id", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "dealer_id")
     private Dealer dealer;
 
-    /** Khách hàng nhận báo giá */
-    @ManyToOne(optional = true)
-    @JoinColumn(name = "customer_id", nullable = true)
+    @ManyToOne
+    @JoinColumn(name = "vehicle_id", nullable = false)
+    private Vehicle vehicle;
+
+    private Double quotedPrice;
+    @Column(precision = 14, scale = 2, nullable = false)
+    private BigDecimal unitPrice;        // giá xe tại thời điểm báo giá
+
+    private Integer installmentMonths; // Tháng trả góp, chỉ áp dụng khi trả góp
+    private BigDecimal monthlyInstallment;  // Số tiền trả hàng tháng, chỉ áp dụng khi trả góp
+
+    @ManyToOne
+    @JoinColumn(name = "customer_id")
     private Customer customer;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "kind", length = 20, nullable = false)
-    private QuotationKind kind = QuotationKind.PURCHASE;
+    private PaymentMethod paymentMethod;
 
-    /** Thời điểm tạo báo giá */
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    /** Hạn hiệu lực của báo giá (tùy chọn) */
-    @Column(name = "valid_until")
-    private LocalDate validUntil;
-
-    /** Trạng thái báo giá (DRAFT/SENT/APPROVED/EXPIRED/CANCELLED) */
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", length = 20, nullable = false)
-    private QuotationStatus status = QuotationStatus.DRAFT;
+    @Column(nullable = false)
+    private QuotationStatus quotationStatus; // Trạng thái báo giá
 
-    /** Tổng tiền snapshot = sum(lineTotal) của các items */
-    @Column(name = "grand_total", precision = 14, scale = 2, nullable = false)
-    private BigDecimal grandTotal = BigDecimal.ZERO;
+    // ====== Giá sau khuyến mãi ======
+    @Column(precision = 14, scale = 2)
+    private BigDecimal promotionDiscountAmount; // Tổng giảm giá từ khuyến mãi
 
-    /** Ghi chú (tùy chọn) */
-    @Column(length = 255)
-    private String note;
+    @Column(precision = 14, scale = 2)
+    private BigDecimal priceAfterPromotion;    // Giá trị sau khi trừ khuyến mãi
 
-    @OneToMany(mappedBy = "quotation", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<QuotationItem> items = new ArrayList<>();
+    @ManyToMany
+    @JoinTable(
+            name = "quotation_promotion",
+            joinColumns = @JoinColumn(name = "quotation_id"),
+            inverseJoinColumns = @JoinColumn(name = "promotion_id")
+    )
+    private Set<Promotion> promotions;
 
-    // --------- Helpers ---------
-    public void addItem(QuotationItem item) {
-        if (item == null) return;
-        item.setQuotation(this);
-        this.items.add(item);
-        recomputeTotals(); // nếu bạn có hàm này
-    }
-    public List<QuotationItem> getItems() {                    // ✅ trả về List<QuotationItem>
-        return items;
-    }
-    public void setItems(List<QuotationItem> items) {
-        this.items = items;
-    }
-    public void removeItem(QuotationItem item) {
-        this.items.remove(item);
-        item.setQuotation(null);
-        recomputeTotals();
-    }
+    // ====== Dịch vụ bổ sung ======
+    @OneToMany(mappedBy = "quotation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<QuotationServices> quotationServices;
 
-    /** Tính lại tổng tiền từ các dòng item (snapshot) */
-    public void recomputeTotals() {
-        this.grandTotal = this.items.stream()
-                .map(QuotationItem::getLineTotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
+    // ====== Ngày tạo và ngày hết hạn báo giá ======
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private LocalDate expiryDate;
 
     @PrePersist
-    public void prePersist() {
-        if (this.createdAt == null) this.createdAt = LocalDateTime.now();
-        // Nếu muốn mặc định 7 ngày hiệu lực, mở dòng dưới:
-        // if (this.validUntil == null) this.validUntil = LocalDate.now().plusDays(7);
-        recomputeTotals();
+    void prePersist() {
+        createdAt = LocalDateTime.now();
+        updatedAt = createdAt;
+        if (quotationStatus == null) {
+            quotationStatus = QuotationStatus.PENDING;
+        }
     }
 
     @PreUpdate
-    public void preUpdate() {
-        recomputeTotals();
+    void preUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 }

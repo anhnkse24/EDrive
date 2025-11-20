@@ -1,7 +1,6 @@
 package com.swp391.edrive.controller;
 
 import com.swp391.edrive.service.GeminiService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;

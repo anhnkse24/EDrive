@@ -10,13 +10,7 @@ import lombok.Setter;
 import java.util.List;
 
 @Entity
-@Table(
-        name = "dealers",
-        indexes = {
-                @Index(name = "idx_dealer_name", columnList = "dealer_name"),
-                @Index(name = "idx_dealer_code", columnList = "dealer_code", unique = true)
-        }
-)
+@Table(name = "dealers")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -27,22 +21,32 @@ public class Dealer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long dealerId;
 
-    @Column(name = "dealer_code", length = 32, nullable = false, unique = true)
-    private String dealerCode;
-
-    @Column(name = "dealer_name", length = 150, nullable = false)
+    @Column(nullable = false, length = 100)
     private String dealerName;
 
-    @Column(name = "address", length = 255, nullable = false)
-    private String address;
+    @Column(nullable = false, length = 100)
+    private String dealerEmail;
 
-    @Column(name = "contact_person", length = 100)
+    @Column(length = 150)
+    private String houseNumberAndStreet;
+
+    @Column(length = 100)
+    private String wardOrCommune;
+
+    @Column(length = 100)
+    private String district;
+
+    @Column(length = 100)
+    private String provinceOrCity;
+
+    @Column(nullable = false, length = 100)
     private String contactPerson;
 
-    @Column(name = "phone", length = 30)
+    @Column(length = 100)
     private String phone;
 
-    private Integer contractId;
+    @Column(length = 500)
+    private String businessLicenseUrl;
 
     @OneToMany(mappedBy = "dealer")
     @JsonIgnore
@@ -50,19 +54,7 @@ public class Dealer {
 
     @OneToMany(mappedBy = "dealer")
     @JsonIgnore
-    private List<DealerInventory> inventories;
-
-    @OneToMany(mappedBy = "dealer")
-    @JsonIgnore
-    private List<PricingPolicy> pricingPolicies;
-
-    @OneToMany(mappedBy = "dealer")
-    @JsonIgnore
     private List<TestDrive> testDrives;
-
-    @OneToMany(mappedBy = "dealer")
-    @JsonIgnore
-    private List<Quotation> quotations;
 
     @OneToMany(mappedBy = "dealer")
     @JsonIgnore
@@ -70,9 +62,13 @@ public class Dealer {
 
     @OneToMany(mappedBy = "dealer")
     @JsonIgnore
-    private List<Contract> contracts;
+    private List<DealerInventory> dealerInventories;
 
     @OneToMany(mappedBy = "dealer")
     @JsonIgnore
-    private List<DealerDebt> dealerDebts;
+    private List<Quotation> quotations;
+
+    @OneToMany(mappedBy = "dealer")
+    @JsonIgnore
+    private List<Contract> contracts;
 }

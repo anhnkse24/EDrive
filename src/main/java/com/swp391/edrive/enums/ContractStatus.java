@@ -1,9 +1,8 @@
 package com.swp391.edrive.enums;
 
 public enum ContractStatus {
-    DRAFT,        // Mới tạo, chưa ký
-    ACTIVE,       // Đã ký, đang có hiệu lực
-    COMPLETED,    // Đã hoàn tất
-    TERMINATED,   // Bị chấm dứt
-    CANCELLED     // Bị huỷ trước khi ký
+    DRAFT,      // Admin tạo HĐ
+    SIGNING,    // Hãng đã ký, đang chờ đại lý ký
+    ACTIVE,     // Cả 2 bên đã ký, HĐ có hiệu lực
+    REJECTED    // Đã từ chối
 }

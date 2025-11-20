@@ -1,43 +1,63 @@
 package com.swp391.edrive.entity;
 
 import com.swp391.edrive.enums.OrderStatus;
-import com.swp391.edrive.enums.PaymentType;
+import com.swp391.edrive.enums.PaymentStatus;
 import jakarta.persistence.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 @Entity
 @Table(name = "orders")
+@Getter
+@Setter
 public class Order {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long orderId;
+    private String orderId;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "quotation_id", nullable = false)
-    private Quotation quotation;
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "dealer_id", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "dealer_id")
     private Dealer dealer;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "customer_id", nullable = false)
-    private Customer customer;
+    @ManyToOne
+    @JoinColumn(name = "customer_id")
+    private Customer customer;  // Khách hàng (nếu order từ quotation)
 
-    @Column(name = "order_date", nullable = false)
-    private LocalDate orderDate = LocalDate.now();
+    @ManyToOne
+    @JoinColumn(name = "created_by")
+    private User createdBy;
 
-    @Column(name = "total_price", precision = 14, scale = 2, nullable = false)
-    private BigDecimal totalPrice = BigDecimal.ZERO;
+    private LocalDate orderDate;
+    private LocalDate desiredDeliveryDate;
+    private LocalDate actualDeliveryDate;
+
+    // Các trường tính toán
+    private BigDecimal subtotal;
+    private BigDecimal totalDiscount;
+    private BigDecimal vatAmount;
+    private BigDecimal totalPrice;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "payment_method", length = 20, nullable = false)
-    private PaymentType paymentMethod;
+    private OrderStatus status;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", length = 20, nullable = false)
-    private OrderStatus status = OrderStatus.PENDING;
+    private PaymentStatus paymentStatus;
+
+    private String deliveryAddress;
+    private String deliveryNote;
+
+    @Column
+    private String paymentImage;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<OrderItem> orderItems;
+
+    @OneToMany(mappedBy = "order")
+    private List<Payment> payments;
+
 }
