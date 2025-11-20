@@ -11,7 +11,7 @@ public interface ContractService {
     ContractResponse create(ContractRequest req);
 
     // Tạo hợp đồng từ Order (payment status → ĐÃ_CỌC)
-    ContractResponse createContractFromOrder(String orderId);
+//    ContractResponse createContractFromOrder(String orderId);
 
     // Admin duyệt hoặc từ chối hợp đồng
     ContractResponse reviewContract(Long contractId, Boolean approved, String rejectionReason);

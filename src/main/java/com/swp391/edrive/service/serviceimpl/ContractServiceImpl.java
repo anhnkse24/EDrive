@@ -126,65 +126,65 @@ public class ContractServiceImpl implements ContractService {
         return response;
     }
 
-    @Override
-    @Transactional
-    public ContractResponse createContractFromOrder(String orderId) {
-        // Lấy Order
-        Order order = orderRepo.findById(orderId)
-                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy đơn hàng với ID: " + orderId));
-
-        // Kiểm tra payment status (cho phép CHỜ_DUYỆT - dành cho khách hàng đã cọc)
-        if (order.getPaymentStatus() != PaymentStatus.CHỜ_DUYỆT) {
-            throw new IllegalStateException("Chỉ có thể tạo hợp đồng cho đơn hàng đang chờ duyệt (đã cọc)");
-        }
-
-        // Kiểm tra đã có hợp đồng chưa
-        if (contractRepo.existsByOrder_OrderId(orderId)) {
-            throw new IllegalStateException("Đơn hàng này đã có hợp đồng");
-        }
-
-        Dealer dealer = order.getDealer();
-        if (dealer == null) {
-            throw new IllegalStateException("Đơn hàng không có thông tin đại lý");
-        }
-
-        // Lấy thông tin từ order
-        BigDecimal totalPrice = order.getTotalPrice();
-        BigDecimal discountRate = order.getTotalDiscount();
-        BigDecimal subtotal = order.getSubtotal();
-        BigDecimal vatAmount = order.getVatAmount();
-
-        // Lấy manufacturer từ vehicle
-        Vehicle vehicle = order.getOrderItems().get(0).getVehicle();
-        Manufacturer manufacturer = vehicle.getManufacturer();
-        String colorName = (vehicle.getColor() != null) ? vehicle.getColor().getColorName() : null;
-
-        // Tạo hợp đồng với trạng thái DRAFT
-        Contract contract = Contract.builder()
-                .order(order)
-                .dealer(dealer)
-                .manufacturer(manufacturer)
-                .vehicleModel(vehicle.getModelName())
-                .vehicleVersion(vehicle.getVersion())
-                .colorName(colorName)
-                .totalPrice(totalPrice)
-                .discountRate(discountRate)
-                .terms("Điều khoản hợp đồng mặc định")
-                .status(ContractStatus.DRAFT)
-                .build();
-
-        Contract savedContract = contractRepo.save(contract);
-
-        // Cập nhật payment status của order thành ĐÃ_CỌC (khách hàng đã cọc 7%)
-        order.setPaymentStatus(PaymentStatus.ĐÃ_CỌC);
-        orderRepo.save(order);
-
-        ContractResponse response = mapper.toResponse(savedContract);
-        response.setSubtotal(subtotal);
-        response.setVatAmount(vatAmount);
-
-        return response;
-    }
+//    @Override
+//    @Transactional
+//    public ContractResponse createContractFromOrder(String orderId) {
+//        // Lấy Order
+//        Order order = orderRepo.findById(orderId)
+//                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy đơn hàng với ID: " + orderId));
+//
+//        // Kiểm tra payment status (cho phép CHỜ_DUYỆT - dành cho khách hàng đã cọc)
+//        if (order.getPaymentStatus() != PaymentStatus.CHỜ_DUYỆT) {
+//            throw new IllegalStateException("Chỉ có thể tạo hợp đồng cho đơn hàng đang chờ duyệt (đã cọc)");
+//        }
+//
+//        // Kiểm tra đã có hợp đồng chưa
+//        if (contractRepo.existsByOrder_OrderId(orderId)) {
+//            throw new IllegalStateException("Đơn hàng này đã có hợp đồng");
+//        }
+//
+//        Dealer dealer = order.getDealer();
+//        if (dealer == null) {
+//            throw new IllegalStateException("Đơn hàng không có thông tin đại lý");
+//        }
+//
+//        // Lấy thông tin từ order
+//        BigDecimal totalPrice = order.getTotalPrice();
+//        BigDecimal discountRate = order.getTotalDiscount();
+//        BigDecimal subtotal = order.getSubtotal();
+//        BigDecimal vatAmount = order.getVatAmount();
+//
+//        // Lấy manufacturer từ vehicle
+//        Vehicle vehicle = order.getOrderItems().get(0).getVehicle();
+//        Manufacturer manufacturer = vehicle.getManufacturer();
+//        String colorName = (vehicle.getColor() != null) ? vehicle.getColor().getColorName() : null;
+//
+//        // Tạo hợp đồng với trạng thái DRAFT
+//        Contract contract = Contract.builder()
+//                .order(order)
+//                .dealer(dealer)
+//                .manufacturer(manufacturer)
+//                .vehicleModel(vehicle.getModelName())
+//                .vehicleVersion(vehicle.getVersion())
+//                .colorName(colorName)
+//                .totalPrice(totalPrice)
+//                .discountRate(discountRate)
+//                .terms("Điều khoản hợp đồng mặc định")
+//                .status(ContractStatus.DRAFT)
+//                .build();
+//
+//        Contract savedContract = contractRepo.save(contract);
+//
+//        // Cập nhật payment status của order thành ĐÃ_CỌC (khách hàng đã cọc 7%)
+//        order.setPaymentStatus(PaymentStatus.ĐÃ_CỌC);
+//        orderRepo.save(order);
+//
+//        ContractResponse response = mapper.toResponse(savedContract);
+//        response.setSubtotal(subtotal);
+//        response.setVatAmount(vatAmount);
+//
+//        return response;
+//    }
 
     @Override
     @Transactional
