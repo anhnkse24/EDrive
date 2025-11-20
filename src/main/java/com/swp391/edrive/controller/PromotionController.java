@@ -35,7 +35,7 @@ public class PromotionController {
         return ResponseEntity.ok(
                 ResponseObject.<List<PromotionResponse>>builder()
                         .statusCode(HttpStatus.OK.value())
-                        .message("Promotions retrieved successfully")
+                        .message("Danh sách mã khuyến mãi")
                         .data(list)
                         .build()
         );
@@ -50,7 +50,7 @@ public class PromotionController {
         return ResponseEntity.ok(
                 ResponseObject.<List<PromotionResponse>>builder()
                         .statusCode(HttpStatus.OK.value())
-                        .message("Promotions retrieved successfully by dealer ID")
+                        .message("Danh sách mã khuyến mãi theo đại lí")
                         .data(list)
                         .build()
         );
@@ -67,7 +67,7 @@ public class PromotionController {
         return ResponseEntity.ok(
                 ResponseObject.<PromotionResponse>builder()
                         .statusCode(HttpStatus.OK.value())
-                        .message("Promotion retrieved successfully by dealer ID")
+                        .message("Danh sách mã khuyến mãi")
                         .data(res)
                         .build()
         );
@@ -84,7 +84,7 @@ public class PromotionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 ResponseObject.<PromotionResponse>builder()
                         .statusCode(HttpStatus.CREATED.value())
-                        .message("Promotion created successfully for dealer")
+                        .message("Tạo mã khuyến mãi thành công")
                         .data(res)
                         .build()
         );
@@ -102,7 +102,7 @@ public class PromotionController {
         return ResponseEntity.ok(
                 ResponseObject.<PromotionResponse>builder()
                         .statusCode(HttpStatus.OK.value())
-                        .message("Promotion updated successfully for dealer")
+                        .message("Cập nhật mã khuyến mãi thành công")
                         .data(updated)
                         .build()
         );
@@ -119,7 +119,7 @@ public class PromotionController {
         return ResponseEntity.ok(
                 ResponseObject.<Void>builder()
                         .statusCode(HttpStatus.OK.value())
-                        .message("Promotion deleted successfully for dealer")
+                        .message("Xoá mã khuyến mãi thành công")
                         .data(null)
                         .build()
         );
