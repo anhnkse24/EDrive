@@ -145,6 +145,7 @@ public class TestDriveServiceImpl implements TestDriveService {
                             .dealer(testDrive.getDealer())
                             .title("Cập nhật trạng thái lịch lái thử")
                             .message(message)
+                            .receiverType("DEALER")
                             .isRead(false)
                             .createdAt(LocalDateTime.now())
                             .build()
