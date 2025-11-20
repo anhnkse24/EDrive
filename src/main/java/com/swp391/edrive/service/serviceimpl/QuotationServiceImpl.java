@@ -9,6 +9,7 @@ import com.swp391.edrive.enums.DiscountType;
 import com.swp391.edrive.enums.PromoTarget;
 import com.swp391.edrive.enums.QuotationStatus;
 import com.swp391.edrive.repository.*;
+import com.swp391.edrive.service.NotificationService;
 import com.swp391.edrive.service.QuotationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,6 +40,8 @@ public class QuotationServiceImpl implements QuotationService {
     @Autowired
     private PromotionRepository promotionRepository;
 
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     public QuotationResponse createQuotation(QuotationRequest quotationRequest, User createdByUser) {
@@ -133,6 +136,8 @@ public class QuotationServiceImpl implements QuotationService {
 
         // Lưu báo giá trước để có ID
         Quotation savedQuotation = quotationRepository.save(quotation);
+
+        notificationService.createAdminNotificationForNewQuotation(savedQuotation);
 
         // Tạo và lưu các QuotationService entities nếu có selectedServiceIds
         if (quotationRequest.getSelectedServiceIds() != null && !quotationRequest.getSelectedServiceIds().isEmpty()) {

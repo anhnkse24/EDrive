@@ -2,6 +2,7 @@ package com.swp391.edrive.service;
 
 import com.swp391.edrive.dto.response.NotificationResponse;
 import com.swp391.edrive.entity.Contract;
+import com.swp391.edrive.entity.Quotation;
 
 import java.util.List;
 
@@ -15,5 +16,6 @@ public interface NotificationService {
     void createAdminNotificationForUploadedBill(String orderId);
     List<NotificationResponse> getNotificationsForAdmin();
     void createNotificationForUploadedContract(Contract contract);
+    void createAdminNotificationForNewQuotation(Quotation quotation);
 
 }

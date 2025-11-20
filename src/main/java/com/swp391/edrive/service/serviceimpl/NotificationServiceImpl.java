@@ -142,6 +142,24 @@ public class NotificationServiceImpl implements NotificationService {
 
         notificationRepository.save(notification);
     }
+    @Override
+    public void createAdminNotificationForNewQuotation(Quotation quotation) {
+
+        Dealer dealer = quotation.getDealer();
+
+        Notification notification = Notification.builder()
+                .dealer(dealer)
+                .receiverType("ADMIN")
+                .title("Báo giá mới từ đại lý")
+                .message("Đại lý " + dealer.getDealerName() +
+                        " vừa tạo báo giá #" + quotation.getQuotationId() +
+                        " cho khách hàng " + quotation.getCustomer().getFullName())
+                .isRead(false)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        notificationRepository.save(notification);
+    }
 
     private NotificationResponse mapToResponse(Notification notification) {
         return NotificationResponse.builder()
