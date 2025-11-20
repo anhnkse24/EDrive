@@ -130,6 +130,7 @@ public class QuotationServiceImpl implements QuotationService {
         quotation.setUnitPrice(unitPrice);
         quotation.setPromotionDiscountAmount(promotionDiscountAmount);
         quotation.setPriceAfterPromotion(grandTotal);
+        quotation.setNote(quotationRequest.getNote());
 
         // Lưu các promotion đã áp dụng
         if (!appliedPromotions.isEmpty()) {
@@ -169,6 +170,7 @@ public class QuotationServiceImpl implements QuotationService {
                 .dealerId(dealer.getDealerId())
                 .dealerName(dealer.getDealerName())
                 .createdByUserName(createdByUser.getFullName())
+                .note(savedQuotation.getNote())
                 // Thông tin xe
                 .vehicleId(vehicle.getVehicleId())
                 .modelName(vehicle.getModelName())
