@@ -6,6 +6,7 @@ import com.swp391.edrive.service.DealerInventoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,22 +22,37 @@ public class DealerInventoryController {
 
     @Operation(summary = "Cập nhật số lượng xe trong kho đại lý")
     @PutMapping("/update/{dealerId}/{vehicleId}")
-    public ResponseEntity<ResponseObject> updateDealerInventory(
-            @PathVariable Long dealerId,  // ID của Dealer
-            @PathVariable Long vehicleId, // ID của Vehicle
-            @RequestParam int quantity) { // Số lượng xe mới
-        DealerInventoryDTO updatedInventory = dealerInventoryService.updateDealerInventory(dealerId, vehicleId, quantity);
+    public ResponseEntity<ResponseObject<DealerInventoryDTO>> updateDealerInventory(
+            @PathVariable Long dealerId,
+            @PathVariable Long vehicleId,
+            @RequestParam int quantity) {
+
+        DealerInventoryDTO updatedInventory =
+                dealerInventoryService.updateDealerInventory(dealerId, vehicleId, quantity);
+
         return ResponseEntity.ok(
-                new ResponseObject(200, "Cập nhật số lượng xe thành công", updatedInventory)
+                ResponseObject.<DealerInventoryDTO>builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message("Cập nhật số lượng xe thành công")
+                        .data(updatedInventory)
+                        .build()
         );
     }
 
     @Operation(summary = "Lấy thông tin kho đại lý theo ID đại lý")
     @GetMapping("/dealer/{dealerId}")
-    public ResponseEntity<ResponseObject> getDealerInventoryByDealerId(@PathVariable Long dealerId) {
-        List<DealerInventoryDTO> inventories = dealerInventoryService.getDealerInventoryByDealerId(dealerId);
+    public ResponseEntity<ResponseObject<List<DealerInventoryDTO>>> getDealerInventoryByDealerId(
+            @PathVariable Long dealerId) {
+
+        List<DealerInventoryDTO> inventories =
+                dealerInventoryService.getDealerInventoryByDealerId(dealerId);
+
         return ResponseEntity.ok(
-                new ResponseObject(200, "Lấy thông tin kho đại lý thành công", inventories)
+                ResponseObject.<List<DealerInventoryDTO>>builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message("Lấy thông tin kho đại lý thành công")
+                        .data(inventories)
+                        .build()
         );
     }
 
