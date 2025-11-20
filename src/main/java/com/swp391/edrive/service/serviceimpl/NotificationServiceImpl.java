@@ -44,9 +44,6 @@ public class NotificationServiceImpl implements NotificationService {
         List<Notification> notifications = notificationRepository
                 .findByDealerDealerIdAndReceiverTypeOrderByCreatedAtDesc(dealerId, "DEALER");
 
-        if (notifications.isEmpty())
-            throw new EntityNotFoundException("Không có thông báo nào cho đại lý ID: " + dealerId);
-
         return notifications.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -124,7 +121,9 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public List<NotificationResponse> getNotificationsForAdmin() {
         List<Notification> notifications = notificationRepository.findByReceiverTypeOrderByCreatedAtDesc("ADMIN");
-        return notifications.stream().map(this::mapToResponse).collect(Collectors.toList());
+        return notifications.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
     @Override
     public void createNotificationForUploadedContract(Contract contract) {
