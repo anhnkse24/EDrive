@@ -4,6 +4,7 @@ import com.swp391.edrive.dto.request.ContractRequest;
 import com.swp391.edrive.dto.response.*;
 import com.swp391.edrive.entity.*;
 import com.swp391.edrive.enums.ContractStatus;
+import com.swp391.edrive.enums.OrderStatus;
 import com.swp391.edrive.enums.PaymentStatus;
 import com.swp391.edrive.mapper.contract.IContractMapper;
 import com.swp391.edrive.repository.*;
@@ -118,7 +119,7 @@ public class ContractServiceImpl implements ContractService {
                 .build();
 
         Contract savedContract = contractRepo.save(c);
-
+        order.setStatus(OrderStatus.ĐÃ_XÁC_NHẬN);
         ContractResponse response = mapper.toResponse(savedContract);
         response.setSubtotal(subtotal);
         response.setVatAmount(vatAmount);
