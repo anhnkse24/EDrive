@@ -4,11 +4,13 @@ import com.swp391.edrive.dto.request.ManufacturerInventoryRequest;
 import com.swp391.edrive.dto.request.ManufacturerInventoryUpdateRequest;
 import com.swp391.edrive.dto.response.ManufacturerInventoryResponse;
 import com.swp391.edrive.dto.response.ManufacturerInventorySummaryResponse;
+import com.swp391.edrive.dto.response.ResponseObject;
 import com.swp391.edrive.service.ManufacturerInventoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,8 +33,17 @@ public class ManufacturerInventoryController {
             description = "Tìm và trả về thông tin tồn kho của một hãng theo ID cụ thể"
     )
     @GetMapping("/{id}")
-    public ResponseEntity<ManufacturerInventoryResponse> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(manufacturerInventoryService.getById(id));
+    public ResponseEntity<ResponseObject<ManufacturerInventoryResponse>> getById(@PathVariable Long id) {
+
+        ManufacturerInventoryResponse data = manufacturerInventoryService.getById(id);
+
+        return ResponseEntity.ok(
+                ResponseObject.<ManufacturerInventoryResponse>builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message("Lấy danh sách kho theo đại lí thành công")
+                        .data(data)
+                        .build()
+        );
     }
 
     @Operation(
@@ -40,9 +51,18 @@ public class ManufacturerInventoryController {
             description = "Tạo mới một bản ghi tồn kho của hãng sản xuất (Manufacturer Inventory)"
     )
     @PostMapping
-    public ResponseEntity<ManufacturerInventoryResponse> create(
+    public ResponseEntity<ResponseObject<ManufacturerInventoryResponse>> create(
             @RequestBody ManufacturerInventoryRequest request) {
-        return ResponseEntity.ok(manufacturerInventoryService.create(request));
+
+        ManufacturerInventoryResponse data = manufacturerInventoryService.create(request);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                ResponseObject.<ManufacturerInventoryResponse>builder()
+                        .statusCode(HttpStatus.CREATED.value())
+                        .message("Inventory created successfully")
+                        .data(data)
+                        .build()
+        );
     }
 
     @Operation(
@@ -50,10 +70,19 @@ public class ManufacturerInventoryController {
             description = "Cập nhật thông tin bản ghi tồn kho dựa trên ID"
     )
     @PutMapping("/{id}")
-    public ResponseEntity<ManufacturerInventoryResponse> update(
+    public ResponseEntity<ResponseObject<ManufacturerInventoryResponse>> update(
             @PathVariable Long id,
             @RequestBody ManufacturerInventoryUpdateRequest request) {
-        return ResponseEntity.ok(manufacturerInventoryService.update(id, request));
+
+        ManufacturerInventoryResponse data = manufacturerInventoryService.update(id, request);
+
+        return ResponseEntity.ok(
+                ResponseObject.<ManufacturerInventoryResponse>builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message("Chỉnh sửa kho thành công")
+                        .data(data)
+                        .build()
+        );
     }
 
     @Operation(
@@ -61,9 +90,17 @@ public class ManufacturerInventoryController {
             description = "Xóa bản ghi tồn kho theo ID của manufacturer inventory"
     )
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<ResponseObject<Void>> delete(@PathVariable Long id) {
+
         manufacturerInventoryService.delete(id);
-        return ResponseEntity.noContent().build();
+
+        return ResponseEntity.ok(
+                ResponseObject.<Void>builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message("Xoá kho thành công")
+                        .data(null)
+                        .build()
+        );
     }
 
     @Operation(
@@ -71,7 +108,16 @@ public class ManufacturerInventoryController {
             description = "Nhóm dữ liệu tồn kho theo tên hãng và trả về số lượng xe tồn kho theo từng hãng"
     )
     @GetMapping("/summary")
-    public ResponseEntity<List<ManufacturerInventorySummaryResponse>> getSummary() {
-        return ResponseEntity.ok(manufacturerInventoryService.getGroupedByManufacturer());
+    public ResponseEntity<ResponseObject<List<ManufacturerInventorySummaryResponse>>> getSummary() {
+
+        List<ManufacturerInventorySummaryResponse> data = manufacturerInventoryService.getGroupedByManufacturer();
+
+        return ResponseEntity.ok(
+                ResponseObject.<List<ManufacturerInventorySummaryResponse>>builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message("Tổng danh sách kho")
+                        .data(data)
+                        .build()
+        );
     }
 }
