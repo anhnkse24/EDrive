@@ -159,4 +159,28 @@ public class QuotationController {
             return new ResponseEntity<>(errorBytes, headers, HttpStatus.BAD_REQUEST);
         }
     }
+
+    @Operation(summary = "Gửi email báo giá cho khách hàng",
+               description = "Gửi email kèm PDF báo giá cho khách hàng. Chỉ áp dụng cho báo giá đã được đại lý duyệt (ACCEPTED)")
+    @PostMapping("/{quotationId}/send-email")
+    public ResponseEntity<ResponseObject<String>> sendQuotationEmail(@PathVariable Long quotationId) {
+        try {
+            quotationService.sendQuotationEmailToCustomer(quotationId);
+
+            return ResponseEntity.ok(
+                    new ResponseObject<>(200, "Gửi email báo giá thành công",
+                            "Email đã được gửi đến khách hàng kèm file PDF báo giá")
+            );
+        } catch (IllegalStateException e) {
+            // Trường hợp quotation chưa được duyệt
+            return ResponseEntity.badRequest().body(
+                    new ResponseObject<>(400, e.getMessage(), null)
+            );
+        } catch (RuntimeException e) {
+            // Các lỗi khác
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    new ResponseObject<>(500, "Lỗi khi gửi email: " + e.getMessage(), null)
+            );
+        }
+    }
 }

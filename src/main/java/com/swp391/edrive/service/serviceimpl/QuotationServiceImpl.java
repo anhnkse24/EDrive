@@ -9,6 +9,8 @@ import com.swp391.edrive.enums.DiscountType;
 import com.swp391.edrive.enums.PromoTarget;
 import com.swp391.edrive.enums.QuotationStatus;
 import com.swp391.edrive.repository.*;
+import com.swp391.edrive.service.EmailService;
+import com.swp391.edrive.service.QuotationPdfService;
 import com.swp391.edrive.service.QuotationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,6 +40,12 @@ public class QuotationServiceImpl implements QuotationService {
 
     @Autowired
     private PromotionRepository promotionRepository;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private QuotationPdfService quotationPdfService;
 
 
     @Override
@@ -510,5 +518,123 @@ public class QuotationServiceImpl implements QuotationService {
                 .vatAmount(vatAmount)
                 .grandTotal(grandTotal)
                 .build();
+    }
+
+    @Override
+    public void sendQuotationEmailToCustomer(Long quotationId) {
+        // Tìm quotation
+        Quotation quotation = quotationRepository.findById(quotationId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy báo giá với ID: " + quotationId));
+
+        // Kiểm tra quotation phải ở trạng thái ACCEPTED
+        if (quotation.getQuotationStatus() != QuotationStatus.ACCEPTED) {
+            throw new IllegalStateException("Chỉ có thể gửi email cho báo giá đã được đại lý duyệt (trạng thái ACCEPTED)");
+        }
+
+        Customer customer = quotation.getCustomer();
+        if (customer == null || customer.getEmail() == null || customer.getEmail().isEmpty()) {
+            throw new RuntimeException("Khách hàng không có email để gửi báo giá");
+        }
+
+        try {
+            // Tạo PDF báo giá
+            java.io.ByteArrayOutputStream pdfStream = quotationPdfService.generateQuotationPdf(quotation);
+            byte[] pdfBytes = pdfStream.toByteArray();
+
+            // Lưu PDF tạm thời vào file
+            java.io.File tempFile = java.io.File.createTempFile("Bao-gia-" + quotationId, ".pdf");
+            try (java.io.FileOutputStream fos = new java.io.FileOutputStream(tempFile)) {
+                fos.write(pdfBytes);
+            }
+
+            // Tạo nội dung email
+            String subject = "Báo giá xe điện từ " + quotation.getDealer().getDealerName();
+            String emailBody = buildEmailBody(quotation);
+
+            // Gửi email kèm PDF
+            emailService.sendEmailWithAttachment(
+                    customer.getEmail(),
+                    subject,
+                    emailBody,
+                    tempFile
+            );
+
+            // Xóa file tạm sau khi gửi
+            tempFile.delete();
+
+        } catch (java.io.IOException e) {
+            throw new RuntimeException("Lỗi khi tạo hoặc gửi file PDF: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Xây dựng nội dung email gửi cho khách hàng
+     */
+    private String buildEmailBody(Quotation quotation) {
+        Customer customer = quotation.getCustomer();
+        Vehicle vehicle = quotation.getVehicle();
+        Dealer dealer = quotation.getDealer();
+
+        StringBuilder body = new StringBuilder();
+        body.append("Kính gửi Quý khách ").append(customer.getFullName()).append(",\n\n");
+        body.append("Cảm ơn Quý khách đã quan tâm đến sản phẩm xe điện của chúng tôi.\n\n");
+        body.append("Chúng tôi xin gửi đến Quý khách báo giá chi tiết cho xe ").append(vehicle.getModelName());
+        body.append(" phiên bản ").append(vehicle.getVersion()).append(".\n\n");
+
+        body.append("Thông tin báo giá:\n");
+        body.append("- Mã báo giá: #").append(quotation.getQuotationId()).append("\n");
+        body.append("- Xe: ").append(vehicle.getModelName()).append(" ").append(vehicle.getVersion()).append("\n");
+        body.append("- Giá xe: ").append(formatPrice(quotation.getUnitPrice())).append(" VNĐ\n");
+
+        if (quotation.getPromotionDiscountAmount() != null && quotation.getPromotionDiscountAmount().compareTo(BigDecimal.ZERO) > 0) {
+            body.append("- Giảm giá khuyến mãi: ").append(formatPrice(quotation.getPromotionDiscountAmount())).append(" VNĐ\n");
+        }
+
+        body.append("- Tổng giá trị (đã bao gồm VAT): ").append(formatPrice(quotation.getPriceAfterPromotion())).append(" VNĐ\n\n");
+
+        body.append("Vui lòng xem chi tiết trong file PDF đính kèm.\n\n");
+        body.append("Để biết thêm thông tin hoặc đặt lịch lái thử, vui lòng liên hệ:\n");
+        body.append("Đại lý: ").append(dealer.getDealerName()).append("\n");
+
+        // Xây dựng địa chỉ từ các phần
+        StringBuilder address = new StringBuilder();
+        if (dealer.getHouseNumberAndStreet() != null && !dealer.getHouseNumberAndStreet().isEmpty()) {
+            address.append(dealer.getHouseNumberAndStreet());
+        }
+        if (dealer.getWardOrCommune() != null && !dealer.getWardOrCommune().isEmpty()) {
+            if (address.length() > 0) address.append(", ");
+            address.append(dealer.getWardOrCommune());
+        }
+        if (dealer.getDistrict() != null && !dealer.getDistrict().isEmpty()) {
+            if (address.length() > 0) address.append(", ");
+            address.append(dealer.getDistrict());
+        }
+        if (dealer.getProvinceOrCity() != null && !dealer.getProvinceOrCity().isEmpty()) {
+            if (address.length() > 0) address.append(", ");
+            address.append(dealer.getProvinceOrCity());
+        }
+        if (address.length() > 0) {
+            body.append("Địa chỉ: ").append(address.toString()).append("\n");
+        }
+
+        if (dealer.getPhone() != null && !dealer.getPhone().isEmpty()) {
+            body.append("Điện thoại: ").append(dealer.getPhone()).append("\n");
+        }
+        if (dealer.getDealerEmail() != null && !dealer.getDealerEmail().isEmpty()) {
+            body.append("Email: ").append(dealer.getDealerEmail()).append("\n");
+        }
+
+        body.append("\nTrân trọng,\n");
+        body.append(dealer.getDealerName());
+
+        return body.toString();
+    }
+
+    /**
+     * Format giá tiền
+     */
+    private String formatPrice(BigDecimal price) {
+        if (price == null) return "0";
+        return String.format("%,d", price.longValue());
     }
 }

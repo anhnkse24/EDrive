@@ -918,7 +918,7 @@ public class DataInitializer implements CommandLineRunner {
                 c1.setFullName("Nguyễn Văn Minh");
                 c1.setDob(LocalDate.of(1992, 3, 15));
                 c1.setGender("Nam");
-                c1.setEmail("minh.nguyen@example.com");
+                c1.setEmail("jaycengo59@gmail.com");
                 c1.setPhone("0905123456");
                 c1.setAddress("12 Nguyễn Trãi, Hà Nội");
                 c1.setIdCardNo("012345678912");

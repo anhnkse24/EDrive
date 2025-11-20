@@ -14,4 +14,7 @@ public interface QuotationService {
 
     List<QuotationResponse> getAllQuotations();
     Optional<QuotationResponse> getQuotationById(Long quotationId);
+
+    // Gửi email báo giá cho khách hàng (chỉ áp dụng cho báo giá đã được duyệt)
+    void sendQuotationEmailToCustomer(Long quotationId);
 }
