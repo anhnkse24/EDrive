@@ -25,106 +25,81 @@ public class ColorController {
     @Operation(summary = "Tạo màu mới")
     @PostMapping
     public ResponseEntity<ResponseObject<ColorResponse>> create(@RequestBody @Valid ColorRequest req) {
-        try {
-            ColorResponse colorResponse = colorService.create(req);
-            ResponseObject<ColorResponse> response = ResponseObject.<ColorResponse>builder()
-                    .statusCode(200)
-                    .message("Color created successfully")
-                    .data(colorResponse)
-                    .build();
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            ResponseObject<ColorResponse> response = ResponseObject.<ColorResponse>builder()
-                    .statusCode(500)
-                    .message("Error creating color")
-                    .data(null)
-                    .build();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+
+        ColorResponse colorResponse = colorService.create(req);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ResponseObject.<ColorResponse>builder()
+                        .statusCode(HttpStatus.CREATED.value())
+                        .message("Color created successfully")
+                        .data(colorResponse)
+                        .build()
+                );
     }
 
     @Operation(summary = "Cập nhật màu")
     @PutMapping("/{id}")
-    public ResponseEntity<ResponseObject<ColorResponse>> update(@PathVariable Long id, @RequestBody @Valid ColorRequest req) {
-        try {
-            ColorResponse colorResponse = colorService.update(id, req);
-            ResponseObject<ColorResponse> response = ResponseObject.<ColorResponse>builder()
-                    .statusCode(200)
-                    .message("Color updated successfully")
-                    .data(colorResponse)
-                    .build();
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            ResponseObject<ColorResponse> response = ResponseObject.<ColorResponse>builder()
-                    .statusCode(500)
-                    .message("Error updating color")
-                    .data(null)
-                    .build();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+    public ResponseEntity<ResponseObject<ColorResponse>> update(
+            @PathVariable Long id,
+            @RequestBody @Valid ColorRequest req) {
+
+        ColorResponse colorResponse = colorService.update(id, req);
+
+        return ResponseEntity.ok(
+                ResponseObject.<ColorResponse>builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message("Color updated successfully")
+                        .data(colorResponse)
+                        .build()
+        );
     }
 
     @Operation(summary = "Xoá màu")
     @DeleteMapping("/{id}")
-    public ResponseEntity<ResponseObject<Void>> delete(@PathVariable Long id, @RequestParam(defaultValue = "false") boolean force) {
-        try {
-            colorService.delete(id, force);
-            ResponseObject<Void> response = ResponseObject.<Void>builder()
-                    .statusCode(200)
-                    .message("Color deleted successfully")
-                    .data(null)
-                    .build();
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            ResponseObject<Void> response = ResponseObject.<Void>builder()
-                    .statusCode(500)
-                    .message("Error deleting color")
-                    .data(null)
-                    .build();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+    public ResponseEntity<ResponseObject<Void>> delete(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "false") boolean force) {
+
+        colorService.delete(id, force);
+
+        return ResponseEntity.ok(
+                ResponseObject.<Void>builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message("Color deleted successfully")
+                        .data(null)
+                        .build()
+        );
     }
 
     @Operation(summary = "Lấy màu theo ID")
     @GetMapping("/{id}")
     public ResponseEntity<ResponseObject<ColorResponse>> getById(@PathVariable Long id) {
-        try {
-            ColorResponse colorResponse = colorService.getById(id);
-            ResponseObject<ColorResponse> response = ResponseObject.<ColorResponse>builder()
-                    .statusCode(200)
-                    .message("Color fetched successfully")
-                    .data(colorResponse)
-                    .build();
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            ResponseObject<ColorResponse> response = ResponseObject.<ColorResponse>builder()
-                    .statusCode(500)
-                    .message("Error fetching color")
-                    .data(null)
-                    .build();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+
+        ColorResponse colorResponse = colorService.getById(id);
+
+        return ResponseEntity.ok(
+                ResponseObject.<ColorResponse>builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message("Color fetched successfully")
+                        .data(colorResponse)
+                        .build()
+        );
     }
 
     @Operation(summary = "Danh sách màu")
     @GetMapping
     public ResponseEntity<ResponseObject<List<ColorResponse>>> list() {
-        try {
-            List<ColorResponse> colors = colorService.getAll();
-            ResponseObject<List<ColorResponse>> response = ResponseObject.<List<ColorResponse>>builder()
-                    .statusCode(200)
-                    .message("Color list retrieved")
-                    .data(colors)
-                    .build();
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            ResponseObject<List<ColorResponse>> response = ResponseObject.<List<ColorResponse>>builder()
-                    .statusCode(500)
-                    .message("Error fetching color list")
-                    .data(null)
-                    .build();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+
+        List<ColorResponse> colors = colorService.getAll();
+
+        return ResponseEntity.ok(
+                ResponseObject.<List<ColorResponse>>builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message("Color list retrieved")
+                        .data(colors)
+                        .build()
+        );
     }
+
 
 }
