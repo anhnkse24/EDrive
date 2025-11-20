@@ -1,7 +1,5 @@
 package com.swp391.edrive.enums;
 
 public enum QuotationStatus {
-    PENDING,
-    ACCEPTED,
-    REJECTED
+    DRAFT, SENT, APPROVED, EXPIRED, CANCELLED
 }

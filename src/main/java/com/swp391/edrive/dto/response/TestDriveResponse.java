@@ -1,22 +1,25 @@
 package com.swp391.edrive.dto.response;
 
 import com.swp391.edrive.enums.TestDriveStatus;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.swp391.edrive.enums.TestDriveStatusForStaff;
+import lombok.Builder;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
+@Data
+@Builder
 public class TestDriveResponse {
-    private Long id;
+    private Long testdriveId;
     private Long customerId;
+    private String customerName;
     private Long dealerId;
+    private String dealerName;
     private Long vehicleId;
+    private String vehicleModel;
     private LocalDateTime scheduleDatetime;
+    private LocalDateTime completedAt;
     private TestDriveStatus status;
+    private TestDriveStatusForStaff statusForStaff;
+    private String cancelReason;
 }
