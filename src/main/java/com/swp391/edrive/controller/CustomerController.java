@@ -1,6 +1,7 @@
 package com.swp391.edrive.controller;
 
 import com.swp391.edrive.dto.request.CustomerRequest;
+import com.swp391.edrive.dto.response.CustomerResponse;
 import com.swp391.edrive.dto.response.ResponseObject;
 import com.swp391.edrive.service.CustomerService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,8 +10,11 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/dealer/{dealerId}/customers")
@@ -25,46 +29,87 @@ public class CustomerController {
 
     @Operation(summary = "Thêm khách hàng mới cho Dealer")
     @PostMapping
-    public ResponseEntity<ResponseObject> createCustomer(
+    public ResponseEntity<ResponseObject<CustomerResponse>> createCustomer(
             @PathVariable Long dealerId,
             @Valid @RequestBody CustomerRequest request) {
-        var res = customerService.createCustomer(dealerId, request);
-        return ResponseEntity.ok(new ResponseObject(200, "Customer created successfully", res));
+
+        CustomerResponse res = customerService.createCustomer(dealerId, request);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ResponseObject.<CustomerResponse>builder()
+                        .statusCode(HttpStatus.CREATED.value())
+                        .message("Customer created successfully")
+                        .data(res)
+                        .build()
+                );
     }
 
     @Operation(summary = "Cập nhật khách hàng theo Dealer & ID")
     @PutMapping("/{customerId}")
-    public ResponseEntity<ResponseObject> updateCustomer(
+    public ResponseEntity<ResponseObject<CustomerResponse>> updateCustomer(
             @PathVariable Long dealerId,
             @PathVariable Long customerId,
             @Valid @RequestBody CustomerRequest request) {
-        var res = customerService.updateCustomer(dealerId, customerId, request);
-        return ResponseEntity.ok(new ResponseObject(200, "Customer updated successfully", res));
+
+        CustomerResponse res = customerService.updateCustomer(dealerId, customerId, request);
+
+        return ResponseEntity.ok(
+                ResponseObject.<CustomerResponse>builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message("Customer updated successfully")
+                        .data(res)
+                        .build()
+        );
     }
 
     @Operation(summary = "Xóa khách hàng theo Dealer & ID")
     @DeleteMapping("/{customerId}")
-    public ResponseEntity<ResponseObject> deleteCustomer(
+    public ResponseEntity<ResponseObject<Void>> deleteCustomer(
             @PathVariable Long dealerId,
             @PathVariable Long customerId) {
+
         customerService.deleteCustomer(dealerId, customerId);
-        return ResponseEntity.ok(new ResponseObject(200, "Customer deleted successfully", null));
+
+        return ResponseEntity.ok(
+                ResponseObject.<Void>builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message("Customer deleted successfully")
+                        .data(null)
+                        .build()
+        );
     }
 
     @Operation(summary = "Lấy chi tiết khách hàng theo Dealer & ID")
     @GetMapping("/{customerId}")
-    public ResponseEntity<ResponseObject> getCustomerById(
+    public ResponseEntity<ResponseObject<CustomerResponse>> getCustomerById(
             @PathVariable Long dealerId,
             @PathVariable Long customerId) {
-        var res = customerService.getCustomerById(dealerId, customerId);
-        return ResponseEntity.ok(new ResponseObject(200, "Customer retrieved successfully", res));
+
+        CustomerResponse res = customerService.getCustomerById(dealerId, customerId);
+
+        return ResponseEntity.ok(
+                ResponseObject.<CustomerResponse>builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message("Customer retrieved successfully")
+                        .data(res)
+                        .build()
+        );
     }
 
     @Operation(summary = "Lấy danh sách khách hàng theo Dealer")
     @GetMapping
-    public ResponseEntity<ResponseObject> getCustomersByDealer(@PathVariable Long dealerId) {
-        var res = customerService.getCustomersByDealer(dealerId);
-        return ResponseEntity.ok(new ResponseObject(200, "Customers retrieved successfully", res));
+    public ResponseEntity<ResponseObject<List<CustomerResponse>>> getCustomersByDealer(
+            @PathVariable Long dealerId) {
+
+        List<CustomerResponse> res = customerService.getCustomersByDealer(dealerId);
+
+        return ResponseEntity.ok(
+                ResponseObject.<List<CustomerResponse>>builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message("Customers retrieved successfully")
+                        .data(res)
+                        .build()
+        );
     }
 }
 

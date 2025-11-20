@@ -37,17 +37,6 @@ public class ContractController {
         return ResponseEntity.ok(service.create(req));
     }
 
-//    @Operation(summary = "Tạo hợp đồng từ Order", description = "Tạo hợp đồng từ đơn hàng đã thanh toán, payment status chuyển sang ĐÃ_CỌC")
-//    @PostMapping("/from-order")
-//    public ResponseObject<ContractResponse> createFromOrder(@RequestBody ContractFromOrderRequest req) {
-//        ContractResponse result = service.createContractFromOrder(req.getOrderId());
-//        return ResponseObject.<ContractResponse>builder()
-//                .statusCode(HttpStatus.OK.value())
-//                .message("Tạo hợp đồng thành công. Trạng thái thanh toán đã chuyển sang ĐÃ_CỌC")
-//                .data(result)
-//                .build();
-//    }
-
     @Operation(summary = "Admin duyệt hoặc từ chối hợp đồng", description = "Admin approve/reject hợp đồng đang ở trạng thái CHỜ_DUYỆT")
     @PostMapping("/review")
     public ResponseObject<ContractResponse> reviewContract(@RequestBody ContractApprovalRequest req) {
