@@ -18,6 +18,6 @@ public class StaffResponse {
     private Set<String> roles;
     private Long dealerId;
     private String dealerName;
-    private boolean isVerified;
+    private boolean isActive;
 }
 

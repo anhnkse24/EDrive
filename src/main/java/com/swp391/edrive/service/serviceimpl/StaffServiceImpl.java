@@ -1,4 +1,4 @@
-    package com.swp391.edrive.service.serviceimpl;
+package com.swp391.edrive.service.serviceimpl;
 
 import com.swp391.edrive.constant.PredefinedRole;
 import com.swp391.edrive.dto.request.StaffCreateRequest;
@@ -154,7 +154,9 @@ public class StaffServiceImpl implements StaffService {
                 PredefinedRole.DEALER_STAFF_ROLE
         );
 
+        // CHỈ trả về staff đang active (isVerify = true)
         return staffList.stream()
+                .filter(User::isVerify)
                 .map(this::mapToStaffResponse)
                 .collect(Collectors.toList());
     }
@@ -163,7 +165,9 @@ public class StaffServiceImpl implements StaffService {
     public List<StaffResponse> getAllEvmStaff() {
         List<User> staffList = userRepository.findByRoles_NameAndDealerIsNull(PredefinedRole.EVM_STAFF_ROLE);
 
+        // CHỈ trả về staff đang active (isVerify = true)
         return staffList.stream()
+                .filter(User::isVerify)
                 .map(this::mapToStaffResponse)
                 .collect(Collectors.toList());
     }
@@ -262,7 +266,7 @@ public class StaffServiceImpl implements StaffService {
                         .collect(Collectors.toSet()))
                 .dealerId(user.getDealer() != null ? user.getDealer().getDealerId() : null)
                 .dealerName(user.getDealer() != null ? user.getDealer().getDealerName() : null)
-                .isVerified(user.isVerify())
+                .isActive(user.isVerify())
                 .build();
     }
 }
