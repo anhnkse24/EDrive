@@ -20,23 +20,26 @@ public class NotificationController {
 
     private final NotificationService notificationService;
 
-    // 1. Lấy thông báo của 1 dealer
-    @Operation(summary = "Lấy danh sách thông báo theo Dealer ID")
-    @GetMapping("/dealer/{dealerId}")
-    @PreAuthorize("hasAnyRole('DEALER_MANAGER','DEALER_STAFF')")
-    public List<NotificationResponse> getNotificationsByDealer(@PathVariable Long dealerId) {
-        return notificationService.getNotificationsByDealer(dealerId);
+    @Operation(summary = "Lấy danh sách thông báo Dealer Manager")
+    @GetMapping("/dealer/manager/{dealerId}")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER')")
+    public List<NotificationResponse> getNotificationsByDealerManager(@PathVariable Long dealerId) {
+        return notificationService.getNotificationsForDealerManager(dealerId);
+    }
+    @Operation(summary = "Lấy danh sách thông báo Dealer Manager")
+    @GetMapping("/dealer/staff/{dealerId}")
+    @PreAuthorize("hasAnyRole('DEALER_STAFF')")
+    public List<NotificationResponse> getNotificationsByDealerStaff(@PathVariable Long dealerId) {
+        return notificationService.getNotificationsForDealerStaff(dealerId);
     }
 
-    // 2. Lấy thông báo dành cho admin
     @Operation(summary = "Lấy danh sách thông báo dành cho Admin")
     @GetMapping("/admin")
     @PreAuthorize("hasAnyRole('ADMIN')")
     public List<NotificationResponse> getNotificationsForAdmin() {
-        return notificationService.getNotificationsForAdmin(); // bạn cần tạo method này trong service
+        return notificationService.getNotificationsForAdmin();
     }
 
-    // 3. Lấy tất cả thông báo (admin + dealer)
     @Operation(summary = "Lấy tất cả thông báo")
     @GetMapping("/all")
     public List<NotificationResponse> getAllNotifications() {
