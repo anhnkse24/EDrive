@@ -5,6 +5,7 @@ import com.swp391.edrive.enums.OrderStatus;
 import com.swp391.edrive.enums.PaymentStatus;
 import com.swp391.edrive.repository.*;
 import com.swp391.edrive.service.DeliveryService;
+import com.swp391.edrive.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,7 @@ public class DeliveryServiceImpl implements DeliveryService {
     private final OrderItemRepository orderItemRepo;
     private final ManufacturerInventoryRepository manufacturerInventoryRepo;
     private final DealerInventoryRepository dealerInventoryRepo;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional
@@ -46,6 +48,7 @@ public class DeliveryServiceImpl implements DeliveryService {
         order.setStatus(OrderStatus.ĐÃ_GIAO);
         order.setActualDeliveryDate(LocalDate.now());
         orderRepo.save(order);
+        notificationService.createNotificationForDeliveryConfirmed(order);
     }
 
     private void updateInventory(OrderItem orderItem) {

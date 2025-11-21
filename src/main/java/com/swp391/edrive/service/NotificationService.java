@@ -2,11 +2,11 @@ package com.swp391.edrive.service;
 
 import com.swp391.edrive.dto.response.NotificationResponse;
 import com.swp391.edrive.entity.Contract;
+import com.swp391.edrive.entity.Order;
 
 import java.util.List;
 
 public interface NotificationService {
-    List<NotificationResponse> getNotificationsByDealer(Long dealerId);
     NotificationResponse markAsRead(Long notificationId);
     List<NotificationResponse> getAllNotifications();
     void createAdminNotificationForDealerRequest(Long dealerId);
@@ -15,5 +15,8 @@ public interface NotificationService {
     void createAdminNotificationForUploadedBill(String orderId);
     List<NotificationResponse> getNotificationsForAdmin();
     void createNotificationForUploadedContract(Contract contract);
+    void createNotificationForDeliveryConfirmed(Order order);
+    List<NotificationResponse> getNotificationsForDealerManager(Long dealerId);
+    List<NotificationResponse> getNotificationsForDealerStaff(Long dealerId);
 
-}
+    }

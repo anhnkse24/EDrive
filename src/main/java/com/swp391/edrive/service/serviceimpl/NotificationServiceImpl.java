@@ -31,22 +31,13 @@ public class NotificationServiceImpl implements NotificationService {
         Notification notification = Notification.builder()
                 .dealer(dealer)
                 .title("Lịch lái thử mới")
-                .receiverType("DEALER")
+                .receiverType("DEALER_MANAGER")
                 .message("Bạn có một lịch lái thử mới với mã #" + testDriveId)
                 .isRead(false)
                 .createdAt(LocalDateTime.now())
                 .build();
 
         notificationRepository.save(notification);
-    }
-    @Override
-    public List<NotificationResponse> getNotificationsByDealer(Long dealerId) {
-        List<Notification> notifications = notificationRepository
-                .findByDealerDealerIdAndReceiverTypeOrderByCreatedAtDesc(dealerId, "DEALER");
-
-        return notifications.stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
     }
 
     @Override
@@ -119,11 +110,17 @@ public class NotificationServiceImpl implements NotificationService {
         notificationRepository.save(notification);
     }
     @Override
-    public List<NotificationResponse> getNotificationsForAdmin() {
-        List<Notification> notifications = notificationRepository.findByReceiverTypeOrderByCreatedAtDesc("ADMIN");
-        return notifications.stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+    public void createNotificationForDeliveryConfirmed(Order order) {
+        Notification notification = Notification.builder()
+                .dealer(order.getDealer())
+                .receiverType("DEALER_MANAGER")
+                .title("Giao hàng thành công")
+                .message("Đơn hàng #" + order.getOrderId() + " đã được giao thành công.")
+                .isRead(false)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        notificationRepository.save(notification);
     }
     @Override
     public void createNotificationForUploadedContract(Contract contract) {
@@ -133,13 +130,39 @@ public class NotificationServiceImpl implements NotificationService {
         Notification notification = Notification.builder()
                 .dealer(dealer)
                 .title("Hợp đồng mới từ nhà sản xuất")
-                .receiverType("DEALER")
+                .receiverType("DEALER_MANAGER")
                 .message("Hợp đồng cho đơn hàng #" + contract.getOrder().getOrderId() + " đã được upload.")
                 .isRead(false)
                 .createdAt(LocalDateTime.now())
                 .build();
 
         notificationRepository.save(notification);
+    }
+    @Override
+    public List<NotificationResponse> getNotificationsForAdmin() {
+        List<Notification> notifications = notificationRepository.findByReceiverTypeOrderByCreatedAtDesc("ADMIN");
+        return notifications.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<NotificationResponse> getNotificationsForDealerManager(Long dealerId) {
+        List<Notification> notifications = notificationRepository
+                .findByDealerDealerIdAndReceiverTypeOrderByCreatedAtDesc(dealerId, "DEALER_MANAGER");
+
+        return notifications.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+    @Override
+    public List<NotificationResponse> getNotificationsForDealerStaff(Long dealerId) {
+        List<Notification> notifications = notificationRepository
+                .findByDealerDealerIdAndReceiverTypeOrderByCreatedAtDesc(dealerId, "DEALER_STAFF");
+
+        return notifications.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 
     private NotificationResponse mapToResponse(Notification notification) {
