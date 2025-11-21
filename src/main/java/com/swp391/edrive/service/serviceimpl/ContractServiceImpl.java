@@ -60,7 +60,7 @@ public class ContractServiceImpl implements ContractService {
         BigDecimal subtotal = order.getSubtotal();
         BigDecimal vatAmount = order.getVatAmount();
 
-        // Process all items in order: transfer inventory & create contract
+        // CHỈ KIỂM TRA tồn kho hãng, KHÔNG trừ kho
         for (OrderItem orderItem : order.getOrderItems()) {
             Vehicle vehicle = orderItem.getVehicle();
             Integer quantity = orderItem.getQuantity();
@@ -69,36 +69,20 @@ public class ContractServiceImpl implements ContractService {
                 manufacturer = vehicle.getManufacturer();
             }
 
-            // Trừ từ kho hãng
+            // Kiểm tra kho hãng có đủ hàng không
             ManufacturerInventory manufacturerInventory = manufacturerInventoryRepo
                     .findByVehicle_VehicleId(vehicle.getVehicleId())
                     .orElseThrow(() -> new IllegalStateException(
-                            "Manufacturer inventory not found for vehicle: " + vehicle.getVehicleId()));
+                            "Không tìm thấy tồn kho hãng cho xe: " + vehicle.getVehicleId()));
 
             if (manufacturerInventory.getQuantity() < quantity) {
                 throw new IllegalStateException(
-                        "Insufficient manufacturer inventory for vehicle: " + vehicle.getModelName() +
-                                ". Available: " + manufacturerInventory.getQuantity() + ", Requested: " + quantity);
+                        "Không đủ tồn kho hãng cho xe " + vehicle.getModelName() +
+                                ". Có sẵn: " + manufacturerInventory.getQuantity() +
+                                ", Yêu cầu: " + quantity);
             }
 
-            // Cộng vào kho đại lý
-            DealerInventory dealerInventory = dealerInventoryRepo
-                    .findByDealer_DealerIdAndVehicle_VehicleId(dealer.getDealerId(), vehicle.getVehicleId())
-                    .orElse(null);
-
-            if (dealerInventory != null) {
-                dealerInventory.setQuantity(dealerInventory.getQuantity() + quantity);
-                dealerInventory.setLastUpdated(LocalDateTime.now());
-            } else {
-                dealerInventory = DealerInventory.builder()
-                        .dealer(dealer)
-                        .vehicle(vehicle)
-                        .quantity(quantity)
-                        .lastUpdated(LocalDateTime.now())
-                        .build();
-            }
-
-            dealerInventoryRepo.save(dealerInventory);
+            // KHÔNG trừ kho ở đây - sẽ trừ khi confirmDelivery
         }
 
         // Tạo contract với trạng thái DRAFT
@@ -204,14 +188,13 @@ public class ContractServiceImpl implements ContractService {
             contract.setManufacturerNote("Đã phê duyệt");
 
             Order order = contract.getOrder();
-            Dealer dealer = contract.getDealer();
 
-            // Xử lý inventory cho tất cả items trong order
+            // CHỈ KIỂM TRA tồn kho hãng, KHÔNG trừ kho
             for (OrderItem orderItem : order.getOrderItems()) {
                 Vehicle vehicle = orderItem.getVehicle();
                 Integer quantity = orderItem.getQuantity();
 
-                // Trừ từ kho hãng
+                // Kiểm tra kho hãng có đủ hàng không
                 ManufacturerInventory manufacturerInventory = manufacturerInventoryRepo
                         .findByVehicle_VehicleId(vehicle.getVehicleId())
                         .orElseThrow(() -> new IllegalStateException(
@@ -219,33 +202,12 @@ public class ContractServiceImpl implements ContractService {
 
                 if (manufacturerInventory.getQuantity() < quantity) {
                     throw new IllegalStateException(
-                            "Không đủ tồn kho cho xe " + vehicle.getModelName() +
+                            "Không đủ tồn kho hãng cho xe " + vehicle.getModelName() +
                                     ". Có sẵn: " + manufacturerInventory.getQuantity() +
                                     ", Yêu cầu: " + quantity);
                 }
 
-                manufacturerInventory.setQuantity(manufacturerInventory.getQuantity() - quantity);
-                manufacturerInventory.setLastUpdated(LocalDateTime.now());
-                manufacturerInventoryRepo.save(manufacturerInventory);
-
-                // Cộng vào kho đại lý
-                DealerInventory dealerInventory = dealerInventoryRepo
-                        .findByDealer_DealerIdAndVehicle_VehicleId(dealer.getDealerId(), vehicle.getVehicleId())
-                        .orElse(null);
-
-                if (dealerInventory != null) {
-                    dealerInventory.setQuantity(dealerInventory.getQuantity() + quantity);
-                    dealerInventory.setLastUpdated(LocalDateTime.now());
-                } else {
-                    dealerInventory = DealerInventory.builder()
-                            .dealer(dealer)
-                            .vehicle(vehicle)
-                            .quantity(quantity)
-                            .lastUpdated(LocalDateTime.now())
-                            .build();
-                }
-
-                dealerInventoryRepo.save(dealerInventory);
+                // KHÔNG trừ kho ở đây - sẽ trừ khi confirmDelivery
             }
         } else {
             // REJECT: Chuyển sang REJECTED
