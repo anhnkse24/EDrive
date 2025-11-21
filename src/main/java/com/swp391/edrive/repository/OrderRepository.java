@@ -14,4 +14,7 @@ public interface OrderRepository extends JpaRepository <Order, String> {
     List<Order> findByDealer_DealerId(Long dealerId);
     Optional<Order> findTopByDealer_DealerIdAndPaymentImageIsNotNullOrderByOrderDateDesc(Long dealerId);
 
+    // Tìm order cuối cùng của dealer để tạo số thứ tự
+    Optional<Order> findTopByDealer_DealerIdOrderByOrderIdDesc(Long dealerId);
+
 }

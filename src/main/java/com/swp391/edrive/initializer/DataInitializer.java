@@ -928,7 +928,7 @@ public class DataInitializer implements CommandLineRunner {
                 c2.setFullName("Trần Thị Hồng");
                 c2.setDob(LocalDate.of(1996, 8, 25));
                 c2.setGender("Nữ");
-                c2.setEmail("hong.tran@example.com");
+                c2.setEmail("asferfw@gmail.com");
                 c2.setPhone("0906234567");
                 c2.setAddress("56 Lê Lợi, Quận 1, TP.HCM");
                 c2.setIdCardNo("123456789123");

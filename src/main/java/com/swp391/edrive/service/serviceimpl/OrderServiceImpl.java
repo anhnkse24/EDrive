@@ -26,6 +26,7 @@ import java.nio.file.Files;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -173,7 +174,7 @@ public class OrderServiceImpl implements OrderService {
 
         // Tạo đơn hàng mới
         Order order = new Order();
-        order.setOrderId(UUID.randomUUID().toString()); // Tạo ID ngẫu nhiên
+        order.setOrderId(generateOrderId(dealerId)); // Tạo ID theo format DL{dealerId}-ORD{number}
         order.setOrderDate(LocalDate.now());  // Ngày đặt hàng
         order.setDealer(dealer);  // Đặt dealer từ đối tượng đã tìm thấy
         order.setCreatedBy(createdBy);  // Lưu user tạo order
@@ -502,6 +503,39 @@ public class OrderServiceImpl implements OrderService {
         } catch (Exception e) {
             throw new RuntimeException("Gửi email thất bại: " + e.getMessage());
         }
+    }
+
+    /**
+     * Tạo Order ID theo format: DL{dealerId}-ORD{orderNumber}
+     * Ví dụ: DL001-ORD0001, DL002-ORD0045
+     */
+    private String generateOrderId(Long dealerId) {
+        // Format dealer ID thành 3 chữ số (001, 002, ...)
+        String dealerPart = String.format("DL%03d", dealerId);
+
+        // Tìm order cuối cùng của dealer này để lấy số thứ tự
+        Optional<Order> latestOrder = orderRepo.findTopByDealer_DealerIdOrderByOrderIdDesc(dealerId);
+
+        int nextOrderNumber = 1; // Mặc định bắt đầu từ 1
+
+        if (latestOrder.isPresent()) {
+            String latestOrderId = latestOrder.get().getOrderId();
+            // Parse số thứ tự từ orderId cũ (format: DL001-ORD0001)
+            try {
+                String[] parts = latestOrderId.split("-ORD");
+                if (parts.length == 2) {
+                    int lastNumber = Integer.parseInt(parts[1]);
+                    nextOrderNumber = lastNumber + 1;
+                }
+            } catch (NumberFormatException e) {
+                // Nếu parse lỗi, giữ nextOrderNumber = 1
+            }
+        }
+
+        // Format order number thành 4 chữ số (0001, 0002, ...)
+        String orderNumberPart = String.format("ORD%04d", nextOrderNumber);
+
+        return dealerPart + "-" + orderNumberPart;
     }
 
 }
