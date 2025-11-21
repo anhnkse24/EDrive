@@ -25,10 +25,7 @@ public interface StaffService {
     // Update staff
     StaffResponse updateStaff(Long staffId, StaffUpdateRequest request);
 
-    // Delete staff (soft delete by setting isVerify = false)
+    // Delete staff (hard delete - xóa hẳn khỏi database)
     void deleteStaff(Long staffId);
-
-    // Reactivate staff
-    void reactivateStaff(Long staffId);
 }
 

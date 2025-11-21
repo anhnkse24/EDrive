@@ -154,9 +154,7 @@ public class StaffServiceImpl implements StaffService {
                 PredefinedRole.DEALER_STAFF_ROLE
         );
 
-        // CHỈ trả về staff đang active (isVerify = true)
         return staffList.stream()
-                .filter(User::isVerify)
                 .map(this::mapToStaffResponse)
                 .collect(Collectors.toList());
     }
@@ -165,9 +163,7 @@ public class StaffServiceImpl implements StaffService {
     public List<StaffResponse> getAllEvmStaff() {
         List<User> staffList = userRepository.findByRoles_NameAndDealerIsNull(PredefinedRole.EVM_STAFF_ROLE);
 
-        // CHỈ trả về staff đang active (isVerify = true)
         return staffList.stream()
-                .filter(User::isVerify)
                 .map(this::mapToStaffResponse)
                 .collect(Collectors.toList());
     }
@@ -227,31 +223,10 @@ public class StaffServiceImpl implements StaffService {
             }
         }
 
-        // Soft delete by setting isVerify to false
-        staff.setVerify(false);
-        userRepository.save(staff);
-        log.info("Staff deactivated successfully: {}", staff.getUsername());
-    }
-
-    @Override
-    @Transactional
-    public void reactivateStaff(Long staffId) {
-        User staff = userRepository.findById(staffId)
-                .orElseThrow(() -> new NotFoundException("Không tìm thấy nhân viên với ID: " + staffId));
-
-        // Check authorization
-        User currentUser = getCurrentUser();
-        if (currentUser.hasRole(PredefinedRole.DEALER_MANAGER_ROLE)) {
-            // Dealer manager can only reactivate their own dealer's staff
-            if (staff.getDealer() == null || !staff.getDealer().getDealerId().equals(currentUser.getDealer().getDealerId())) {
-                throw new ForbiddenException("Bạn không có quyền kích hoạt lại nhân viên này");
-            }
-        }
-
-        // Reactivate by setting isVerify to true
-        staff.setVerify(true);
-        userRepository.save(staff);
-        log.info("Staff reactivated successfully: {}", staff.getUsername());
+        // Hard delete - xóa hẳn khỏi database
+        String username = staff.getUsername();
+        userRepository.delete(staff);
+        log.info("Staff deleted permanently: {}", username);
     }
 
     private StaffResponse mapToStaffResponse(User user) {
@@ -270,4 +245,3 @@ public class StaffServiceImpl implements StaffService {
                 .build();
     }
 }
-

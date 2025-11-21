@@ -81,24 +81,12 @@ public class StaffController {
 
     @DeleteMapping("/dealer/{staffId}")
     @PreAuthorize("hasRole('DEALER_MANAGER')")
-    @Operation(summary = "Vô hiệu hóa nhân viên đại lý", description = "Dealer Manager vô hiệu hóa tài khoản nhân viên (soft delete)")
+    @Operation(summary = "Xóa nhân viên đại lý", description = "Dealer Manager xóa hẳn tài khoản nhân viên khỏi hệ thống (hard delete)")
     public ResponseEntity<ResponseObject<Void>> deleteDealerStaff(@PathVariable Long staffId) {
         staffService.deleteStaff(staffId);
         return ResponseEntity.ok(new ResponseObject<>(
                 HttpStatus.OK.value(),
-                "Vô hiệu hóa nhân viên thành công",
-                null
-        ));
-    }
-
-    @PostMapping("/dealer/{staffId}/reactivate")
-    @PreAuthorize("hasRole('DEALER_MANAGER')")
-    @Operation(summary = "Kích hoạt lại nhân viên đại lý", description = "Dealer Manager kích hoạt lại tài khoản nhân viên đã bị vô hiệu hóa")
-    public ResponseEntity<ResponseObject<Void>> reactivateDealerStaff(@PathVariable Long staffId) {
-        staffService.reactivateStaff(staffId);
-        return ResponseEntity.ok(new ResponseObject<>(
-                HttpStatus.OK.value(),
-                "Kích hoạt lại nhân viên thành công",
+                "Xóa nhân viên thành công",
                 null
         ));
     }
@@ -158,24 +146,12 @@ public class StaffController {
 
     @DeleteMapping("/evm/{staffId}")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Vô hiệu hóa nhân viên EVM", description = "Admin vô hiệu hóa tài khoản nhân viên EVM (soft delete)")
+    @Operation(summary = "Xóa nhân viên EVM", description = "Admin xóa hẳn tài khoản nhân viên EVM khỏi hệ thống (hard delete)")
     public ResponseEntity<ResponseObject<Void>> deleteEvmStaff(@PathVariable Long staffId) {
         staffService.deleteStaff(staffId);
         return ResponseEntity.ok(new ResponseObject<>(
                 HttpStatus.OK.value(),
-                "Vô hiệu hóa nhân viên EVM thành công",
-                null
-        ));
-    }
-
-    @PostMapping("/evm/{staffId}/reactivate")
-    @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Kích hoạt lại nhân viên EVM", description = "Admin kích hoạt lại tài khoản nhân viên EVM đã bị vô hiệu hóa")
-    public ResponseEntity<ResponseObject<Void>> reactivateEvmStaff(@PathVariable Long staffId) {
-        staffService.reactivateStaff(staffId);
-        return ResponseEntity.ok(new ResponseObject<>(
-                HttpStatus.OK.value(),
-                "Kích hoạt lại nhân viên EVM thành công",
+                "Xóa nhân viên EVM thành công",
                 null
         ));
     }
