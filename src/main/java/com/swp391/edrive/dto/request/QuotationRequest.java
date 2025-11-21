@@ -12,9 +12,9 @@ import java.util.List;
 public class QuotationRequest {
     private Long vehicleId;            // ID của chiếc xe
     private Long customerId;           // ID của khách hàng
-    // Danh sách ID dịch vụ được chọn từ catalog
     private List<Long> selectedServiceIds; // Danh sách ID các dịch vụ được chọn
 
-    // Danh sách ID promotion được chọn bởi nhân viên
     private List<Long> selectedPromotionIds; // Danh sách ID các promotion được nhân viên chọn
+    private String note;
+
 }

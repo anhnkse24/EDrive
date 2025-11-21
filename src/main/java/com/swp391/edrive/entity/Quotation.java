@@ -67,6 +67,9 @@ public class Quotation {
     @OneToMany(mappedBy = "quotation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<QuotationServices> quotationServices;
 
+    @Column(columnDefinition = "TEXT")
+    private String note;
+
     // ====== Ngày tạo và ngày hết hạn báo giá ======
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

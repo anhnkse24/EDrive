@@ -62,4 +62,7 @@ public class QuotationResponse {
     private BigDecimal additionalServicesTotal; // Tổng giá dịch vụ bổ sung
     private BigDecimal vatAmount;               // Phí VAT (10%)
     private BigDecimal grandTotal;              // Tổng giá cuối cùng
+
+    private String note;
+
 }
