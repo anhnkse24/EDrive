@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,6 +28,7 @@ public class TestDriveController {
     @Operation(summary = "Lấy danh sách tất cả lịch lái thử")
     @GetMapping
     @SecurityRequirement(name = "api")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<List<TestDriveResponse>>> getAllTestDrives() {
         List<TestDriveResponse> list = testDriveService.getAllTestDrives();
         return ResponseEntity.ok(
@@ -37,6 +39,7 @@ public class TestDriveController {
     @Operation(summary = "Lấy danh sách lịch lái thử theo Dealer ID")
     @GetMapping("/dealer/{dealerId}")
     @SecurityRequirement(name = "api")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<List<TestDriveResponse>>> getTestDrivesByDealerId(
             @PathVariable Long dealerId) {
 
@@ -49,6 +52,7 @@ public class TestDriveController {
     @Operation(summary = "Tạo mới lịch lái thử cho Dealer cụ thể")
     @PostMapping("/dealer/{dealerId}")
     @SecurityRequirement(name = "api")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<TestDriveResponse>> createTestDriveByDealer(
             @PathVariable Long dealerId,
             @Valid @RequestBody TestDriveRequest request) {
@@ -62,6 +66,7 @@ public class TestDriveController {
     @Operation(summary = "Cập nhật lịch lái thử theo Dealer ID")
     @PutMapping("/dealer/{dealerId}/{testDriveId}")
     @SecurityRequirement(name = "api")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<TestDriveResponse>> updateTestDriveByDealer(
             @PathVariable Long dealerId,
             @PathVariable Long testDriveId,
@@ -76,6 +81,7 @@ public class TestDriveController {
     @Operation(summary = "Xóa lịch lái thử theo Dealer ID")
     @DeleteMapping("/dealer/{dealerId}/{testDriveId}")
     @SecurityRequirement(name = "api")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<Void>> deleteTestDriveByDealer(
             @PathVariable Long dealerId,
             @PathVariable Long testDriveId) {
@@ -89,6 +95,7 @@ public class TestDriveController {
     @Operation(summary = "Thay đổi trạng thái lịch lái thử")
     @PatchMapping("/dealer/{dealerId}/{testDriveId}/status")
     @SecurityRequirement(name = "api")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<TestDriveResponse>> changeTestDriveStatus(
             @PathVariable Long dealerId,
             @PathVariable Long testDriveId,
