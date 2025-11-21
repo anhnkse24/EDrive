@@ -12,8 +12,19 @@ import java.util.stream.Collectors;
 public class UserMapper {
 
     public static UserResponse toResponse(User user, String token, String refreshToken) {
-        return UserResponse.builder().token(token).refreshToken(refreshToken).build();
+        return UserResponse.builder()
+                .userId(user.getUserId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .roles(user.getRoles().stream()
+                        .map(r -> r.getName())
+                        .collect(Collectors.toSet()))
+                .dealerId(user.getDealer() != null ? user.getDealer().getDealerId() : null)
+                .token(token)
+                .refreshToken(refreshToken)
+                .build();
     }
+
     public DealerResponse toUserResponse(User user) {
         DealerResponse.DealerResponseBuilder builder = DealerResponse.builder()
                 .userId(user.getUserId())

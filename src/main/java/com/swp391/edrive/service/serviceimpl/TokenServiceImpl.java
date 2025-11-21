@@ -56,6 +56,10 @@ public class TokenServiceImpl implements TokenService {
                         .map(Permission::getCode)
                         .collect(Collectors.toSet()));
 
+        if (user.getDealer() != null) {
+            claims.put("dealerId", user.getDealer().getDealerId());
+        }
+
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(new Date())
