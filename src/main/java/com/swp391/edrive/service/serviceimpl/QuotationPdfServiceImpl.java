@@ -6,16 +6,19 @@ import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.io.font.PdfEncodings;
 import com.itextpdf.io.font.constants.StandardFonts;
+import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.borders.Border;
 import com.itextpdf.layout.borders.SolidBorder;
 import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
+import com.itextpdf.layout.properties.VerticalAlignment;
 import com.swp391.edrive.entity.*;
 import com.swp391.edrive.repository.QuotationRepository;
 import com.swp391.edrive.service.QuotationPdfService;
@@ -38,6 +41,10 @@ public class QuotationPdfServiceImpl implements QuotationPdfService {
 
     private static final DecimalFormat CURRENCY_FORMAT = (DecimalFormat) NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+    // Logo configuration
+    private static final String LOGO_PATH = "uploads/logo/edrive-logo.png"; // Đường dẫn logo
+    private static final String LOGO_URL = "https://vinfast-thaodien.com/wp-content/uploads/2025/02/vf8eco.webp"; // URL logo dự phòng
 
     // Colors
     private static final DeviceRgb PRIMARY_COLOR = new DeviceRgb(0, 102, 204); // Blue
@@ -114,6 +121,7 @@ public class QuotationPdfServiceImpl implements QuotationPdfService {
             }
 
             addPricingSummary(document, quotation);
+            addTermsAndConditions(document);
             addFooter(document);
 
             document.close();
@@ -126,14 +134,43 @@ public class QuotationPdfServiceImpl implements QuotationPdfService {
     }
 
     private void addHeader(Document document, Quotation quotation) {
+        // Create table for header layout: logo (left) + title (center-right)
+        Table headerTable = new Table(UnitValue.createPercentArray(new float[]{1, 3}))
+                .useAllAvailableWidth()
+                .setMarginBottom(10);
+
+        // Left cell: Logo
+        Cell logoCell = new Cell()
+                .setBorder(Border.NO_BORDER)
+                .setVerticalAlignment(VerticalAlignment.MIDDLE);
+
+        Image logo = loadLogo();
+
+        if (logo != null) {
+            // Resize logo to fit nicely (width: 100px, maintain aspect ratio)
+            logo.setWidth(100);
+            logo.setAutoScale(true);
+            logoCell.add(logo);
+        } else {
+            // Nếu không load được logo, hiển thị text placeholder
+            logoCell.add(new Paragraph("E-DRIVE")
+                    .setFontSize(16)
+                    .setBold()
+                    .setFontColor(PRIMARY_COLOR));
+        }
+
+        // Right cell: Title and info
+        Cell titleCell = new Cell()
+                .setBorder(Border.NO_BORDER)
+                .setVerticalAlignment(VerticalAlignment.MIDDLE);
+
         // Title
         Paragraph title = new Paragraph("BÁO GIÁ XE ĐIỆN")
                 .setFontSize(24)
                 .setBold()
                 .setFontColor(PRIMARY_COLOR)
-                .setTextAlignment(TextAlignment.CENTER)
-                .setMarginBottom(5);
-        document.add(title);
+                .setTextAlignment(TextAlignment.CENTER);
+        titleCell.add(title);
 
         // Quotation number
         String quotationNumber = String.format("Số: QT-%d-%04d",
@@ -142,8 +179,8 @@ public class QuotationPdfServiceImpl implements QuotationPdfService {
         Paragraph number = new Paragraph(quotationNumber)
                 .setFontSize(12)
                 .setTextAlignment(TextAlignment.CENTER)
-                .setMarginBottom(10);
-        document.add(number);
+                .setMarginTop(5);
+        titleCell.add(number);
 
         // Date
         String dateStr = "Ngày tạo: " + (quotation.getCreatedAt() != null
@@ -152,8 +189,14 @@ public class QuotationPdfServiceImpl implements QuotationPdfService {
         Paragraph date = new Paragraph(dateStr)
                 .setFontSize(10)
                 .setTextAlignment(TextAlignment.CENTER)
-                .setMarginBottom(20);
-        document.add(date);
+                .setMarginTop(3);
+        titleCell.add(date);
+
+        // Add cells to table
+        headerTable.addCell(logoCell);
+        headerTable.addCell(titleCell);
+
+        document.add(headerTable);
 
         // Separator line
         document.add(new Paragraph().setBorder(new SolidBorder(ColorConstants.GRAY, 1)).setMarginBottom(15));
@@ -163,7 +206,7 @@ public class QuotationPdfServiceImpl implements QuotationPdfService {
         Dealer dealer = quotation.getDealer();
         if (dealer == null) return;
 
-        Paragraph sectionTitle = new Paragraph("THÔNG TIN ĐẠI LÝ")
+        Paragraph sectionTitle = new Paragraph("THÔNG TIN ĐẠI LÝ:")
                 .setFontSize(14)
                 .setBold()
                 .setFontColor(PRIMARY_COLOR)
@@ -194,7 +237,7 @@ public class QuotationPdfServiceImpl implements QuotationPdfService {
         Customer customer = quotation.getCustomer();
         if (customer == null) return;
 
-        Paragraph sectionTitle = new Paragraph("THÔNG TIN KHÁCH HÀNG")
+        Paragraph sectionTitle = new Paragraph("THÔNG TIN KHÁCH HÀNG:")
                 .setFontSize(14)
                 .setBold()
                 .setFontColor(PRIMARY_COLOR)
@@ -280,7 +323,7 @@ public class QuotationPdfServiceImpl implements QuotationPdfService {
     }
 
     private void addServicesSection(Document document, Quotation quotation) {
-        Paragraph sectionTitle = new Paragraph("DỊCH VỤ BỔ SUNG")
+        Paragraph sectionTitle = new Paragraph("DỊCH VỤ BỔ SUNG:")
                 .setFontSize(14)
                 .setBold()
                 .setFontColor(PRIMARY_COLOR)
@@ -300,20 +343,19 @@ public class QuotationPdfServiceImpl implements QuotationPdfService {
 
         int index = 1;
         for (QuotationServices qs : quotation.getQuotationServices()) {
-            table.addCell(createCell(String.valueOf(index++)));
-            table.addCell(createCell(qs.getService().getServiceName()));
-            table.addCell(createCell(String.valueOf(qs.getQuantity())));
-            table.addCell(createCell(formatCurrency(qs.getPriceAtSelection())));
-
+            table.addCell(createCenterCell(String.valueOf(index++)));       // STT
+            table.addCell(createCell(qs.getService().getServiceName()));    // Tên dịch vụ (căn trái)
+            table.addCell(createCenterCell(String.valueOf(qs.getQuantity()))); // SL
+            table.addCell(createCenterCell(formatCurrency(qs.getPriceAtSelection()))); // Đơn giá
             BigDecimal total = qs.getPriceAtSelection().multiply(BigDecimal.valueOf(qs.getQuantity()));
-            table.addCell(createCell(formatCurrency(total)));
+            table.addCell(createCenterCell(formatCurrency(total)));        // Thành tiền
         }
 
         document.add(table);
     }
 
     private void addPricingSummary(Document document, Quotation quotation) {
-        Paragraph sectionTitle = new Paragraph("TỔNG KẾT GIÁ")
+        Paragraph sectionTitle = new Paragraph("TỔNG KẾT GIÁ:")
                 .setFontSize(14)
                 .setBold()
                 .setFontColor(PRIMARY_COLOR)
@@ -351,9 +393,10 @@ public class QuotationPdfServiceImpl implements QuotationPdfService {
         BigDecimal vat = subtotal.multiply(BigDecimal.valueOf(0.10));
         addPriceRow(table, "VAT (10%):", vat, false);
 
-        // Separator
-        table.addCell(createCell("").setBorder(new SolidBorder(ColorConstants.GRAY, 1)));
-        table.addCell(createCell("").setBorder(new SolidBorder(ColorConstants.GRAY, 1)));
+        Cell spacer = new Cell(1, 2)
+                .setBorder(Border.NO_BORDER)
+                .setHeight(10);
+        table.addCell(spacer);
 
         // Grand total
         BigDecimal grandTotal = subtotal.add(vat);
@@ -378,35 +421,37 @@ public class QuotationPdfServiceImpl implements QuotationPdfService {
         document.add(table);
     }
 
+    private void addTermsAndConditions(Document document) {
+
+        Paragraph title = new Paragraph("ĐIỀU KHOẢN & ĐIỀU KIỆN:")
+                .setBold()
+                .setFontColor(PRIMARY_COLOR)
+                .setMarginTop(10)
+                .setMarginBottom(5);
+        document.add(title);
+
+        String terms =
+                "• Báo giá này có hiệu lực trong vòng 07 ngày kể từ ngày phát hành.\n" +
+                        "• Giá trên đã bao gồm thuế VAT, nhưng chưa bao gồm lệ phí trước bạ, phí đăng ký, đăng kiểm và các chi phí lăn bánh khác.\n" +
+                        "• Các chương trình khuyến mãi (nếu có) được áp dụng theo điều kiện và thời hạn của E-Drive tại thời điểm xuất hóa đơn.\n" +
+                        "• Màu sắc xe và phụ kiện có thể có sự chênh lệch nhỏ so với hình ảnh minh họa do điều kiện ánh sáng.\n" +
+                        "• Khoản tiền đặt cọc sẽ không được hoàn lại nếu khách hàng đơn phương hủy bỏ giao dịch.\n" +
+                        "• Thời gian giao xe dự kiến có thể thay đổi tùy thuộc vào lịch sản xuất của nhà máy và tình hình vận chuyển.\n" +
+                        "• Các gói dịch vụ cộng thêm có thể có điều khoản riêng. Vui lòng tham khảo hợp đồng chi tiết.\n" +
+                        "• Đây là báo giá tham khảo và không có giá trị pháp lý như một hợp đồng mua bán chính thức.\n" +
+                        "• Vui lòng đọc kỹ các điều khoản trước khi quyết định mua xe.";
+
+        Paragraph content = new Paragraph(terms)
+                .setFontSize(10)
+                .setMarginBottom(15)
+                .setTextAlignment(TextAlignment.LEFT)
+                .setFixedLeading(14); // giãn dòng
+        document.add(content);
+    }
+
     private void addFooter(Document document) {
         document.add(new Paragraph().setMarginTop(30));
 
-        // Signatures table
-        Table sigTable = new Table(UnitValue.createPercentArray(new float[]{1, 1}))
-                .useAllAvailableWidth();
-
-        Cell customerCell = new Cell().add(new Paragraph("KHÁCH HÀNG\n(Ký và ghi rõ họ tên)")
-                .setTextAlignment(TextAlignment.CENTER)
-                .setBold())
-                .setBorder(Border.NO_BORDER);
-
-        Cell dealerCell = new Cell().add(new Paragraph("ĐẠI DIỆN ĐẠI LÝ\n(Ký và ghi rõ họ tên)")
-                .setTextAlignment(TextAlignment.CENTER)
-                .setBold())
-                .setBorder(Border.NO_BORDER);
-
-        sigTable.addCell(customerCell);
-        sigTable.addCell(dealerCell);
-
-        document.add(sigTable);
-
-        // Note
-        Paragraph note = new Paragraph("\nLưu ý: Báo giá này có hiệu lực trong 30 ngày kể từ ngày phát hành.")
-                .setFontSize(9)
-                .setItalic()
-                .setTextAlignment(TextAlignment.CENTER)
-                .setMarginTop(40);
-        document.add(note);
     }
 
     private void addInfoRow(Table table, String label, String value) {
@@ -436,6 +481,13 @@ public class QuotationPdfServiceImpl implements QuotationPdfService {
                 .setTextAlignment(TextAlignment.LEFT);
     }
 
+    private Cell createCenterCell(String text) {
+        return new Cell()
+                .add(new Paragraph(text))
+                .setPadding(5)
+                .setTextAlignment(TextAlignment.CENTER); // Căn giữa
+    }
+
     private void addPriceRow(Table table, String label, BigDecimal amount, boolean isBold) {
         Paragraph labelPara = new Paragraph(label);
         if (isBold) labelPara.setBold();
@@ -463,6 +515,49 @@ public class QuotationPdfServiceImpl implements QuotationPdfService {
     private String formatCurrency(BigDecimal amount) {
         if (amount == null) return "0 ₫";
         return String.format("%,d ₫", amount.longValue());
+    }
+
+    /**
+     * Load logo from various sources with fallback options
+     */
+    private Image loadLogo() {
+        // Danh sách các file logo có thể có
+        String[] possibleLogoPaths = {
+            "uploads/logo/edrive-logo.png",
+            "uploads/logo/logo.png",
+            "uploads/logo/logo.jpg",
+            "uploads/logo/logo.jpeg",
+            "uploads/logo/edrive-logo.jpg",
+            LOGO_PATH
+        };
+
+        // Thử load từ các file local
+        for (String path : possibleLogoPaths) {
+            try {
+                java.io.File logoFile = new java.io.File(path);
+                if (logoFile.exists()) {
+                    System.out.println("Found logo at: " + logoFile.getAbsolutePath());
+                    Image logo = new Image(ImageDataFactory.create(logoFile.getAbsolutePath()));
+                    System.out.println("Successfully loaded logo from: " + path);
+                    return logo;
+                }
+            } catch (Exception e) {
+                System.err.println("Error loading logo from " + path + ": " + e.getMessage());
+            }
+        }
+
+        // Nếu không có file local, thử load từ URL
+        try {
+            System.out.println("Trying to load logo from URL: " + LOGO_URL);
+            Image logo = new Image(ImageDataFactory.create(LOGO_URL));
+            System.out.println("Successfully loaded logo from URL");
+            return logo;
+        } catch (Exception e) {
+            System.err.println("Error loading logo from URL: " + e.getMessage());
+        }
+
+        System.err.println("Could not load logo from any source. Using text placeholder.");
+        return null;
     }
 
     /**
