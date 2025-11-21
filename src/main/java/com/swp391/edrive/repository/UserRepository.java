@@ -22,4 +22,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByIsVerify(boolean isVerify);
 
     Optional<User> findByDealer(Dealer dealer);
+
+    // For staff management
+    List<User> findByDealerAndRoles_Name(Dealer dealer, String roleName);
+    List<User> findByRoles_NameAndDealerIsNull(String roleName);
 }
