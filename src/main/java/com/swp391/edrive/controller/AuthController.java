@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -53,6 +54,7 @@ public class AuthController {
 
     @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Đăng ký đại lý với giấy phép kinh doanh")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<ResponseObject> register(
             @Valid @ModelAttribute UserRegistrationRequest request,
             @RequestParam(value = "businessLicense", required = false) MultipartFile businessLicense) {
@@ -81,6 +83,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<ResponseObject> login(@RequestBody LoginRequest loginRequest) {
         try {
             UserResponse userResponse = authenticationService.login(loginRequest);
@@ -98,6 +101,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh-token")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<ResponseObject> refreshToken(@Valid @RequestBody TokenRefreshRequest request) {
         try {
             String requestRefreshToken = request.getRefreshToken();
@@ -122,6 +126,7 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<ResponseObject> forgotPassword(@RequestBody ForgotPasswordRequest request) {
         try {
             User user = userRepository
@@ -158,6 +163,7 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<ResponseObject> resetPasswordWithToken(@RequestBody ResetPasswordWithTokenRequest request) {
         try {
             authenticationService.resetPasswordWithToken(request.getToken(), request.getNewPassword());
@@ -170,6 +176,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
+    @PreAuthorize("isAuthenticated()")
     @SecurityRequirement(name = "api")
     @Transactional
     public ResponseEntity<ResponseObject> logout() {
@@ -192,6 +199,7 @@ public class AuthController {
 
 
     @PostMapping("/verify")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<ResponseObject> verifyAccount(@RequestParam String token) {
         try {
             authenticationService.verifyAccount(token);
@@ -204,6 +212,7 @@ public class AuthController {
     }
 
     @GetMapping("/verify-dealer")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject> verifyDealerAccount(@RequestParam String token) {
         try {
             authenticationService.verifyDealerAccount(token);
@@ -218,6 +227,7 @@ public class AuthController {
 
     @PostMapping("/change-password")
     @SecurityRequirement(name = "api")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ResponseObject> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
         try {
             authenticationService.changeUserPassword(request.getOldPassword(), request.getNewPassword());

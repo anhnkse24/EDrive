@@ -16,6 +16,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -39,6 +40,7 @@ public class ContractController {
 
     @Operation(summary = "Admin duyệt hoặc từ chối hợp đồng", description = "Admin approve/reject hợp đồng đang ở trạng thái CHỜ_DUYỆT")
     @PostMapping("/review")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseObject<ContractResponse> reviewContract(@RequestBody ContractApprovalRequest req) {
         ContractResponse result = service.reviewContract(
                 req.getContractId(),
@@ -58,33 +60,39 @@ public class ContractController {
     }
 
     @PutMapping("/{id}/submit")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ContractResponse> submit(@PathVariable Long id) {
         return ResponseEntity.ok(service.submitToManufacturer(id));
     }
 
     @PutMapping("/{id}/approve")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ContractResponse> approve(@PathVariable Long id,
                                                     @RequestParam(required = false) String note) {
         return ResponseEntity.ok(service.approve(id, note));
     }
 
     @PutMapping("/{id}/reject")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ContractResponse> reject(@PathVariable Long id,
                                                    @RequestParam(required = false) String note) {
         return ResponseEntity.ok(service.reject(id, note));
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ContractResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
     @GetMapping("/dealer/{dealerId}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<List<ContractResponse>> listByDealer(@PathVariable Long dealerId) {
         return ResponseEntity.ok(service.getByDealer(dealerId));
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseObject<List<ContractResponse>> getAllContracts() {
         List<ContractResponse> result = service.getAllContracts();
         return ResponseObject.<List<ContractResponse>>builder()
@@ -97,7 +105,9 @@ public class ContractController {
     @PostMapping(
             value = "/{contractId}/upload-pdf",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )    public ResponseEntity<ContractFileResponse> uploadContractPdf(
+    )
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER')")
+    public ResponseEntity<ContractFileResponse> uploadContractPdf(
             @PathVariable Long contractId,
             @RequestParam("file") MultipartFile file) {
 
@@ -106,6 +116,7 @@ public class ContractController {
     }
 
     @GetMapping("/{id}/download")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Resource> downloadContract(@PathVariable Long id) {
         Contract contract = service.findEntityById(id);
         if (contract == null || contract.getPdfFilename() == null) {
@@ -134,6 +145,7 @@ public class ContractController {
      */
     @Operation(summary = "Get contract detail", description = "Returns detailed contract information including buyer, dealer, manufacturer, and pricing")
     @GetMapping("/{contractId}/detail")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ContractDetailResponse> getContractDetail(@PathVariable Long contractId) {
         return ResponseEntity.ok(service.getContractDetail(contractId));
     }
@@ -144,6 +156,7 @@ public class ContractController {
      */
     @Operation(summary = "Get order detail", description = "Returns detailed order information with items and money breakdown")
     @GetMapping("/orders/{orderId}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<OrderDetailResponse> getOrderDetail(@PathVariable String orderId) {
         return ResponseEntity.ok(service.getOrderDetail(orderId));
     }
@@ -154,6 +167,7 @@ public class ContractController {
      */
     @Operation(summary = "Manufacturer signs contract", description = "Saves manufacturer's signature on the contract")
     @PutMapping("/{contractId}/sign/manufacturer")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<SignatureResponse> saveManufacturerSignature(
             @PathVariable Long contractId,
             @RequestBody java.util.Map<String, String> request) {
@@ -172,6 +186,7 @@ public class ContractController {
      */
     @Operation(summary = "Upload contract PDF", description = "Uploads a PDF file for the contract with optional custom filename")
     @PostMapping(value = "/{contractId}/upload-pdf-new", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<PdfUploadResponse> uploadContractPdfNew(
             @PathVariable Long contractId,
             @RequestParam("file") MultipartFile file,
@@ -186,6 +201,7 @@ public class ContractController {
      */
     @Operation(summary = "Dealer signs contract", description = "Saves dealer's signature on the contract. Can only be done after manufacturer has signed (status = SIGNING).")
     @PutMapping("/{contractId}/sign/dealer")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER')")
     public ResponseEntity<SignatureResponse> dealerSignContract(
             @PathVariable Long contractId,
             @RequestBody java.util.Map<String, String> request) {

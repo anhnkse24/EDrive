@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class DealerInventoryController {
 
     @Operation(summary = "Cập nhật số lượng xe trong kho đại lý")
     @PutMapping("/update/{dealerId}/{vehicleId}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<DealerInventoryDTO>> updateDealerInventory(
             @PathVariable Long dealerId,
             @PathVariable Long vehicleId,
@@ -41,6 +43,7 @@ public class DealerInventoryController {
 
     @Operation(summary = "Lấy thông tin kho đại lý theo ID đại lý")
     @GetMapping("/dealer/{dealerId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DEALER_MANAGER')")
     public ResponseEntity<ResponseObject<List<DealerInventoryDTO>>> getDealerInventoryByDealerId(
             @PathVariable Long dealerId) {
 

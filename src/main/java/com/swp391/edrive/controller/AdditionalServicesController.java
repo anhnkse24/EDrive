@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,6 +28,7 @@ public class AdditionalServicesController {
 
     @Operation(summary = "Lấy tất cả dịch vụ đang hoạt động")
     @GetMapping("/active")
+    @PreAuthorize("hasAnyRole('ADMIN','DEALER_STAFF','DEALER_MANAGER')")
     public ResponseEntity<ResponseObject<List<ServiceCatalogResponse>>> getAllActiveServices() {
 
         List<ServiceCatalogResponse> services = additionalServicesService.getAllActiveServices();
@@ -41,6 +43,7 @@ public class AdditionalServicesController {
     }
 
     @Operation(summary = "Lấy dịch vụ theo ID")
+    @PreAuthorize("hasAnyRole('ADMIN','DEALER_STAFF','DEALER_MANAGER')")
     @GetMapping("/{serviceId}")
     public ResponseEntity<ResponseObject<ServiceCatalogResponse>> getServiceById(@PathVariable Long serviceId) {
 
@@ -56,6 +59,7 @@ public class AdditionalServicesController {
     }
 
     @Operation(summary = "Lấy dịch vụ theo category")
+    @PreAuthorize("hasAnyRole('ADMIN','DEALER_STAFF','DEALER_MANAGER')")
     @GetMapping("/category/{category}")
     public ResponseEntity<ResponseObject<List<ServiceCatalogResponse>>> getServicesByCategory(
             @PathVariable String category) {
@@ -72,6 +76,7 @@ public class AdditionalServicesController {
     }
 
     @Operation(summary = "Tìm kiếm dịch vụ")
+    @PreAuthorize("hasAnyRole('ADMIN','DEALER_STAFF','DEALER_MANAGER')")
     @GetMapping("/search")
     public ResponseEntity<ResponseObject<Page<ServiceCatalogResponse>>> searchServices(
             @RequestParam(required = false, defaultValue = "") String keyword,
@@ -93,6 +98,7 @@ public class AdditionalServicesController {
 
     @Operation(summary = "Lấy tất cả dịch vụ (bao gồm inactive - cho manager)")
     @GetMapping("/all")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<Page<ServiceCatalogResponse>>> getAllServices(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
@@ -113,6 +119,7 @@ public class AdditionalServicesController {
 
     @Operation(summary = "Tạo dịch vụ mới")
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<ServiceCatalogResponse>> createService(
             @RequestBody @Valid ServiceCatalogRequest request) {
 
@@ -130,6 +137,7 @@ public class AdditionalServicesController {
 
     @Operation(summary = "Cập nhật dịch vụ")
     @PutMapping("/{serviceId}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<ServiceCatalogResponse>> updateService(
             @PathVariable Long serviceId,
             @RequestBody @Valid ServiceCatalogRequest request) {
@@ -148,6 +156,7 @@ public class AdditionalServicesController {
 
     @Operation(summary = "Vô hiệu hóa dịch vụ (xóa mềm)")
     @PatchMapping("/{serviceId}/deactivate")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<Void>> deactivateService(@PathVariable Long serviceId) {
 
         additionalServicesService.deactivateService(serviceId);
@@ -163,6 +172,7 @@ public class AdditionalServicesController {
 
     @Operation(summary = "Kích hoạt lại dịch vụ")
     @PatchMapping("/{serviceId}/activate")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<Void>> activateService(@PathVariable Long serviceId) {
 
         additionalServicesService.activateService(serviceId);
@@ -178,6 +188,7 @@ public class AdditionalServicesController {
 
 
     @Operation(summary = "Xóa dịch vụ vĩnh viễn")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @DeleteMapping("/{serviceId}")
     public ResponseEntity<ResponseObject<Void>> deleteService(@PathVariable Long serviceId) {
         try {

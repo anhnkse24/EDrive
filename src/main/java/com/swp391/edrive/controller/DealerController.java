@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +27,7 @@ public class DealerController {
     private final DealerService dealerService;
 
     @Operation(summary = "Tạo mới đại lý")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @PostMapping
     public ResponseEntity<ResponseObject<DealerResponse>> createDealer(
             @Valid @RequestBody DealerRequest request) {
@@ -43,6 +45,7 @@ public class DealerController {
 
     @Operation(summary = "Cập nhật thông tin đại lý")
     @PutMapping("/{dealerId}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<DealerResponse>> updateDealer(
             @PathVariable Long dealerId,
             @Valid @RequestBody DealerRequest request) {
@@ -60,6 +63,7 @@ public class DealerController {
 
     @Operation(summary = "Xóa đại lý theo ID")
     @DeleteMapping("/{dealerId}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<Void>> deleteDealer(@PathVariable Long dealerId) {
         dealerService.deleteDealer(dealerId);
 
@@ -74,6 +78,7 @@ public class DealerController {
 
     @Operation(summary = "Lấy thông tin chi tiết đại lý theo ID")
     @GetMapping("/{dealerId}")
+    @PreAuthorize("hasAnyRole('ADMIN','DEALER_MANAGER')")
     public ResponseEntity<ResponseObject<DealerResponse>> getDealerById(@PathVariable Long dealerId) {
         DealerResponse dealer = dealerService.getDealerById(dealerId);
 
@@ -88,6 +93,7 @@ public class DealerController {
 
     @Operation(summary = "Lấy danh sách tất cả đại lý")
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<List<DealerResponse>>> getAllDealers() {
 
         List<DealerResponse> list = dealerService.getAllDealers();

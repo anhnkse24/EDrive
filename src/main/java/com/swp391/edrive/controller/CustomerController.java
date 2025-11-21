@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,6 +30,7 @@ public class CustomerController {
 
     @Operation(summary = "Thêm khách hàng mới cho Dealer")
     @PostMapping
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<CustomerResponse>> createCustomer(
             @PathVariable Long dealerId,
             @Valid @RequestBody CustomerRequest request) {
@@ -46,6 +48,7 @@ public class CustomerController {
 
     @Operation(summary = "Cập nhật khách hàng theo Dealer & ID")
     @PutMapping("/{customerId}")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<CustomerResponse>> updateCustomer(
             @PathVariable Long dealerId,
             @PathVariable Long customerId,
@@ -64,6 +67,7 @@ public class CustomerController {
 
     @Operation(summary = "Xóa khách hàng theo Dealer & ID")
     @DeleteMapping("/{customerId}")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<Void>> deleteCustomer(
             @PathVariable Long dealerId,
             @PathVariable Long customerId) {
@@ -81,6 +85,7 @@ public class CustomerController {
 
     @Operation(summary = "Lấy chi tiết khách hàng theo Dealer & ID")
     @GetMapping("/{customerId}")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<CustomerResponse>> getCustomerById(
             @PathVariable Long dealerId,
             @PathVariable Long customerId) {
@@ -98,6 +103,7 @@ public class CustomerController {
 
     @Operation(summary = "Lấy danh sách khách hàng theo Dealer")
     @GetMapping
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<List<CustomerResponse>>> getCustomersByDealer(
             @PathVariable Long dealerId) {
 

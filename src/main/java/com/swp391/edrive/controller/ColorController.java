@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class ColorController {
 
     @Operation(summary = "Tạo màu mới")
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<ColorResponse>> create(@RequestBody @Valid ColorRequest req) {
 
         ColorResponse colorResponse = colorService.create(req);
@@ -39,6 +41,7 @@ public class ColorController {
 
     @Operation(summary = "Cập nhật màu")
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<ColorResponse>> update(
             @PathVariable Long id,
             @RequestBody @Valid ColorRequest req) {
@@ -56,6 +59,7 @@ public class ColorController {
 
     @Operation(summary = "Xoá màu")
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<Void>> delete(
             @PathVariable Long id,
             @RequestParam(defaultValue = "false") boolean force) {
@@ -73,6 +77,7 @@ public class ColorController {
 
     @Operation(summary = "Lấy màu theo ID")
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<ColorResponse>> getById(@PathVariable Long id) {
 
         ColorResponse colorResponse = colorService.getById(id);
@@ -88,6 +93,7 @@ public class ColorController {
 
     @Operation(summary = "Danh sách màu")
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<List<ColorResponse>>> list() {
 
         List<ColorResponse> colors = colorService.getAll();

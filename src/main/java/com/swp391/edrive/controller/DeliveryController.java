@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -20,6 +21,7 @@ public class DeliveryController {
     private final DeliveryService deliveryService;
 
     @PostMapping("/orders/{orderId}/confirm-delivery")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER')")
     public ResponseEntity<ResponseObject<DeliveryResponse>> confirmDelivery(@PathVariable String orderId) {
         try {
             deliveryService.confirmDelivery(orderId);

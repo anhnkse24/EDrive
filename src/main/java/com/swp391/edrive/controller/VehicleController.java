@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -28,6 +29,7 @@ public class VehicleController {
 
     @Operation(summary = "Lấy danh sách tất cả xe")
     @GetMapping
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<List<VehicleResponse>>> getAllVehicles() {
         List<VehicleResponse> vehicles = vehicleService.getAllVehicles();
         return ResponseEntity.ok(
@@ -37,6 +39,7 @@ public class VehicleController {
 
     @Operation(summary = "Tìm xe theo ID")
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<VehicleResponse>> findById(@PathVariable Long id) {
         try {
             VehicleResponse vehicle = vehicleService.findVehicleById(id);
@@ -51,6 +54,7 @@ public class VehicleController {
 
     @Operation(summary = "Tìm xe theo trạng thái")
     @GetMapping("/search/status")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<List<VehicleResponse>>> findByStatus(
             @RequestParam String status,
             @RequestParam(defaultValue = "0") int page,
@@ -72,6 +76,7 @@ public class VehicleController {
 
     @Operation(summary = "Tìm xe theo màu")
     @GetMapping("/search/color")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<List<VehicleResponse>>> findByColor(
             @RequestParam String color,
             @RequestParam(defaultValue = "0") int page,
@@ -90,6 +95,7 @@ public class VehicleController {
 
     @Operation(summary = "Tìm xe theo năm sản xuất (exact hoặc range)")
     @GetMapping("/search/year")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<List<VehicleResponse>>> findByYear(
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) Integer fromYear,
@@ -120,6 +126,7 @@ public class VehicleController {
 
     @Operation(summary = "Tìm xe theo giá (min/max hoặc khoảng)")
     @GetMapping("/search/price")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<List<VehicleResponse>>> findByPrice(
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
@@ -140,6 +147,7 @@ public class VehicleController {
     @Operation(summary = "Cập nhật thông tin xe")
     @PutMapping("/{id}")
     @SecurityRequirement(name = "api")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<VehicleResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody VehicleUpsertRequest req) {
@@ -157,6 +165,7 @@ public class VehicleController {
     @Operation(summary = "Xóa xe")
     @DeleteMapping("/{id}")
     @SecurityRequirement(name = "api")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<Void>> delete(@PathVariable Long id) {
         try {
             vehicleService.deleteVehicle(id);
@@ -171,6 +180,7 @@ public class VehicleController {
 
     @PostMapping
     @SecurityRequirement(name = "api")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<List<VehicleResponse>>> create(@Valid @RequestBody VehicleUpsertRequest req) {
         try {
             List<VehicleResponse> createdVehicles = vehicleService.createVehicle(req);

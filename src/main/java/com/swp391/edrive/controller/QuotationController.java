@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +32,7 @@ public class QuotationController {
 
     @Operation(summary = "Tạo báo giá")
     @PostMapping("/create")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<QuotationResponse>> createQuotation(
             @RequestBody QuotationRequest quotationRequest) {
 
@@ -52,6 +54,7 @@ public class QuotationController {
 
     @Operation(summary = "Cập nhật trạng thái báo giá")
     @PutMapping("/update-status")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<QuotationResponse>> updateQuotationStatus(
             @RequestBody QuotationStatusUpdateRequest request) {
 
@@ -78,6 +81,7 @@ public class QuotationController {
 
     @Operation(summary = "Lấy danh sách tất cả báo giá")
     @GetMapping
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<List<QuotationResponse>>> getAll() {
         List<QuotationResponse> list = quotationService.getAllQuotations();
         return ResponseEntity.ok(
@@ -88,6 +92,7 @@ public class QuotationController {
     // API Lấy báo giá theo ID
     @Operation(summary = "Lấy báo giá theo ID")
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<QuotationResponse>> getById(@PathVariable Long id) {
 
         Optional<QuotationResponse> res = quotationService.getQuotationById(id);
@@ -105,6 +110,7 @@ public class QuotationController {
 
     @Operation(summary = "Export báo giá ra PDF", description = "Tải xuống báo giá dưới dạng file PDF")
     @GetMapping("/{quotationId}/export-pdf")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<byte[]> exportQuotationToPdf(@PathVariable Long quotationId) {
         try {
             // Generate PDF
@@ -134,6 +140,7 @@ public class QuotationController {
 
     @Operation(summary = "Xem trước PDF trong browser", description = "Hiển thị PDF báo giá trực tiếp trong browser")
     @GetMapping("/{quotationId}/preview-pdf")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<byte[]> previewQuotationPdf(@PathVariable Long quotationId) {
         try {
             // Generate PDF
@@ -163,6 +170,7 @@ public class QuotationController {
     @Operation(summary = "Gửi email báo giá cho khách hàng",
                description = "Gửi email kèm PDF báo giá cho khách hàng. Chỉ áp dụng cho báo giá đã được đại lý duyệt (ACCEPTED)")
     @PostMapping("/{quotationId}/send-email")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<String>> sendQuotationEmail(@PathVariable Long quotationId) {
         try {
             quotationService.sendQuotationEmailToCustomer(quotationId);

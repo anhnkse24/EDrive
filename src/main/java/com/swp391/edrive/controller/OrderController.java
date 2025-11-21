@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +30,7 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER')")
     public OrderSummaryResponse create(@RequestBody OrderCreateRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) authentication.getPrincipal();
@@ -37,6 +39,7 @@ public class OrderController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER')")
     public ResponseObject<List<OrderResponse>> getAllOrders() {
         List<OrderResponse> result = orderService.getAllOrders();
         return ResponseObject.<List<OrderResponse>>builder()
@@ -47,6 +50,7 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseObject<OrderResponse> getOrderById(@PathVariable String orderId) {
         OrderResponse result = orderService.getOrderById(orderId);
         return ResponseObject.<OrderResponse>builder()
@@ -57,6 +61,7 @@ public class OrderController {
     }
 
     @GetMapping("/status/{status}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseObject<List<OrderResponse>> getOrdersByStatus(@PathVariable OrderStatus status) {
         List<OrderResponse> result = orderService.getOrdersByStatus(status);
         return ResponseObject.<List<OrderResponse>>builder()
@@ -67,6 +72,7 @@ public class OrderController {
     }
 
     @GetMapping("/dealer/{dealerId}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseObject<List<OrderResponse>> getOrdersByDealerId(@PathVariable Long dealerId) {
         List<OrderResponse> result = orderService.getOrdersByDealerId(dealerId);
         return ResponseObject.<List<OrderResponse>>builder()
@@ -77,6 +83,7 @@ public class OrderController {
     }
 
     @PutMapping("/{orderId}/cancel")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseObject<OrderResponse> cancel(@PathVariable String orderId) {
         OrderResponse result = orderService.cancelOrder(orderId);
         return ResponseObject.<OrderResponse>builder()
@@ -87,6 +94,7 @@ public class OrderController {
 
     @Operation(summary = "Upload payment bill after order payment", description = "Dealer uploads payment bill (invoice) after completing payment for the order")
     @PostMapping(value = "/{orderId}/upload-bill", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER')")
     public ResponseObject<String> uploadPaymentBill(@PathVariable String orderId,
                                                     @RequestParam("bill") MultipartFile bill) {
         String result = orderService.uploadPaymentImage(orderId, bill);
@@ -99,6 +107,7 @@ public class OrderController {
 
     @Operation(summary = "View payment bill image", description = "View the payment bill as image/PDF in browser")
     @GetMapping("/{orderId}/bill-preview")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<?> viewBill(@PathVariable String orderId) {
         try {
             byte[] fileContent = orderService.getPaymentBillContent(orderId);
@@ -115,6 +124,7 @@ public class OrderController {
 
     @Operation(summary = "Download payment bill", description = "Download the payment bill file to local machine")
     @GetMapping("/{orderId}/download-bill")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<?> downloadBill(@PathVariable String orderId) {
         try {
             byte[] fileContent = orderService.getPaymentBillContent(orderId);
@@ -132,6 +142,7 @@ public class OrderController {
 
     @Operation(summary = "Admin confirm payment and mark order as PAID", description = "Admin endpoint to mark order payment status as PAID after verifying the uploaded bill")
     @PutMapping("/{orderId}/mark-paid")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseObject<OrderResponse> markOrderAsPaid(@PathVariable String orderId) {
         OrderResponse result = orderService.markOrderAsPaid(orderId);
         return ResponseObject.<OrderResponse>builder()
@@ -142,6 +153,7 @@ public class OrderController {
     }
     @Operation(summary = "Admin gửi bill cho đại lý bằng email", description = "Admin nhập email của đại lý, hệ thống sẽ tìm đơn hàng gần nhất có bill và gửi qua email")
     @PostMapping("/send-bill-by-email")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseObject<String> sendBillByDealerEmail(@RequestParam String dealerEmail) {
         orderService.sendBillByDealerEmail(dealerEmail);
         return ResponseObject.<String>builder()

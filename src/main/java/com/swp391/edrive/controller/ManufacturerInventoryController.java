@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,6 +34,7 @@ public class ManufacturerInventoryController {
             description = "Tìm và trả về thông tin tồn kho của một hãng theo ID cụ thể"
     )
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<ManufacturerInventoryResponse>> getById(@PathVariable Long id) {
 
         ManufacturerInventoryResponse data = manufacturerInventoryService.getById(id);
@@ -51,6 +53,7 @@ public class ManufacturerInventoryController {
             description = "Tạo mới một bản ghi tồn kho của hãng sản xuất (Manufacturer Inventory)"
     )
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<ManufacturerInventoryResponse>> create(
             @RequestBody ManufacturerInventoryRequest request) {
 
@@ -70,6 +73,7 @@ public class ManufacturerInventoryController {
             description = "Cập nhật thông tin bản ghi tồn kho dựa trên ID"
     )
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<ManufacturerInventoryResponse>> update(
             @PathVariable Long id,
             @RequestBody ManufacturerInventoryUpdateRequest request) {
@@ -90,6 +94,7 @@ public class ManufacturerInventoryController {
             description = "Xóa bản ghi tồn kho theo ID của manufacturer inventory"
     )
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<Void>> delete(@PathVariable Long id) {
 
         manufacturerInventoryService.delete(id);
@@ -108,6 +113,7 @@ public class ManufacturerInventoryController {
             description = "Nhóm dữ liệu tồn kho theo tên hãng và trả về số lượng xe tồn kho theo từng hãng"
     )
     @GetMapping("/summary")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<List<ManufacturerInventorySummaryResponse>>> getSummary() {
 
         List<ManufacturerInventorySummaryResponse> data = manufacturerInventoryService.getGroupedByManufacturer();

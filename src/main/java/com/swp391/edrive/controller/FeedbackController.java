@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,6 +22,7 @@ public class FeedbackController {
 
     @Operation(summary = "Get all feedback")
     @GetMapping
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF','ADMIN')")
     public ResponseEntity<ResponseObject<Page<FeedbackResponse>>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
@@ -38,6 +40,7 @@ public class FeedbackController {
 
     @Operation(summary = "Get feedback by ID")
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<FeedbackResponse>> getById(@PathVariable Long id) {
         FeedbackResponse data = feedbackService.getById(id);
 
@@ -52,6 +55,7 @@ public class FeedbackController {
 
     @Operation(summary = "Get feedback by customer ID")
     @GetMapping("/by-customer/{customerId}")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
     public ResponseEntity<ResponseObject<Page<FeedbackResponse>>> getByCustomerId(
             @PathVariable Long customerId,
             @RequestParam(defaultValue = "0") int page,
@@ -70,6 +74,7 @@ public class FeedbackController {
 
     @Operation(summary = "Get feedback by dealer ID")
     @GetMapping("/by-dealer/{dealerId}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<Page<FeedbackResponse>>> getByDealerId(
             @PathVariable Long dealerId,
             @RequestParam(defaultValue = "0") int page,
@@ -88,6 +93,7 @@ public class FeedbackController {
 
     @Operation(summary = "Delete feedback")
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<Void>> delete(@PathVariable Long id) {
         feedbackService.deleteById(id);
 

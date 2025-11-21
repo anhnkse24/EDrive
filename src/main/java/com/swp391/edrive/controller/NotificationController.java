@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class NotificationController {
     // 1. Lấy thông báo của 1 dealer
     @Operation(summary = "Lấy danh sách thông báo theo Dealer ID")
     @GetMapping("/dealer/{dealerId}")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER','DEALER_STAFF')")
     public List<NotificationResponse> getNotificationsByDealer(@PathVariable Long dealerId) {
         return notificationService.getNotificationsByDealer(dealerId);
     }
@@ -29,6 +31,7 @@ public class NotificationController {
     // 2. Lấy thông báo dành cho admin
     @Operation(summary = "Lấy danh sách thông báo dành cho Admin")
     @GetMapping("/admin")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public List<NotificationResponse> getNotificationsForAdmin() {
         return notificationService.getNotificationsForAdmin(); // bạn cần tạo method này trong service
     }
@@ -43,6 +46,7 @@ public class NotificationController {
     // Đánh dấu đã đọc
     @Operation(summary = "Đánh dấu đã đọc")
     @PutMapping("/{notificationId}/read")
+    @PreAuthorize("isAuthenticated()")
     public NotificationResponse markAsRead(@PathVariable Long notificationId) {
         return notificationService.markAsRead(notificationId);
     }
