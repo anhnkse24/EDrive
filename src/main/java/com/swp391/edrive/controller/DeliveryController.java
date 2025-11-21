@@ -21,7 +21,7 @@ public class DeliveryController {
     private final DeliveryService deliveryService;
 
     @PostMapping("/orders/{orderId}/confirm-delivery")
-    @PreAuthorize("hasAnyRole('DEALER_MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<DeliveryResponse>> confirmDelivery(@PathVariable String orderId) {
         try {
             deliveryService.confirmDelivery(orderId);

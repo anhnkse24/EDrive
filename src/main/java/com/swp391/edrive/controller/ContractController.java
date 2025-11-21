@@ -34,6 +34,7 @@ public class ContractController {
     private final ContractService service;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ContractResponse> create(@RequestBody ContractRequest req) {
         return ResponseEntity.ok(service.create(req));
     }

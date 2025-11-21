@@ -79,7 +79,7 @@ public class DiscountPolicyController {
 
     @Operation(summary = "Get discount policy by ID", description = "Retrieve a specific discount policy by ID")
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'DEALER_MANAGER', 'DEALER_STAFF')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<DiscountPolicyResponse>> getDiscountPolicyById(@PathVariable Long id) {
 
         DiscountPolicyResponse response = discountPolicyService.getDiscountPolicyById(id);
@@ -95,7 +95,7 @@ public class DiscountPolicyController {
 
     @Operation(summary = "Get all discount policies", description = "Retrieve all discount policies")
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'DEALER_MANAGER', 'DEALER_STAFF')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<List<DiscountPolicyResponse>>> getAllDiscountPolicies() {
 
         List<DiscountPolicyResponse> responses = discountPolicyService.getAllDiscountPolicies();
@@ -111,7 +111,7 @@ public class DiscountPolicyController {
 
     @Operation(summary = "Get active discount policies", description = "Retrieve only active discount policies")
     @GetMapping("/active")
-    @PreAuthorize("hasAnyRole('ADMIN', 'DEALER_MANAGER', 'DEALER_STAFF')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<List<DiscountPolicyResponse>>> getActiveDiscountPolicies() {
 
         List<DiscountPolicyResponse> responses = discountPolicyService.getActiveDiscountPolicies();

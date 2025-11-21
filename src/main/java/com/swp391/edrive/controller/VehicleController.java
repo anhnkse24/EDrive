@@ -147,7 +147,7 @@ public class VehicleController {
     @Operation(summary = "Cập nhật thông tin xe")
     @PutMapping("/{id}")
     @SecurityRequirement(name = "api")
-    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<VehicleResponse>> update(
             @PathVariable Long id,
             @Valid @RequestBody VehicleUpsertRequest req) {
@@ -165,7 +165,7 @@ public class VehicleController {
     @Operation(summary = "Xóa xe")
     @DeleteMapping("/{id}")
     @SecurityRequirement(name = "api")
-    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<Void>> delete(@PathVariable Long id) {
         try {
             vehicleService.deleteVehicle(id);
@@ -180,7 +180,7 @@ public class VehicleController {
 
     @PostMapping
     @SecurityRequirement(name = "api")
-    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<List<VehicleResponse>>> create(@Valid @RequestBody VehicleUpsertRequest req) {
         try {
             List<VehicleResponse> createdVehicles = vehicleService.createVehicle(req);

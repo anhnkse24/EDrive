@@ -28,7 +28,7 @@ public class AdditionalServicesController {
 
     @Operation(summary = "Lấy tất cả dịch vụ đang hoạt động")
     @GetMapping("/active")
-    @PreAuthorize("hasAnyRole('ADMIN','DEALER_STAFF','DEALER_MANAGER')")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER')")
     public ResponseEntity<ResponseObject<List<ServiceCatalogResponse>>> getAllActiveServices() {
 
         List<ServiceCatalogResponse> services = additionalServicesService.getAllActiveServices();
@@ -43,7 +43,7 @@ public class AdditionalServicesController {
     }
 
     @Operation(summary = "Lấy dịch vụ theo ID")
-    @PreAuthorize("hasAnyRole('ADMIN','DEALER_STAFF','DEALER_MANAGER')")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER')")
     @GetMapping("/{serviceId}")
     public ResponseEntity<ResponseObject<ServiceCatalogResponse>> getServiceById(@PathVariable Long serviceId) {
 
@@ -59,7 +59,7 @@ public class AdditionalServicesController {
     }
 
     @Operation(summary = "Lấy dịch vụ theo category")
-    @PreAuthorize("hasAnyRole('ADMIN','DEALER_STAFF','DEALER_MANAGER')")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER')")
     @GetMapping("/category/{category}")
     public ResponseEntity<ResponseObject<List<ServiceCatalogResponse>>> getServicesByCategory(
             @PathVariable String category) {
@@ -76,7 +76,7 @@ public class AdditionalServicesController {
     }
 
     @Operation(summary = "Tìm kiếm dịch vụ")
-    @PreAuthorize("hasAnyRole('ADMIN','DEALER_STAFF','DEALER_MANAGER')")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER')")
     @GetMapping("/search")
     public ResponseEntity<ResponseObject<Page<ServiceCatalogResponse>>> searchServices(
             @RequestParam(required = false, defaultValue = "") String keyword,
