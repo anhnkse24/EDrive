@@ -971,7 +971,7 @@ public class DataInitializer implements CommandLineRunner {
                 Vehicle v5 = vehicles.get(4);
                 Vehicle v6 = vehicles.size() > 5 ? vehicles.get(5) : v1;
 
-                // 🟢 Các đơn hàng mẫu
+                // Các đơn hàng mẫu
                 OrderCustomer o1 = new OrderCustomer();
                 o1.setOrderCode("ORD-2025-001");
                 o1.setCustomer(c1);
@@ -1017,7 +1017,7 @@ public class DataInitializer implements CommandLineRunner {
                 // Lưu trước order để có ID cho khóa ngoại
                 orderCustomerRepository.saveAll(List.of(o1, o2, o3, o4, o5, o6, o7));
 
-                // 🟡 Trạng thái cho từng order
+                // Trạng thái cho từng order
                 StatusOrderCustomer s1 = new StatusOrderCustomer();
                 s1.setStatus("Đã phân bổ xe");
                 s1.setDeliveryDate("2025-11-10");
@@ -1176,6 +1176,9 @@ public class DataInitializer implements CommandLineRunner {
             List<Dealer> dealers = dealerRepository.findAll();
             List<Customer> customers = customerRepository.findAll();
 
+            User staff = userRepository.findById(4L)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy staffId = 4"));
+
             if (!dealers.isEmpty() && !vehicles.isEmpty() && !customers.isEmpty()) {
                 Dealer dealer1 = dealers.get(0);
                 Dealer dealer2 = dealers.size() > 1 ? dealers.get(1) : dealer1;
@@ -1194,6 +1197,7 @@ public class DataInitializer implements CommandLineRunner {
                 td1.setScheduleDatetime(LocalDateTime.now().plusDays(2));
                 td1.setStatusForManager(TestDriveStatusManager.PENDING);
                 td1.setStatusForStaff(TestDriveStatusStaff.PENDING);
+                td1.setStaff(staff);
 
                 // TestDrive 2 — Completed
                 TestDrive td2 = new TestDrive();
@@ -1204,6 +1208,7 @@ public class DataInitializer implements CommandLineRunner {
                 td2.setCompletedAt(LocalDateTime.now().minusHours(3));
                 td2.setStatusForManager(TestDriveStatusManager.COMPLETED);
                 td2.setStatusForStaff(TestDriveStatusStaff.COMPLETED);
+                td2.setStaff(staff);
 
 
                 // TestDrive 3 — Cancelled
@@ -1215,6 +1220,7 @@ public class DataInitializer implements CommandLineRunner {
                 td3.setStatusForManager(TestDriveStatusManager.CANCELLED);
                 td3.setStatusForStaff(TestDriveStatusStaff.CANCELLED);
                 td3.setCancelReason("Khách bận công tác, hủy lịch.");
+                td3.setStaff(staff);
 
                 testDriveRepository.saveAll(List.of(td1, td2, td3));
                 System.out.println("Đã khởi tạo 3 test drives");
