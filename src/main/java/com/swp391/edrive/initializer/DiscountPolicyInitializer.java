@@ -29,7 +29,7 @@ public class DiscountPolicyInitializer implements CommandLineRunner {
                     .maxQuantity(5)
                     .discountRate(new BigDecimal("0.05"))
                     .isActive(true)
-                    .description("5% discount for orders of 1-5 vehicles")
+                    .description("Giảm 5% khi đặt từ 1-5 chiếc xe")
                     .build();
 
             // Chiết khấu 10% cho đơn hàng 6-10 xe
@@ -38,7 +38,7 @@ public class DiscountPolicyInitializer implements CommandLineRunner {
                     .maxQuantity(10)
                     .discountRate(new BigDecimal("0.10"))
                     .isActive(true)
-                    .description("10% discount for orders of 6-10 vehicles")
+                    .description("Giảm 10% khi đặt từ 6-10 chiếc xe")
                     .build();
 
             // Chiết khấu 15% cho đơn hàng trên 10 xe
@@ -47,7 +47,7 @@ public class DiscountPolicyInitializer implements CommandLineRunner {
                     .maxQuantity(Integer.MAX_VALUE)
                     .discountRate(new BigDecimal("0.15"))
                     .isActive(true)
-                    .description("15% discount for orders of 11+ vehicles")
+                    .description("Giảm 15% khi đặt trên 11 chiếc xe")
                     .build();
 
             discountPolicyRepository.save(policy1);

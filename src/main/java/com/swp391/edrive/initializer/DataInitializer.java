@@ -69,7 +69,7 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
             admin.setRoles(new HashSet<>(Set.of(adminRole)));
             userRepository.save(admin);
-            System.out.println("✅ Seeded admin: admin / Admin@123");
+            System.out.println(" Seeded admin: admin / Admin@123");
         }
 
         // 1.3 EVM Staff (nhân viên hãng)
@@ -84,7 +84,7 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
             evm1.setRoles(new HashSet<>(Set.of(evmStaffRole)));
             userRepository.save(evm1);
-            System.out.println("✅ Seeded EVM staff: evm1 / Evm@123");
+            System.out.println(" Seeded EVM staff: evm1 / Evm@123");
         }
 
         // 1.3 Dealers & Dealer users
@@ -102,7 +102,7 @@ public class DataInitializer implements CommandLineRunner {
             seedDealers.add(makeDealer("E-Drive Buôn Ma Thuột", "edrivebuonmathuot@edrive.local", "10 Nguyễn Tất Thành", "Tân Lợi", "Buôn Ma Thuột", "Đắk Lắk", "Ta Hoang 9", "0900000009"));
             seedDealers.add(makeDealer("E-Drive Thanh Hóa", "edrivethanhhoa@edrive.local", "20 Hạc Thành", "Tân Sơn", "Thanh Hóa", "Thanh Hóa", "Ngo Ky 10", "0900000010"));
             dealersInDb = dealerRepository.saveAll(seedDealers);
-            System.out.println("✅ Đã khởi tạo " + dealersInDb.size() + " dealers");
+            System.out.println(" Đã khởi tạo " + dealersInDb.size() + " dealers");
         }
 
         for (int i = 0; i < dealersInDb.size(); i++) {
@@ -122,7 +122,7 @@ public class DataInitializer implements CommandLineRunner {
                         .build();
                 manager.setRoles(new HashSet<>(Set.of(dealerManagerRole)));
                 userRepository.save(manager);
-                System.out.println("✅ Seeded dealer manager: " + managerUsername + " / Dealer@123");
+                System.out.println(" Seeded dealer manager: " + managerUsername + " / Dealer@123");
             }
 
             String staffUsername = base + "_staff";
@@ -138,7 +138,7 @@ public class DataInitializer implements CommandLineRunner {
                         .build();
                 staff.setRoles(new HashSet<>(Set.of(dealerStaffRole)));
                 userRepository.save(staff);
-                System.out.println("✅ Seeded dealer staff: " + staffUsername + " / Dealer@123");
+                System.out.println(" Seeded dealer staff: " + staffUsername + " / Dealer@123");
             }
         }
 
@@ -150,7 +150,7 @@ public class DataInitializer implements CommandLineRunner {
         edrive.setPhone("0243-123-4567");
 
         List<Manufacturer> manufacturers = manufacturerRepository.saveAll(Arrays.asList(edrive));
-        System.out.println("✅ Đã khởi tạo " + manufacturers.size() + " manufacturers");
+        System.out.println(" Đã khởi tạo " + manufacturers.size() + " manufacturers");
 
 // ====== Seed Colors (dùng chung) ======
         Color red = upsertColor("Đỏ", "#FF0000");
@@ -259,7 +259,7 @@ public class DataInitializer implements CommandLineRunner {
         vf9_blue.setLengthMm(5123);
         vf9_blue.setWidthMm(1976);
         vf9_blue.setHeightMm(1750);
-        vf9_blue.setPriceRetail(new BigDecimal("2000"));
+        vf9_blue.setPriceRetail(new BigDecimal("3100000000"));
         vf9_blue.setManufactureYear(2024);
         vf9_blue.setImageUrl("https://vinfastdienchau.com/wp-content/uploads/2013/08/VF-9-Plus_US-CA_21inch_VinFast-Blue_Mid-2-1.png");
         vf9_blue.setStatus(VehicleStatus.AVAILABLE);
@@ -279,7 +279,7 @@ public class DataInitializer implements CommandLineRunner {
         vf9_red.setLengthMm(4300);
         vf9_red.setWidthMm(1793);
         vf9_red.setHeightMm(1613);
-        vf9_red.setPriceRetail(new BigDecimal("3000"));
+        vf9_red.setPriceRetail(new BigDecimal("2600000000"));
         vf9_red.setManufactureYear(2023);
         vf9_red.setImageUrl("https://vinfastgiare.vn/public/upload/images/Vinfast-Vf9-mau-do-18.jpg");
         vf9_red.setStatus(VehicleStatus.AVAILABLE);
@@ -299,7 +299,7 @@ public class DataInitializer implements CommandLineRunner {
         vf9_white.setLengthMm(4300);
         vf9_white.setWidthMm(1793);
         vf9_white.setHeightMm(1613);
-        vf9_white.setPriceRetail(new BigDecimal("3000"));
+        vf9_white.setPriceRetail(new BigDecimal("34000000000"));
         vf9_white.setManufactureYear(2023);
         vf9_white.setImageUrl("https://vinfastdienchau.com/wp-content/uploads/2013/08/VF-9-Plus_US-CA_21-inch_Brahminy-White_Mid.png");
         vf9_white.setStatus(VehicleStatus.AVAILABLE);
@@ -319,7 +319,7 @@ public class DataInitializer implements CommandLineRunner {
         vf9_green.setLengthMm(4300);
         vf9_green.setWidthMm(1793);
         vf9_green.setHeightMm(1613);
-        vf9_green.setPriceRetail(new BigDecimal("3000"));
+        vf9_green.setPriceRetail(new BigDecimal("3900000000"));
         vf9_green.setManufactureYear(2023);
         vf9_green.setImageUrl("https://vinfasttimescity.vn/wp-content/uploads/2022/01/vf9-05.jpg");
         vf9_green.setStatus(VehicleStatus.AVAILABLE);
@@ -339,7 +339,7 @@ public class DataInitializer implements CommandLineRunner {
         vf9_black.setLengthMm(4300);
         vf9_black.setWidthMm(1793);
         vf9_black.setHeightMm(1613);
-        vf9_black.setPriceRetail(new BigDecimal("3000"));
+        vf9_black.setPriceRetail(new BigDecimal("2400000000"));
         vf9_black.setManufactureYear(2023);
         vf9_black.setImageUrl("https://hanoivinfast.com/wp-content/uploads/2024/09/mau-xe-vf9-2.png");
         vf9_black.setStatus(VehicleStatus.AVAILABLE);
@@ -400,7 +400,7 @@ public class DataInitializer implements CommandLineRunner {
         vf3_white.setLengthMm(4694);
         vf3_white.setWidthMm(1849);
         vf3_white.setHeightMm(1443);
-        vf3_white.setPriceRetail(new BigDecimal("1500000000"));
+        vf3_white.setPriceRetail(new BigDecimal("1700000000"));
         vf3_white.setManufactureYear(2024);
         vf3_white.setImageUrl("https://vinfastgiare.vn/public/upload/images/VF3-mau-trang-12.jpg");
         vf3_white.setStatus(VehicleStatus.AVAILABLE);
@@ -420,7 +420,7 @@ public class DataInitializer implements CommandLineRunner {
         vf5_red.setLengthMm(4694);
         vf5_red.setWidthMm(1849);
         vf5_red.setHeightMm(1443);
-        vf5_red.setPriceRetail(new BigDecimal("1500000000"));
+        vf5_red.setPriceRetail(new BigDecimal("1400000000"));
         vf5_red.setManufactureYear(2024);
         vf5_red.setImageUrl("https://vinfasthadong.com.vn/wp-content/uploads/2023/10/vf5-2023.jpg");
         vf5_red.setStatus(VehicleStatus.AVAILABLE);
@@ -460,7 +460,7 @@ public class DataInitializer implements CommandLineRunner {
         vf5_blue.setLengthMm(4694);
         vf5_blue.setWidthMm(1849);
         vf5_blue.setHeightMm(1443);
-        vf5_blue.setPriceRetail(new BigDecimal("1500000000"));
+        vf5_blue.setPriceRetail(new BigDecimal("1900000000"));
         vf5_blue.setManufactureYear(2024);
         vf5_blue.setImageUrl("https://vinfastgiare.vn/public/upload/images/vinfastgiare-9.jpg");
         vf5_blue.setStatus(VehicleStatus.AVAILABLE);
@@ -480,7 +480,7 @@ public class DataInitializer implements CommandLineRunner {
         vf5_white.setLengthMm(4694);
         vf5_white.setWidthMm(1849);
         vf5_white.setHeightMm(1443);
-        vf5_white.setPriceRetail(new BigDecimal("1500000000"));
+        vf5_white.setPriceRetail(new BigDecimal("1870000000"));
         vf5_white.setManufactureYear(2024);
         vf5_white.setImageUrl("https://vinfastvietnam.com.vn/wp-content/uploads/2022/12/Trang-min.png");
         vf5_white.setStatus(VehicleStatus.AVAILABLE);
@@ -645,7 +645,7 @@ public class DataInitializer implements CommandLineRunner {
         vf3_cyan.setHeightMm(1550);
         vf3_cyan.setPriceRetail(new BigDecimal("800000000"));
         vf3_cyan.setManufactureYear(2025);
-        vf3_cyan.setImageUrl("https://vinfast-tphochiminh.com/OTO3602300549/files/mau_xe/VF3/xanh_duong_nhat.webp");
+        vf3_cyan.setImageUrl("https://vinfastdienchau.com/wp-content/uploads/2014/08/VinFast-VF-3-Aquatic-Azure.png");
         vf3_cyan.setStatus(VehicleStatus.AVAILABLE);
 
         Vehicle vf5_cyan = new Vehicle();
@@ -792,7 +792,7 @@ public class DataInitializer implements CommandLineRunner {
         vf7_black.setManufacturer(edrive);
         vf7_black.setModelName("VF 7");
         vf7_black.setVersion("Long Range");
-        vf7_black.setColor(black); // giữ “Xanh” nhưng có mã hex riêng
+        vf7_black.setColor(black);
         vf7_black.setBatteryCapacityKwh(82);
         vf7_black.setRangeKm(602);
         vf7_black.setMaxSpeedKmh(233);
@@ -805,7 +805,7 @@ public class DataInitializer implements CommandLineRunner {
         vf7_black.setHeightMm(1443);
         vf7_black.setPriceRetail(new BigDecimal("1500000000"));
         vf7_black.setManufactureYear(2024);
-        vf7_black.setImageUrl("https://vinfast-cars.vn/wp-content/uploads/2024/09/vinfast-vf7-6.jpg");
+        vf7_black.setImageUrl("https://xevinfastbinhduong.net/wp-content/uploads/2024/04/vinfast-vf7-mau-den-scaled-1.jpg");
         vf7_black.setStatus(VehicleStatus.AVAILABLE);
 
 
@@ -821,7 +821,6 @@ public class DataInitializer implements CommandLineRunner {
                         vf3_white, vf5_blue, vf5_white,
                         vf6_white, vf7_black,
                         vf7_white, vf7_red,
-                        // 10 chiếc xe mới
                         vf8_cyan, vf9_silver,
                         vf3_cyan, vf5_cyan,
                         vf6_blue, vf7_blue,
@@ -830,7 +829,7 @@ public class DataInitializer implements CommandLineRunner {
                         vf7_green
                 )
         );
-        System.out.println("✅ Đã khởi tạo " + vehicles.size() + " vehicles");
+        System.out.println(" Đã khởi tạo " + vehicles.size() + " vehicles");
 
         // Khởi tạo Manufacturer Inventories
         LocalDateTime now = LocalDateTime.now();
@@ -860,7 +859,7 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         inventories = manufacturerInventoryRepository.saveAll(inventories);
-        System.out.println("✅ Đã khởi tạo " + inventories.size() + " manufacturer inventories");
+        System.out.println(" Đã khởi tạo " + inventories.size() + " manufacturer inventories");
 
 // =================== SEED DEALER INVENTORIES ===================
         if (dealerInventoryRepository.count() == 0) {
@@ -902,7 +901,7 @@ public class DataInitializer implements CommandLineRunner {
             }
 
             dealerInventoryRepository.saveAll(dealerInventories);
-            System.out.println("✅ Đã khởi tạo " + dealerInventories.size() + " dealer inventories");
+            System.out.println(" Đã khởi tạo " + dealerInventories.size() + " dealer inventories");
         }
 
         // =================== SEED CUSTOMERS ===================
@@ -947,7 +946,7 @@ public class DataInitializer implements CommandLineRunner {
                 customers.addAll(List.of(c1, c2, c3));
                 customerRepository.saveAll(customers);
 
-                System.out.println("✅ Đã khởi tạo " + customers.size() + " customers");
+                System.out.println(" Đã khởi tạo " + customers.size() + " customers");
             }
         }
         // =================== SEED ORDER CUSTOMERS ===================
@@ -1075,7 +1074,7 @@ public class DataInitializer implements CommandLineRunner {
                 statusOrderCustomerRepository.saveAll(List.of(s1, s2, s3, s4, s5, s6, s7));
                 orderCustomerRepository.saveAll(List.of(o1, o2, o3, o4, o5, o6, o7));
 
-                System.out.println("✅ Đã khởi tạo 7 đơn hàng mẫu (OrderCustomer + StatusOrderCustomer)");
+                System.out.println(" Đã khởi tạo 7 đơn hàng mẫu (OrderCustomer + StatusOrderCustomer)");
             }
         }
 // =================== SEED PROMOTIONS ===================
@@ -1171,7 +1170,7 @@ public class DataInitializer implements CommandLineRunner {
             promotions.addAll(List.of(promo1, promo2, promo3, promo4));
             promotionRepository.saveAll(promotions);
 
-            System.out.println("✅ Đã khởi tạo " + promotions.size() + " promotions");
+            System.out.println(" Đã khởi tạo " + promotions.size() + " promotions");
         }
 // =================== SEED TEST DRIVES ===================
         if (testDriveRepository.count() == 0) {
@@ -1219,7 +1218,7 @@ public class DataInitializer implements CommandLineRunner {
                 td3.setCancelReason("Khách bận công tác, hủy lịch.");
 
                 testDriveRepository.saveAll(List.of(td1, td2, td3));
-                System.out.println("✅ Đã khởi tạo 3 test drives");
+                System.out.println("Đã khởi tạo 3 test drives");
             }
         }
 
@@ -1254,12 +1253,12 @@ public class DataInitializer implements CommandLineRunner {
                 f3.setCreatedAt(LocalDateTime.now().minusDays(2));
 
                 feedbackRepository.saveAll(List.of(f1, f2, f3));
-                System.out.println("✅ Đã khởi tạo 3 feedbacks cho khách hàng (đăng ký/lái thử)");
+                System.out.println(" Đã khởi tạo 3 feedbacks cho khách hàng (đăng ký/lái thử)");
             }
         }
 
 
-        System.out.println("🎉 Hoàn thành khởi tạo dữ liệu!");
+        System.out.println(" Hoàn thành khởi tạo dữ liệu!");
     }
 
     private Dealer makeDealer(String name, String email, String street, String ward, String district, String city, String contact, String phone) {
