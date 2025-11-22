@@ -103,7 +103,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         Notification notification = Notification.builder()
                 .dealer(testDrive.getDealer())
-                .user(staff) // thông báo đúng tới nhân viên tương ứng
+                .user(staff)
                 .title("Quản lý cập nhật lịch lái thử")
                 .receiverType("DEALER_STAFF")
                 .message(message)
