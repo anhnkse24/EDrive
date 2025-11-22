@@ -35,7 +35,6 @@ public class StaffServiceImpl implements StaffService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private final DealerRepository dealerRepository;
     private final PasswordEncoder passwordEncoder;
 
     private User getCurrentUser() {
@@ -48,7 +47,6 @@ public class StaffServiceImpl implements StaffService {
     @Override
     @Transactional
     public StaffResponse createDealerStaff(StaffCreateRequest request) {
-        // Validate unique constraints
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new ConflictException("Username đã tồn tại");
         }
@@ -59,13 +57,11 @@ public class StaffServiceImpl implements StaffService {
             throw new ConflictException("Số điện thoại đã tồn tại");
         }
 
-        // Get current dealer manager
         User currentUser = getCurrentUser();
         if (currentUser.getDealer() == null) {
             throw new BadRequestException("Chỉ Dealer Manager mới có thể tạo nhân viên đại lý");
         }
 
-        // Create new staff user
         User staff = User.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
@@ -76,7 +72,6 @@ public class StaffServiceImpl implements StaffService {
                 .isVerify(true) // Staff account is immediately active
                 .build();
 
-        // Assign DEALER_STAFF role
         Set<Role> roles = new HashSet<>();
         roleRepository.findById(PredefinedRole.DEALER_STAFF_ROLE)
                 .ifPresent(roles::add);
@@ -91,7 +86,6 @@ public class StaffServiceImpl implements StaffService {
     @Override
     @Transactional
     public StaffResponse createEvmStaff(StaffCreateRequest request) {
-        // Validate unique constraints
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new ConflictException("Username đã tồn tại");
         }
@@ -102,18 +96,16 @@ public class StaffServiceImpl implements StaffService {
             throw new ConflictException("Số điện thoại đã tồn tại");
         }
 
-        // Create new EVM staff user
         User staff = User.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .email(request.getEmail())
                 .phone(request.getPhone())
                 .fullName(request.getFullName())
-                .dealer(null) // EVM staff doesn't belong to any dealer
-                .isVerify(true) // Staff account is immediately active
+                .dealer(null)
+                .isVerify(true)
                 .build();
 
-        // Assign EVM_STAFF role
         Set<Role> roles = new HashSet<>();
         roleRepository.findById(PredefinedRole.EVM_STAFF_ROLE)
                 .ifPresent(roles::add);
@@ -174,10 +166,8 @@ public class StaffServiceImpl implements StaffService {
         User staff = userRepository.findById(staffId)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy nhân viên với ID: " + staffId));
 
-        // Check authorization
         User currentUser = getCurrentUser();
         if (currentUser.hasRole(PredefinedRole.DEALER_MANAGER_ROLE)) {
-            // Dealer manager can only update their own dealer's staff
             if (staff.getDealer() == null || !staff.getDealer().getDealerId().equals(currentUser.getDealer().getDealerId())) {
                 throw new ForbiddenException("Bạn không có quyền cập nhật nhân viên này");
             }
@@ -214,16 +204,13 @@ public class StaffServiceImpl implements StaffService {
         User staff = userRepository.findById(staffId)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy nhân viên với ID: " + staffId));
 
-        // Check authorization
         User currentUser = getCurrentUser();
         if (currentUser.hasRole(PredefinedRole.DEALER_MANAGER_ROLE)) {
-            // Dealer manager can only delete their own dealer's staff
             if (staff.getDealer() == null || !staff.getDealer().getDealerId().equals(currentUser.getDealer().getDealerId())) {
                 throw new ForbiddenException("Bạn không có quyền xóa nhân viên này");
             }
         }
 
-        // Hard delete - xóa hẳn khỏi database
         String username = staff.getUsername();
         userRepository.delete(staff);
         log.info("Staff deleted permanently: {}", username);

@@ -34,13 +34,6 @@ public class VehicleServiceImpl implements VehicleService {
     private final ManufacturerRepository manufacturerRepository;
     private final ManufacturerInventoryRepository manufacturerInventoryRepository;
 
-//    @Override
-//    public List<VehicleResponse> getAllVehicles(int page, int size) {
-//        Pageable pageable = PageRequest.of(page, size);
-//        Page<Vehicle> vehicles = vehicleRepository.findAll(pageable);
-//        return vehicles.stream().map(this::toResponse).toList();
-//    }
-
     @Override
     public List<VehicleResponse> getAllVehicles() {
         List<Vehicle> vehicles = vehicleRepository.findAll();
@@ -155,7 +148,7 @@ public class VehicleServiceImpl implements VehicleService {
         apply(v, req);
 
         if (req.getColors() != null && !req.getColors().isEmpty()) {
-            var colorImage = req.getColors().get(0); // lấy phần tử đầu tiên
+            var colorImage = req.getColors().get(0);
             Color color = colorRepository.findById(colorImage.getColorId())
                     .orElseThrow(() -> new IllegalArgumentException("Mã màu không tồn tại: " + colorImage.getColorId()));
             v.setColor(color);
@@ -166,7 +159,6 @@ public class VehicleServiceImpl implements VehicleService {
         return toResponse(v);
     }
 
-    // === DELETE ===
     @Override
     @Transactional
     public void deleteVehicle(Long id) {

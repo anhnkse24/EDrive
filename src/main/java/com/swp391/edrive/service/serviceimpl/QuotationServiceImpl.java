@@ -52,7 +52,7 @@ public class QuotationServiceImpl implements QuotationService {
     public QuotationResponse createQuotation(QuotationRequest quotationRequest, User createdByUser) {
         // Kiểm tra user có dealer không
         if (createdByUser.getDealer() == null) {
-            throw new RuntimeException("User không thuộc đại lý nào. Chỉ nhân viên đại lý mới có thể tạo báo giá");
+            throw new RuntimeException("Khách hàng không thuộc đại lý nào. Chỉ nhân viên đại lý mới có thể tạo báo giá");
         }
 
         Dealer dealer = createdByUser.getDealer();
@@ -68,7 +68,6 @@ public class QuotationServiceImpl implements QuotationService {
         // Tính toán giá trị báo giá
         BigDecimal unitPrice = vehicle.getPriceRetail(); // Giá xe ban đầu
 
-        // Áp dụng promotion được nhân viên chọn (thay vì tự động tìm)
         PromotionCalculationResult promotionResult = applySelectedPromotions(
             quotationRequest.getSelectedPromotionIds(),
             vehicle,
@@ -79,15 +78,12 @@ public class QuotationServiceImpl implements QuotationService {
         BigDecimal promotionDiscountAmount = promotionResult.getTotalDiscount();
         List<AppliedPromotionInfo> appliedPromotions = promotionResult.getAppliedPromotions();
 
-        // Tính giá sau giảm giá
         BigDecimal priceAfterDiscount = unitPrice.subtract(promotionDiscountAmount);
 
-        // Xử lý dịch vụ bổ sung từ database (chỉ hỗ trợ selectedServiceIds)
         BigDecimal additionalServicesTotal = BigDecimal.ZERO;
         List<SelectedServiceResponse> selectedServiceResponses = null;
 
         if (quotationRequest.getSelectedServiceIds() != null && !quotationRequest.getSelectedServiceIds().isEmpty()) {
-            // Lấy các dịch vụ từ database
             List<AdditionalServices> selectedServices = additionalServicesRepository.findAllById(quotationRequest.getSelectedServiceIds());
 
             // Kiểm tra tất cả service có tồn tại
@@ -95,7 +91,6 @@ public class QuotationServiceImpl implements QuotationService {
                 throw new RuntimeException("Một số dịch vụ không tồn tại trong hệ thống");
             }
 
-            // Lọc chỉ lấy các service đang active
             List<AdditionalServices> activeServices = selectedServices.stream()
                     .filter(AdditionalServices::getIsActive)
                     .collect(Collectors.toList());
@@ -123,7 +118,7 @@ public class QuotationServiceImpl implements QuotationService {
 
         // Tạo báo giá
         Quotation quotation = new Quotation();
-        quotation.setDealer(dealer);  // Lưu thông tin dealer
+        quotation.setDealer(dealer);  
         quotation.setVehicle(vehicle);
         quotation.setCustomer(customer);
         quotation.setQuotedPrice(unitPrice.doubleValue());
@@ -225,20 +220,13 @@ public class QuotationServiceImpl implements QuotationService {
         return quotation.map(this::convertToQuotationResponse);
     }
 
-
-    /**
-     * Xây dựng response cho dịch vụ bổ sung
-     */
-
-
     @Override
     public QuotationResponse updateQuotationStatus(Long quotationId, String status, String rejectionReason) {
-        // Tìm quotation
         Quotation quotation = quotationRepository.findById(quotationId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy báo giá với ID: " + quotationId));
 
         // Kiểm tra trạng thái hiện tại phải là PENDING
-        if (quotation.getQuotationStatus() != com.swp391.edrive.enums.QuotationStatus.PENDING) {
+        if (quotation.getQuotationStatus() != QuotationStatus.PENDING) {
             throw new IllegalStateException("Chỉ có thể cập nhật trạng thái cho báo giá đang ở trạng thái PENDING");
         }
 
@@ -249,9 +237,9 @@ public class QuotationServiceImpl implements QuotationService {
 
         // Cập nhật status
         if ("ACCEPTED".equals(status)) {
-            quotation.setQuotationStatus(com.swp391.edrive.enums.QuotationStatus.ACCEPTED);
+            quotation.setQuotationStatus(QuotationStatus.ACCEPTED);
         } else {
-            quotation.setQuotationStatus(com.swp391.edrive.enums.QuotationStatus.REJECTED);
+            quotation.setQuotationStatus(QuotationStatus.REJECTED);
             // Có thể lưu lý do từ chối vào note field nếu cần (hiện tại entity chưa có)
         }
 
@@ -569,9 +557,6 @@ public class QuotationServiceImpl implements QuotationService {
         }
     }
 
-    /**
-     * Xây dựng nội dung email gửi cho khách hàng
-     */
     private String buildEmailBody(Quotation quotation) {
         Customer customer = quotation.getCustomer();
         Vehicle vehicle = quotation.getVehicle();
@@ -632,9 +617,6 @@ public class QuotationServiceImpl implements QuotationService {
         return body.toString();
     }
 
-    /**
-     * Format giá tiền
-     */
     private String formatPrice(BigDecimal price) {
         if (price == null) return "0";
         return String.format("%,d", price.longValue());
