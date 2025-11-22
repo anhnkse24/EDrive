@@ -45,7 +45,6 @@ public class Vehicle {
     private Integer widthMm;
     private Integer heightMm;
 
-    @Lob
     @Column(name = "image_url", columnDefinition = "text")
     private String imageUrl;
 
