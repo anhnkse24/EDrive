@@ -245,4 +245,26 @@ public class AuthController {
         }
     }
 
+    @Operation(summary = "Lấy thông tin user hiện tại (để debug)")
+    @GetMapping("/me")
+    @SecurityRequirement(name = "api")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ResponseObject> getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+        // Tạo response với thông tin roles và authorities
+        var userInfo = new java.util.HashMap<String, Object>();
+        userInfo.put("userId", currentUser.getUserId());
+        userInfo.put("username", currentUser.getUsername());
+        userInfo.put("email", currentUser.getEmail());
+        userInfo.put("roles", currentUser.getRoles().stream().map(role -> role.getName()).toList());
+        userInfo.put("authorities", currentUser.getAuthorities().stream()
+                .map(auth -> auth.getAuthority()).toList());
+
+        return ResponseEntity.ok(
+                new ResponseObject(200, "Lấy thông tin user thành công", userInfo)
+        );
+    }
+
 }

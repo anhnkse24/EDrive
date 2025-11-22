@@ -27,6 +27,8 @@ public interface VehicleService {
 
     List<VehicleResponse> createVehicle(VehicleUpsertRequest req);
 
+    List<VehicleResponse> createVehicleWithImages(VehicleUpsertRequest req, List<MultipartFile> images);
+
     VehicleResponse updateVehicle(Long id, VehicleUpsertRequest req);
 
     void deleteVehicle(Long id);

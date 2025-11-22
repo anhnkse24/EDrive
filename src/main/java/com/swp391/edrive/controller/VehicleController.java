@@ -1,5 +1,6 @@
 package com.swp391.edrive.controller;
 
+import com.swp391.edrive.dto.request.VehicleColorImageRequest;
 import com.swp391.edrive.dto.request.VehicleUpsertRequest;
 import com.swp391.edrive.dto.response.ResponseObject;
 import com.swp391.edrive.dto.response.VehicleResponse;
@@ -142,7 +143,6 @@ public class VehicleController {
 
     @Operation(summary = "Cập nhật thông tin xe")
     @PutMapping("/{id}")
-    @SecurityRequirement(name = "api")
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<VehicleResponse>> update(
             @PathVariable Long id,
@@ -160,7 +160,6 @@ public class VehicleController {
 
     @Operation(summary = "Xóa xe")
     @DeleteMapping("/{id}")
-    @SecurityRequirement(name = "api")
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<Void>> delete(@PathVariable Long id) {
         try {
@@ -174,8 +173,8 @@ public class VehicleController {
         }
     }
 
+    @Operation(summary = "Tạo xe (không upload ảnh)")
     @PostMapping
-    @SecurityRequirement(name = "api")
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<List<VehicleResponse>>> create(@Valid @RequestBody VehicleUpsertRequest req) {
         try {
@@ -190,9 +189,38 @@ public class VehicleController {
         }
     }
 
+    @Operation(summary = "Tạo xe với upload nhiều ảnh cùng lúc",
+               description = "Upload nhiều ảnh cho xe. Số lượng ảnh phải bằng số màu trong JSON data.")
+    @PostMapping(value = "/with-images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @SecurityRequirement(name = "api")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<ResponseObject<List<VehicleResponse>>> createWithImages(
+            @RequestParam("data") String jsonData,
+            @RequestPart("images") List<MultipartFile> images) {
+        try {
+            // Parse JSON string to VehicleUpsertRequest
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            VehicleUpsertRequest req = mapper.readValue(jsonData, VehicleUpsertRequest.class);
+
+            List<VehicleResponse> createdVehicles = vehicleService.createVehicleWithImages(req, images);
+
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new ResponseObject<>(201, "Tạo xe và upload ảnh thành công", createdVehicles));
+
+        } catch (com.fasterxml.jackson.core.JsonProcessingException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ResponseObject<>(400, "JSON không hợp lệ: " + ex.getMessage(), null));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ResponseObject<>(400, ex.getMessage(), null));
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ResponseObject<>(500, "Lỗi khi tạo xe: " + ex.getMessage(), null));
+        }
+    }
+
     @Operation(summary = "Upload hình xe và cập nhật vào xe cụ thể")
     @PostMapping(value = "/{vehicleId}/upload-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @SecurityRequirement(name = "api")
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ResponseObject<VehicleResponse>> uploadImage(
             @PathVariable Long vehicleId,

@@ -23,11 +23,9 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -141,6 +139,116 @@ public class VehicleServiceImpl implements VehicleService {
         }
 
         return responses;
+    }
+
+    @Override
+    @Transactional
+    public List<VehicleResponse> createVehicleWithImages(VehicleUpsertRequest req, List<MultipartFile> images) {
+        // Validate số lượng ảnh phải khớp với số màu
+        if (images == null || images.isEmpty()) {
+            throw new IllegalArgumentException("Danh sách ảnh không được để trống");
+        }
+
+        if (images.size() != req.getColors().size()) {
+            throw new IllegalArgumentException(
+                "Số lượng ảnh (" + images.size() + ") phải khớp với số màu (" + req.getColors().size() + ")"
+            );
+        }
+
+        List<VehicleResponse> responses = new ArrayList<>();
+
+        for (int i = 0; i < req.getColors().size(); i++) {
+            var colorImage = req.getColors().get(i);
+            MultipartFile image = images.get(i);
+
+            // Validate ảnh
+            validateImage(image);
+
+            // Kiểm tra trùng lặp
+            boolean exists = vehicleRepository.existsByVersionIgnoreCaseAndColor_ColorId(
+                    req.getVersion().trim(),
+                    colorImage.getColorId()
+            );
+            if (exists) {
+                throw new IllegalArgumentException(
+                        "Xe đã tồn tại với phiên bản '" + req.getVersion() + "' và màu ID " + colorImage.getColorId()
+                );
+            }
+
+            Color color = colorRepository.findById(colorImage.getColorId())
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Mã màu không tồn tại: " + colorImage.getColorId()
+                    ));
+
+            Vehicle v = new Vehicle();
+            apply(v, req);
+            v.setColor(color);
+
+            // Upload và set image URL
+            String imageUrl = saveImage(image, req.getVersion(), color.getColorName());
+            v.setImageUrl(imageUrl);
+
+            v = vehicleRepository.save(v);
+            responses.add(toResponse(v));
+        }
+
+        return responses;
+    }
+
+    private void validateImage(MultipartFile image) {
+        if (image == null || image.isEmpty()) {
+            throw new IllegalArgumentException("File ảnh không được để trống");
+        }
+
+        String fileName = image.getOriginalFilename();
+        if (fileName == null || (!fileName.toLowerCase().endsWith(".jpg")
+                && !fileName.toLowerCase().endsWith(".jpeg")
+                && !fileName.toLowerCase().endsWith(".png")
+                && !fileName.toLowerCase().endsWith(".webp"))) {
+            throw new IllegalArgumentException("Định dạng file không hợp lệ. Chỉ chấp nhận JPG, JPEG, PNG hoặc WEBP");
+        }
+
+        if (image.getSize() > 10 * 1024 * 1024) {
+            throw new IllegalArgumentException("Kích thước file vượt quá giới hạn tối đa 10MB");
+        }
+    }
+
+    private String saveImage(MultipartFile image, String version, String colorName) {
+        try {
+            String originalFileName = image.getOriginalFilename();
+            String fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
+            String uniqueFileName = version.replaceAll("\\s+", "_") + "_"
+                    + colorName.replaceAll("\\s+", "_") + "_"
+                    + System.currentTimeMillis() + fileExtension;
+
+            // Xác định đường dẫn upload
+            String uploadDirPath;
+            if (uploadDir != null && !uploadDir.isEmpty() && !uploadDir.equals("uploads/vehicles")) {
+                uploadDirPath = uploadDir;
+            } else {
+                // Sử dụng đường dẫn tuyệt đối từ thư mục project
+                String projectPath = System.getProperty("user.dir");
+                uploadDirPath = projectPath + File.separator + "uploads" + File.separator + "vehicles";
+            }
+
+            // Tạo thư mục nếu chưa tồn tại
+            File uploadDirFile = new File(uploadDirPath);
+            if (!uploadDirFile.exists()) {
+                boolean created = uploadDirFile.mkdirs();
+                if (!created) {
+                    throw new RuntimeException("Không thể tạo thư mục upload: " + uploadDirPath);
+                }
+            }
+
+            // Lưu file
+            File uploadFile = new File(uploadDirFile, uniqueFileName);
+            image.transferTo(uploadFile);
+
+            // Trả về đường dẫn tương đối với forward slash (/) cho URL
+            return "uploads/vehicles/" + uniqueFileName;
+        } catch (IOException e) {
+            throw new RuntimeException("Lỗi khi upload file: " + e.getMessage(), e);
+        }
     }
 
 
@@ -277,11 +385,14 @@ public class VehicleServiceImpl implements VehicleService {
             String fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
             String uniqueFileName = "vehicle_" + vehicleId + "_" + System.currentTimeMillis() + fileExtension;
 
+            // Xác định đường dẫn upload
             String uploadDirPath;
             if (uploadDir != null && !uploadDir.isEmpty() && !uploadDir.equals("uploads/vehicles")) {
                 uploadDirPath = uploadDir;
             } else {
-                uploadDirPath = "uploads" + File.separator + "vehicles";
+                // Sử dụng đường dẫn tuyệt đối từ thư mục project
+                String projectPath = System.getProperty("user.dir");
+                uploadDirPath = projectPath + File.separator + "uploads" + File.separator + "vehicles";
             }
 
             File uploadDirFile = new File(uploadDirPath);
@@ -296,8 +407,8 @@ public class VehicleServiceImpl implements VehicleService {
             File uploadFile = new File(uploadDirFile, uniqueFileName);
             image.transferTo(uploadFile);
 
-            // Cập nhật imageUrl cho xe
-            String imagePath = uploadDirPath + File.separator + uniqueFileName;
+            // Cập nhật imageUrl cho xe với đường dẫn tương đối sử dụng forward slash cho URL
+            String imagePath = "uploads/vehicles/" + uniqueFileName;
             vehicle.setImageUrl(imagePath);
             vehicle = vehicleRepository.save(vehicle);
 

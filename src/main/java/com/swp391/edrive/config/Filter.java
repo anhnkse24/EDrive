@@ -52,14 +52,14 @@ public class Filter extends OncePerRequestFilter {
             "/api/google-login",
             "/api/facebook-login",
             "/api/payments/vnpay-return",
-            "/chat",
-            "/api/contracts/**"
-            );
+            "/chat"
+    );
 
     // Danh sách các API cho phép GET công khai
     List<String> publicGetAPI = List.of(
             "/api/vehicles/**",
-            "/api/vehicles/search/**"
+            "/api/vehicles/search/**",
+            "/api/files/**"
     );
 
     // kiểm tra xem request có thuộc danh sách publicAPI
