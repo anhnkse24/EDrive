@@ -52,19 +52,10 @@ public class Filter extends OncePerRequestFilter {
             "/api/google-login",
             "/api/facebook-login",
             "/api/payments/vnpay-return",
-            "/api/testdrives",
             "/api/vehicles/**",
             "/api/vehicles/search/**",
             "/chat",
-            "/api/admin/unverified-accounts",
-            "/api/admin/verify-account/*",
-            "/api/manufacturer-inventory/**",
-            "/api/customer-orders/**",
-            "/api/dealers/**",
-            "/api/colors/**",
-            "/api/notifications/**",
-            "/api/testdrives/**",
-            "/api/contracts/**"
+            "/api/dealers/**"
             );
 
     // kiểm tra xem request có thuộc danh sách publicAPI

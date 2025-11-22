@@ -30,7 +30,7 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('DEALER_MANAGER')")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER','DEALER_STAFF')")
     public OrderSummaryResponse create(@RequestBody OrderCreateRequest req) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) authentication.getPrincipal();
@@ -39,7 +39,7 @@ public class OrderController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('DEALER_MANAGER')")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF','ADMIN')")
     public ResponseObject<List<OrderResponse>> getAllOrders() {
         List<OrderResponse> result = orderService.getAllOrders();
         return ResponseObject.<List<OrderResponse>>builder()
@@ -50,7 +50,7 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF','ADMIN')")
     public ResponseObject<OrderResponse> getOrderById(@PathVariable String orderId) {
         OrderResponse result = orderService.getOrderById(orderId);
         return ResponseObject.<OrderResponse>builder()
@@ -61,7 +61,7 @@ public class OrderController {
     }
 
     @GetMapping("/status/{status}")
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF','ADMIN')")
     public ResponseObject<List<OrderResponse>> getOrdersByStatus(@PathVariable OrderStatus status) {
         List<OrderResponse> result = orderService.getOrdersByStatus(status);
         return ResponseObject.<List<OrderResponse>>builder()
@@ -72,7 +72,7 @@ public class OrderController {
     }
 
     @GetMapping("/dealer/{dealerId}")
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF','ADMIN')")
     public ResponseObject<List<OrderResponse>> getOrdersByDealerId(@PathVariable Long dealerId) {
         List<OrderResponse> result = orderService.getOrdersByDealerId(dealerId);
         return ResponseObject.<List<OrderResponse>>builder()
@@ -83,7 +83,7 @@ public class OrderController {
     }
 
     @PutMapping("/{orderId}/cancel")
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF','ADMIN')")
     public ResponseObject<OrderResponse> cancel(@PathVariable String orderId) {
         OrderResponse result = orderService.cancelOrder(orderId);
         return ResponseObject.<OrderResponse>builder()
@@ -94,7 +94,7 @@ public class OrderController {
 
     @Operation(summary = "Upload payment bill after order payment", description = "Dealer uploads payment bill (invoice) after completing payment for the order")
     @PostMapping(value = "/{orderId}/upload-bill", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('DEALER_MANAGER')")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF','ADMIN')")
     public ResponseObject<String> uploadPaymentBill(@PathVariable String orderId,
                                                     @RequestParam("bill") MultipartFile bill) {
         String result = orderService.uploadPaymentImage(orderId, bill);
@@ -107,7 +107,7 @@ public class OrderController {
 
     @Operation(summary = "View payment bill image", description = "View the payment bill as image/PDF in browser")
     @GetMapping("/{orderId}/bill-preview")
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF','ADMIN')")
     public ResponseEntity<?> viewBill(@PathVariable String orderId) {
         try {
             byte[] fileContent = orderService.getPaymentBillContent(orderId);
@@ -124,7 +124,7 @@ public class OrderController {
 
     @Operation(summary = "Download payment bill", description = "Download the payment bill file to local machine")
     @GetMapping("/{orderId}/download-bill")
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF','ADMIN')")
     public ResponseEntity<?> downloadBill(@PathVariable String orderId) {
         try {
             byte[] fileContent = orderService.getPaymentBillContent(orderId);
