@@ -51,32 +51,30 @@ public class GeminiService {
 
     // --- 2. PROMPT TƯ DUY (BRAIN) ---
     private static final String OPERATIONAL_PROMPT = """
-            VAI TRÒ: Bạn là Trợ lý Vận hành AI cao cấp (Operations Manager AI) của Đại lý E-Drive.
+            VAI TRÒ: Bạn là Trợ lý Vận hành AI cao cấp của Đại lý EDrive.
             
-            MỤC TIÊU: Giúp Admin giải quyết vấn đề bằng cách kết hợp dữ liệu: Tồn kho + Đơn hàng đang về + Catalog.
+            NHIỆM VỤ:
+            1. Trả lời các câu hỏi về tồn kho, đơn hàng và danh mục sản phẩm.
+            2. KHI KHÁCH HỎI "DANH SÁCH TẤT CẢ CÁC XE":
+               - Hãy liệt kê đầy đủ các mẫu xe có trong mục [C. DANH MỤC XE].
+               - Trình bày thông tin rõ ràng, ngắn gọn (Tên xe, Phiên bản, Màu, Giá).
+               - Nếu danh sách dài, hãy nhóm theo Dòng xe (Ví dụ: Nhóm E8, Nhóm E3...).
             
             DỮ LIỆU THỰC TẾ CỦA ĐẠI LÝ (ID: {{DEALER_ID}}):
-----------------------------------------------------
-            [A. KHO XE HIỆN TẠI] (Dealer Inventory - Có thể giao ngay):
+            ----------------------------------------------------
+            [A. KHO XE HIỆN TẠI] (Hàng có sẵn tại đại lý):
             {{MY_INVENTORY}}
             
-            [B. ĐƠN NHẬP HÀNG] (Inbound Orders - Hàng đang về):
+            [B. ĐƠN NHẬP HÀNG] (Hàng đang về):
             {{MY_ORDERS}}
             
-            [C. DANH MỤC XE CỦA HÃNG] (Manufacturer Catalog - Để đặt thêm):
+            [C. DANH MỤC XE TOÀN HỆ THỐNG] (Catalog đầy đủ để tra cứu/đặt hàng):
             {{MANUFACTURER_CATALOG}}
             ----------------------------------------------------
             
-            HƯỚNG DẪN TƯ DUY TRẢ LỜI (CHAIN OF THOUGHT):
-            1. Khi Admin hỏi về tình trạng xe (Ví dụ: "Còn xe VF8 không?"):
-               - Bước 1: Nhìn mục [A]. Nếu có -> Báo số lượng.
-               - Bước 2: Nếu [A] hết hoặc ít -> Nhìn ngay mục [B] xem có đơn nào đang về (CONFIRMED/SHIPPING) không.
-               - Bước 3: Tổng hợp lại: "Kho đang hết VF8, nhưng em thấy có đơn #123 gồm 5 chiếc đang về ạ".
-            
-            2. Khi Admin hỏi về quy trình (Ví dụ: "Làm sao nhập hàng?"):
-               - Trả lời dựa trên "CẨM NANG VẬN HÀNH".
-            
-            3. Phong cách: Chuyên nghiệp, Ngắn gọn, Chính xác. Dùng Emoji (📦, 🚚, ❌) để làm nổi bật trạng thái.
+            HƯỚNG DẪN TƯ DUY:
+            - Dữ liệu ở mục [C] là toàn bộ xe mà hãng sản xuất. Dù kho [A] hết hàng, bạn vẫn phải trả lời được thông tin xe dựa trên mục [C].
+            - Sử dụng Emoji phù hợp.
             """;
 
     public GeminiService(ChatClient.Builder chatClientBuilder,
@@ -174,13 +172,25 @@ public class GeminiService {
         }).collect(Collectors.joining("\n"));
     }
 
+    // Trong GeminiService.java
+
     private String formatCatalog(List<Vehicle> list) {
-        // Catalog chỉ cần Tên, Phiên bản và Giá để Admin tham khảo đặt hàng
-        return list.stream().limit(20).map(v -> String.format("- 🚗 %s %s (%s) | Giá: %s",
+        if (list.isEmpty()) return "(Danh mục xe trống)";
+
+        // BỎ .limit(20) để lấy tất cả xe
+        // Format dạng text rõ ràng để AI dễ đọc
+        return list.stream()
+                .map(v -> String.format(
+                        "- 🆔 ID:%d | 🚗 %s %s | 🎨 Màu: %s | 🔋 Pin: %dkWh (%dkm) | 💰 Giá: %s VNĐ | 🏁 Status: %s",
+                        v.getVehicleId(),
                         v.getModelName(),
                         v.getVersion(),
-                        v.getManufactureYear(),
-                        v.getPriceRetail().toPlainString()))
+                        (v.getColor() != null ? v.getColor().getColorName() : "N/A"),
+                        v.getBatteryCapacityKwh(),
+                        v.getRangeKm(),
+                        v.getPriceRetail().toPlainString(), // Hiển thị giá đầy đủ
+                        v.getStatus()
+                ))
                 .collect(Collectors.joining("\n"));
     }
 }
