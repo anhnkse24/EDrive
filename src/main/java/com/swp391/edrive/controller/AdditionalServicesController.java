@@ -98,7 +98,7 @@ public class AdditionalServicesController {
 
     @Operation(summary = "Lấy tất cả dịch vụ (bao gồm inactive - cho manager)")
     @GetMapping("/all")
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER')")
     public ResponseEntity<ResponseObject<Page<ServiceCatalogResponse>>> getAllServices(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
@@ -119,7 +119,7 @@ public class AdditionalServicesController {
 
     @Operation(summary = "Tạo dịch vụ mới")
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER')")
     public ResponseEntity<ResponseObject<ServiceCatalogResponse>> createService(
             @RequestBody @Valid ServiceCatalogRequest request) {
 
@@ -137,7 +137,7 @@ public class AdditionalServicesController {
 
     @Operation(summary = "Cập nhật dịch vụ")
     @PutMapping("/{serviceId}")
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER')")
     public ResponseEntity<ResponseObject<ServiceCatalogResponse>> updateService(
             @PathVariable Long serviceId,
             @RequestBody @Valid ServiceCatalogRequest request) {
@@ -156,7 +156,7 @@ public class AdditionalServicesController {
 
     @Operation(summary = "Vô hiệu hóa dịch vụ (xóa mềm)")
     @PatchMapping("/{serviceId}/deactivate")
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER')")
     public ResponseEntity<ResponseObject<Void>> deactivateService(@PathVariable Long serviceId) {
 
         additionalServicesService.deactivateService(serviceId);
@@ -172,7 +172,7 @@ public class AdditionalServicesController {
 
     @Operation(summary = "Kích hoạt lại dịch vụ")
     @PatchMapping("/{serviceId}/activate")
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER')")
     public ResponseEntity<ResponseObject<Void>> activateService(@PathVariable Long serviceId) {
 
         additionalServicesService.activateService(serviceId);
@@ -188,7 +188,7 @@ public class AdditionalServicesController {
 
 
     @Operation(summary = "Xóa dịch vụ vĩnh viễn")
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER')")
     @DeleteMapping("/{serviceId}")
     public ResponseEntity<ResponseObject<Void>> deleteService(@PathVariable Long serviceId) {
         try {
