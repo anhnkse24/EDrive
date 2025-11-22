@@ -52,25 +52,37 @@ public class Filter extends OncePerRequestFilter {
             "/api/google-login",
             "/api/facebook-login",
             "/api/payments/vnpay-return",
-            "/api/vehicles/**",
-            "/api/vehicles/search/**",
             "/chat",
             "/api/dealers/**"
             );
+
+    // Danh sách các API cho phép GET công khai
+    List<String> publicGetAPI = List.of(
+            "/api/vehicles/**",
+            "/api/vehicles/search/**"
+    );
 
     // kiểm tra xem request có thuộc danh sách publicAPI
     boolean isPermitted(HttpServletRequest request) {
         AntPathMatcher patchMatch = new AntPathMatcher();
         String uri = request.getRequestURI();
+        String method = request.getMethod();
 
-
-        // chuyển đổi list thành một stream
-        return publicAPI.stream()
-                // trong stream có thư viện anyMatch
-                // anyMatch duyệt qua từng phần tử
-                // item có nghĩa đang đại diện cho list publis_api
-                // so sánh uri  với item
+        // Kiểm tra public API (tất cả các method)
+        boolean isPublicAPI = publicAPI.stream()
                 .anyMatch(item -> patchMatch.match(item, uri));
+
+        if (isPublicAPI) {
+            return true;
+        }
+
+        // Kiểm tra public GET API (chỉ GET method)
+        if ("GET".equalsIgnoreCase(method)) {
+            return publicGetAPI.stream()
+                    .anyMatch(item -> patchMatch.match(item, uri));
+        }
+
+        return false;
     }
 
     @Override

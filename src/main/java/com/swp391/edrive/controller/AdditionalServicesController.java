@@ -28,7 +28,7 @@ public class AdditionalServicesController {
 
     @Operation(summary = "Lấy tất cả dịch vụ đang hoạt động")
     @GetMapping("/active")
-    @PreAuthorize("hasAnyRole('DEALER_MANAGER')")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER','DEALER_STAFF')")
     public ResponseEntity<ResponseObject<List<ServiceCatalogResponse>>> getAllActiveServices() {
 
         List<ServiceCatalogResponse> services = additionalServicesService.getAllActiveServices();
@@ -43,7 +43,7 @@ public class AdditionalServicesController {
     }
 
     @Operation(summary = "Lấy dịch vụ theo ID")
-    @PreAuthorize("hasAnyRole('DEALER_MANAGER')")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER','DEALER_STAFF')")
     @GetMapping("/{serviceId}")
     public ResponseEntity<ResponseObject<ServiceCatalogResponse>> getServiceById(@PathVariable Long serviceId) {
 
@@ -59,7 +59,7 @@ public class AdditionalServicesController {
     }
 
     @Operation(summary = "Lấy dịch vụ theo category")
-    @PreAuthorize("hasAnyRole('DEALER_MANAGER')")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER','DEALER_STAFF')")
     @GetMapping("/category/{category}")
     public ResponseEntity<ResponseObject<List<ServiceCatalogResponse>>> getServicesByCategory(
             @PathVariable String category) {
@@ -76,7 +76,7 @@ public class AdditionalServicesController {
     }
 
     @Operation(summary = "Tìm kiếm dịch vụ")
-    @PreAuthorize("hasAnyRole('DEALER_MANAGER')")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER','DEALER_STAFF')")
     @GetMapping("/search")
     public ResponseEntity<ResponseObject<Page<ServiceCatalogResponse>>> searchServices(
             @RequestParam(required = false, defaultValue = "") String keyword,
@@ -96,9 +96,9 @@ public class AdditionalServicesController {
         );
     }
 
-    @Operation(summary = "Lấy tất cả dịch vụ (bao gồm inactive - cho manager)")
+    @Operation(summary = "Lấy tất cả dịch vụ (bao gồm inactive )")
     @GetMapping("/all")
-    @PreAuthorize("hasAnyRole('DEALER_MANAGER')")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER','DEALER_STAFF')")
     public ResponseEntity<ResponseObject<Page<ServiceCatalogResponse>>> getAllServices(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
