@@ -1,7 +1,9 @@
 package com.swp391.edrive.service.serviceimpl;
 
+import com.swp391.edrive.dto.request.TestDriveStatusRequest;
 import com.swp391.edrive.dto.response.NotificationResponse;
 import com.swp391.edrive.entity.*;
+import com.swp391.edrive.enums.TestDriveStatus;
 import com.swp391.edrive.repository.DealerRepository;
 import com.swp391.edrive.repository.NotificationRepository;
 import com.swp391.edrive.repository.OrderRepository;
@@ -39,6 +41,34 @@ public class NotificationServiceImpl implements NotificationService {
 
         notificationRepository.save(notification);
     }
+    @Override
+    public void createNotificationForTestDriveStatusForStaff(TestDrive testDrive, TestDriveStatusRequest request) {
+
+        String statusMessage = getStatusMessage(request.getStatus());
+
+        String message = String.format(
+                "Lịch lái thử xe %s của khách hàng %s đã được chuyển sang: %s",
+                testDrive.getVehicle().getModelName(),
+                testDrive.getCustomer().getFullName(),
+                statusMessage
+        );
+
+        if (request.getStatus() == TestDriveStatus.CANCELLED && request.getCancelReason() != null) {
+            message += ". Lý do: " + request.getCancelReason();
+        }
+
+        Notification notification = Notification.builder()
+                .dealer(testDrive.getDealer())
+                .title("Cập nhật lịch lái thử")
+                .message(message)
+                .receiverType("DEALER_STAFF")  // ⬅️ staff nhận thông báo
+                .isRead(false)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        notificationRepository.save(notification);
+    }
+
 
     @Override
     public NotificationResponse markAsRead(Long notificationId) {
@@ -138,6 +168,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         notificationRepository.save(notification);
     }
+
     @Override
     public List<NotificationResponse> getNotificationsForAdmin() {
         List<Notification> notifications = notificationRepository.findByReceiverTypeOrderByCreatedAtDesc("ADMIN");
@@ -163,6 +194,16 @@ public class NotificationServiceImpl implements NotificationService {
         return notifications.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
+    }
+    //----------------------------------------------
+    private String getStatusMessage(TestDriveStatus status) {
+        switch (status) {
+            case PENDING: return "Đang chờ xử lý";
+            case APPROVED: return "Đã phê duyệt";
+            case COMPLETED: return "Đã hoàn thành";
+            case CANCELLED: return "Đã hủy";
+            default: return status.toString();
+        }
     }
 
     private NotificationResponse mapToResponse(Notification notification) {

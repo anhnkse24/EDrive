@@ -132,16 +132,8 @@ public class TestDriveServiceImpl implements TestDriveService {
                 message += ". Lý do: " + request.getCancelReason();
             }
 
-            notificationRepository.save(
-                    Notification.builder()
-                            .dealer(testDrive.getDealer())
-                            .title("Cập nhật trạng thái lịch lái thử")
-                            .message(message)
-                            .receiverType("DEALER")
-                            .isRead(false)
-                            .createdAt(LocalDateTime.now())
-                            .build()
-            );
+            notificationService.createNotificationForTestDriveStatusForStaff(testDrive, request);
+
         }
 
         // --- Trạng thái staff ---
