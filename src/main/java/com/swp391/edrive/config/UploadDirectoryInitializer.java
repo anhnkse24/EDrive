@@ -31,10 +31,10 @@ public class UploadDirectoryInitializer {
             // Tạo thư mục nếu chưa tồn tại
             Files.createDirectories(Paths.get(uploadPath));
 
-            log.info("✅ Upload directory initialized at: {}", uploadPath);
+            log.info(" Upload directory initialized at: {}", uploadPath);
 
         } catch (Exception e) {
-            log.error("❌ Failed to initialize upload directory", e);
+            log.error("Failed to initialize upload directory", e);
             throw new RuntimeException("Cannot initialize upload directory", e);
         }
     }

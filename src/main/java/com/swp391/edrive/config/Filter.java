@@ -52,8 +52,7 @@ public class Filter extends OncePerRequestFilter {
             "/api/google-login",
             "/api/facebook-login",
             "/api/payments/vnpay-return",
-            "/chat",
-            "/api/dealers/**"
+            "/chat"
             );
 
     // Danh sách các API cho phép GET công khai

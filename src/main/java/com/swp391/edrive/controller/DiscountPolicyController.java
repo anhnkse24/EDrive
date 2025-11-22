@@ -20,7 +20,6 @@ import java.util.List;
 @RequestMapping("/api/admin/discount-policies")
 @RequiredArgsConstructor
 @Tag(name = "Discount Policy Management", description = "APIs for managing discount policies (Admin only)")
-@PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF','ADMIN')")
 @SecurityRequirement(name = "api")
 public class DiscountPolicyController {
 
