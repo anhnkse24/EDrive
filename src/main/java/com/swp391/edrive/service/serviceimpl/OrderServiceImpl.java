@@ -36,12 +36,10 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepo;
     private final DealerRepository dealerRepo;
     private final VehicleRepository vehicleRepo;
-    private final OrderItemRepository orderItemRepo;
     private final ManufacturerInventoryRepository manufacturerInventoryRepo;
     private final NotificationService notificationService;
     private final DiscountPolicyRepository discountPolicyRepo;
     private final EmailService emailService;
-    private final QuotationRepository quotationRepo;
 
     @Value("${edrive.vat-rate:0.1}")
     private BigDecimal vatRate;
@@ -237,9 +235,8 @@ public class OrderServiceImpl implements OrderService {
 
         order.setOrderItems(orderItems);
 
-        // Lưu đơn hàng và các item
+        // Lưu đơn hàng (CascadeType.ALL sẽ tự động lưu orderItems)
         Order savedOrder = orderRepo.save(order);
-        orderItemRepo.saveAll(orderItems);
 
         notificationService.createAdminNotificationForDealerOrder(savedOrder.getOrderId());
 
