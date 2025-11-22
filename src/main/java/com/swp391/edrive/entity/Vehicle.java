@@ -45,7 +45,8 @@ public class Vehicle {
     private Integer widthMm;
     private Integer heightMm;
 
-    @Column(name = "image_url", length = 2048)
+    @Lob
+    @Column(name = "image_url", columnDefinition = "text")
     private String imageUrl;
 
     @NotNull
