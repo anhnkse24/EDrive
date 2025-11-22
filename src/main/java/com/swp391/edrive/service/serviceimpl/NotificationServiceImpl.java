@@ -1,12 +1,15 @@
 package com.swp391.edrive.service.serviceimpl;
 
-import com.swp391.edrive.dto.request.TestDriveStatusRequest;
+import com.swp391.edrive.dto.request.TestDriveStatusManagerRequest;
+import com.swp391.edrive.dto.request.TestDriveStatusStaffRequest;
 import com.swp391.edrive.dto.response.NotificationResponse;
 import com.swp391.edrive.entity.*;
-import com.swp391.edrive.enums.TestDriveStatus;
+import com.swp391.edrive.enums.TestDriveStatusManager;
+import com.swp391.edrive.enums.TestDriveStatusStaff;
 import com.swp391.edrive.repository.DealerRepository;
 import com.swp391.edrive.repository.NotificationRepository;
 import com.swp391.edrive.repository.OrderRepository;
+import com.swp391.edrive.repository.UserRepository;
 import com.swp391.edrive.service.NotificationService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +26,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final DealerRepository dealerRepository;
     private final OrderRepository orderRepository;
+    private final UserRepository userRepository;
 
 
     @Override
@@ -42,26 +46,67 @@ public class NotificationServiceImpl implements NotificationService {
         notificationRepository.save(notification);
     }
     @Override
-    public void createNotificationForTestDriveStatusForStaff(TestDrive testDrive, TestDriveStatusRequest request) {
-
-        String statusMessage = getStatusMessage(request.getStatus());
+    public void createNotificationForTestDriveStatusForStaff(
+            TestDrive testDrive,
+            TestDriveStatusStaffRequest request,
+            Long staffUserId
+    ) {
+        String statusMessage = getStatusMessageStaff(request.getStatusOfStaff());
 
         String message = String.format(
-                "Lịch lái thử xe %s của khách hàng %s đã được chuyển sang: %s",
+                "Nhân viên đã cập nhật lịch lái thử xe %s của khách hàng %s sang trạng thái: %s",
                 testDrive.getVehicle().getModelName(),
                 testDrive.getCustomer().getFullName(),
                 statusMessage
         );
 
-        if (request.getStatus() == TestDriveStatus.CANCELLED && request.getCancelReason() != null) {
+        if (request.getStatusOfStaff() == TestDriveStatusStaff.CANCELLED
+                && request.getCancelReason() != null) {
             message += ". Lý do: " + request.getCancelReason();
         }
 
         Notification notification = Notification.builder()
                 .dealer(testDrive.getDealer())
-                .title("Cập nhật lịch lái thử")
+                .user(null) // Manager nhận → không gán user cố định
+                .title("Nhân viên cập nhật lịch lái thử")
+                .receiverType("DEALER_MANAGER")
                 .message(message)
-                .receiverType("DEALER_STAFF")  // ⬅️ staff nhận thông báo
+                .isRead(false)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        notificationRepository.save(notification);
+    }
+    @Override
+    public void createNotificationForTestDriveStatusForManager(
+            TestDrive testDrive,
+            TestDriveStatusManagerRequest request,
+            Long staffUserId
+    ) {
+
+        String statusMessage = getStatusMessageManager(request.getStatusOfManager());
+
+        String message = String.format(
+                "Quản lý đã cập nhật lịch lái thử xe %s của khách hàng %s sang trạng thái: %s",
+                testDrive.getVehicle().getModelName(),
+                testDrive.getCustomer().getFullName(),
+                statusMessage
+        );
+
+        if (request.getStatusOfManager() == TestDriveStatusManager.CANCELLED
+                && request.getCancelReason() != null) {
+            message += ". Lý do: " + request.getCancelReason();
+        }
+
+        User staff = userRepository.findById(staffUserId)
+                .orElseThrow(() -> new EntityNotFoundException("Staff not found"));
+
+        Notification notification = Notification.builder()
+                .dealer(testDrive.getDealer())
+                .user(staff) // thông báo đúng tới nhân viên tương ứng
+                .title("Quản lý cập nhật lịch lái thử")
+                .receiverType("DEALER_STAFF")
+                .message(message)
                 .isRead(false)
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -69,7 +114,23 @@ public class NotificationServiceImpl implements NotificationService {
         notificationRepository.save(notification);
     }
 
-
+    private String getStatusMessageManager(TestDriveStatusManager status) {
+        switch (status) {
+            case PENDING: return "Đang chờ xử lý";
+            case APPROVED: return "Đã phê duyệt";
+            case COMPLETED: return "Đã hoàn thành";
+            case CANCELLED: return "Đã hủy";
+            default: return status.toString();
+        }
+    }
+    private String getStatusMessageStaff(TestDriveStatusStaff status) {
+        switch (status) {
+            case PENDING: return "Đang chờ";
+            case COMPLETED: return "Đã hoàn thành";
+            case CANCELLED: return "Đã hủy";
+            default: return status.toString();
+        }
+    }
     @Override
     public NotificationResponse markAsRead(Long notificationId) {
         Notification notification = notificationRepository.findById(notificationId)
@@ -169,6 +230,7 @@ public class NotificationServiceImpl implements NotificationService {
         notificationRepository.save(notification);
     }
 
+
     @Override
     public List<NotificationResponse> getNotificationsForAdmin() {
         List<Notification> notifications = notificationRepository.findByReceiverTypeOrderByCreatedAtDesc("ADMIN");
@@ -187,16 +249,14 @@ public class NotificationServiceImpl implements NotificationService {
                 .collect(Collectors.toList());
     }
     @Override
-    public List<NotificationResponse> getNotificationsForDealerStaff(Long dealerId) {
-        List<Notification> notifications = notificationRepository
-                .findByDealerDealerIdAndReceiverTypeOrderByCreatedAtDesc(dealerId, "DEALER_STAFF");
-
-        return notifications.stream()
+    public List<NotificationResponse> getNotificationsForDealerStaff(Long userId) {
+        return notificationRepository.findByUserUserIdOrderByCreatedAtDesc(userId)
+                .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
     //----------------------------------------------
-    private String getStatusMessage(TestDriveStatus status) {
+    private String getStatusMessage(TestDriveStatusManager status) {
         switch (status) {
             case PENDING: return "Đang chờ xử lý";
             case APPROVED: return "Đã phê duyệt";

@@ -1,7 +1,8 @@
 package com.swp391.edrive.controller;
 
 import com.swp391.edrive.dto.request.TestDriveRequest;
-import com.swp391.edrive.dto.request.TestDriveStatusRequest;
+import com.swp391.edrive.dto.request.TestDriveStatusManagerRequest;
+import com.swp391.edrive.dto.request.TestDriveStatusStaffRequest;
 import com.swp391.edrive.dto.response.ResponseObject;
 import com.swp391.edrive.dto.response.TestDriveResponse;
 import com.swp391.edrive.service.TestDriveService;
@@ -92,18 +93,42 @@ public class TestDriveController {
         );
     }
 
-    @Operation(summary = "Thay đổi trạng thái lịch lái thử")
-    @PatchMapping("/dealer/{dealerId}/{testDriveId}/status")
+    @Operation(summary = "Manager - Thay đổi trạng thái lịch lái thử")
+    @PatchMapping("/dealer/{dealerId}/{testDriveId}/manager/status")
     @SecurityRequirement(name = "api")
-    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
-    public ResponseEntity<ResponseObject<TestDriveResponse>> changeTestDriveStatus(
+    @PreAuthorize("hasRole('DEALER_MANAGER')")
+    public ResponseEntity<ResponseObject<TestDriveResponse>> changeStatusByManager(
             @PathVariable Long dealerId,
             @PathVariable Long testDriveId,
-            @Valid @RequestBody TestDriveStatusRequest request) {
+            @Valid @RequestBody TestDriveStatusManagerRequest request
+    ) {
+        TestDriveResponse response =
+                testDriveService.changeTestDriveStatusForManager(dealerId, testDriveId, request);
 
-        TestDriveResponse response = testDriveService.changeTestDriveStatus(dealerId, testDriveId, request);
         return ResponseEntity.ok(
-                new ResponseObject<>(200, "Thay đổi trạng thái lịch lái thử thành công", response)
+                new ResponseObject<>(200, "Manager thay đổi trạng thái thành công", response)
+        );
+    }
+
+    @Operation(summary = "Staff - Thay đổi trạng thái lịch lái thử")
+    @PatchMapping("/dealer/{dealerId}/{testDriveId}/staff/status")
+    @SecurityRequirement(name = "api")
+    @PreAuthorize("hasRole('DEALER_STAFF')")
+    public ResponseEntity<ResponseObject<TestDriveResponse>> changeStatusByStaff(
+            @PathVariable Long dealerId,
+            @PathVariable Long testDriveId,
+            @Valid @RequestBody TestDriveStatusStaffRequest request
+    ) {
+        TestDriveResponse response =
+                testDriveService.changeTestDriveStatusForStaff(
+                        request.getStaffUserId(),   // đúng nhất vì service yêu cầu userId
+                        dealerId,
+                        testDriveId,
+                        request
+                );
+
+        return ResponseEntity.ok(
+                new ResponseObject<>(200, "Staff thay đổi trạng thái thành công", response)
         );
     }
 }

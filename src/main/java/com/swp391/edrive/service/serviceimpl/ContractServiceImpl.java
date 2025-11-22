@@ -677,7 +677,8 @@ public class ContractServiceImpl implements ContractService {
             contract.setPdfUploadedAt(LocalDateTime.now());
             // Status không đổi - chỉ update PDF URL (có thể upload lại nhiều lần)
             contractRepo.save(contract);
-            
+            notificationService.createNotificationForUploadedContract(contract);
+
             return PdfUploadResponse.builder()
                     .success(true)
                     .message("PDF uploaded successfully")

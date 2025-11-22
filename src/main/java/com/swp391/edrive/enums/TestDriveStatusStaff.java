@@ -1,8 +1,7 @@
 package com.swp391.edrive.enums;
 
-public enum TestDriveStatus {
+public enum TestDriveStatusStaff {
     PENDING,
-    APPROVED,
     COMPLETED,
     CANCELLED
 }

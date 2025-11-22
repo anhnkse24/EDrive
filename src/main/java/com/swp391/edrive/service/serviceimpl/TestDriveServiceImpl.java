@@ -1,17 +1,19 @@
 package com.swp391.edrive.service.serviceimpl;
 
 import com.swp391.edrive.dto.request.TestDriveRequest;
-import com.swp391.edrive.dto.request.TestDriveStatusRequest;
+import com.swp391.edrive.dto.request.TestDriveStatusManagerRequest;
+import com.swp391.edrive.dto.request.TestDriveStatusStaffRequest;
 import com.swp391.edrive.dto.response.TestDriveResponse;
 import com.swp391.edrive.entity.*;
-import com.swp391.edrive.enums.TestDriveStatus;
-import com.swp391.edrive.enums.TestDriveStatusForStaff;
+import com.swp391.edrive.enums.TestDriveStatusManager;
+import com.swp391.edrive.enums.TestDriveStatusStaff;
 import com.swp391.edrive.repository.*;
 import com.swp391.edrive.service.NotificationService;
 import com.swp391.edrive.service.TestDriveService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -63,8 +65,8 @@ public class TestDriveServiceImpl implements TestDriveService {
                 dealer,
                 vehicle,
                 request.getScheduleDatetime(),
-                TestDriveStatus.PENDING,
-                TestDriveStatusForStaff.PENDING
+                TestDriveStatusManager.PENDING,
+                TestDriveStatusStaff.PENDING
         );
 
         testDriveRepository.save(testDrive);
@@ -89,84 +91,79 @@ public class TestDriveServiceImpl implements TestDriveService {
     }
 
     @Override
-    public void deleteTestDriveByDealer(Long dealerId, Long testDriveId) {
+    @Transactional
+    public TestDriveResponse changeTestDriveStatusForManager(Long dealerId, Long testDriveId, TestDriveStatusManagerRequest request) {
+
         TestDrive testDrive = testDriveRepository.findById(testDriveId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy lịch lái thử"));
 
         if (!testDrive.getDealer().getDealerId().equals(dealerId))
-            throw new EntityNotFoundException("Không có quyền xóa lịch lái thử của Dealer khác");
+            throw new EntityNotFoundException("Bạn không có quyền đổi trạng thái lịch của Dealer khác");
+
+        if (request.getStatusOfManager() == null)
+            throw new IllegalArgumentException("Thiếu trạng thái");
+
+        // ---- Cập nhật trạng thái ----
+        testDrive.setStatusForManager(request.getStatusOfManager());
+
+        if (request.getStatusOfManager() == TestDriveStatusManager.COMPLETED)
+            testDrive.setCompletedAt(LocalDateTime.now());
+
+        if (request.getStatusOfManager() == TestDriveStatusManager.CANCELLED &&
+                request.getCancelReason() != null &&
+                !request.getCancelReason().trim().isEmpty()) {
+
+            testDrive.setCancelReason(request.getCancelReason());
+        }
+
+        // ---- Gửi thông báo cho Staff ----
+        notificationService.createNotificationForTestDriveStatusForManager(
+                testDrive,
+                request,
+                request.getStaffUserId()
+        );
+        testDriveRepository.save(testDrive);
+
+        return mapToResponse(testDrive);
+    }
+    @Override
+    public void deleteTestDriveByDealer(Long dealerId, Long testDriveId) {
+        TestDrive testDrive = testDriveRepository.findById(testDriveId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy lịch lái thử"));
+
+        if (!testDrive.getDealer().getDealerId().equals(dealerId)) {
+            throw new EntityNotFoundException("Bạn không có quyền xóa lịch của Dealer khác");
+        }
 
         testDriveRepository.delete(testDrive);
     }
 
     @Override
-    public TestDriveResponse changeTestDriveStatus(Long dealerId, Long testDriveId, TestDriveStatusRequest request) {
+    @Transactional
+    public TestDriveResponse changeTestDriveStatusForStaff(
+            Long staffUserId, Long dealerId, Long testDriveId, TestDriveStatusStaffRequest request) {
+
         TestDrive testDrive = testDriveRepository.findById(testDriveId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy lịch lái thử"));
 
         if (!testDrive.getDealer().getDealerId().equals(dealerId))
-            throw new EntityNotFoundException("Không có quyền thay đổi trạng thái lịch lái thử của Dealer khác");
+            throw new EntityNotFoundException("Bạn không có quyền đổi trạng thái lịch của Dealer khác");
 
-        if (request.getStatus() != null) {
+        if (request.getStatusOfStaff() == null)
+            throw new IllegalArgumentException("Thiếu trạng thái Staff");
 
-            testDrive.setStatus(request.getStatus());
+        // ---- Cập nhật ----
+        testDrive.setStatusForStaff(request.getStatusOfStaff());
 
-            if (request.getStatus() == TestDriveStatus.COMPLETED) {
-                testDrive.setCompletedAt(LocalDateTime.now());
-            }
-
-            if (request.getStatus() == TestDriveStatus.CANCELLED
-                    && request.getCancelReason() != null
-                    && !request.getCancelReason().trim().isEmpty()) {
-                testDrive.setCancelReason(request.getCancelReason());
-            }
-
-            String statusMessage = getStatusMessage(request.getStatus());
-            String message = String.format(
-                    "Lịch lái thử xe %s của bạn đã được chuyển sang trạng thái: %s",
-                    testDrive.getVehicle().getModelName(),
-                    statusMessage
-            );
-
-            if (request.getStatus() == TestDriveStatus.CANCELLED && request.getCancelReason() != null) {
-                message += ". Lý do: " + request.getCancelReason();
-            }
-
-            notificationService.createNotificationForTestDriveStatusForStaff(testDrive, request);
-
-        }
-
-        // --- Trạng thái staff ---
-        if (request.getStatusForStaff() != null) {
-
-            if (request.getStatusForStaff() == TestDriveStatusForStaff.COMPLETED) {
-
-                if (testDrive.getScheduleDatetime().isAfter(LocalDateTime.now())) {
-                    throw new IllegalStateException("không thể hoàn thành vì ngày lái thử chưa đến.");
-                }
-            }
-
-            testDrive.setStatusForStaff(request.getStatusForStaff());
-        }
-
+        // ---- Gửi thông báo cho Manager ----
+        notificationService.createNotificationForTestDriveStatusForStaff(
+                testDrive,
+                request,
+                staffUserId
+        );
         testDriveRepository.save(testDrive);
+
         return mapToResponse(testDrive);
-    }
-
-
-    private String getStatusMessage(TestDriveStatus status) {
-        switch (status) {
-            case PENDING:
-                return "Đang chờ xử lý";
-            case APPROVED:
-                return "Đã phê duyệt";
-            case COMPLETED:
-                return "Đã hoàn thành";
-            case CANCELLED:
-                return "Đã hủy";
-            default:
-                return status.toString();
-        }
     }
 
     private TestDriveResponse mapToResponse(TestDrive testDrive) {
@@ -180,7 +177,7 @@ public class TestDriveServiceImpl implements TestDriveService {
                 .vehicleModel(testDrive.getVehicle().getModelName())
                 .scheduleDatetime(testDrive.getScheduleDatetime())
                 .completedAt(testDrive.getCompletedAt())
-                .status(testDrive.getStatus())
+                .statusForManager(testDrive.getStatusForManager())
                 .statusForStaff(testDrive.getStatusForStaff())
                 .cancelReason(testDrive.getCancelReason())
                 .build();

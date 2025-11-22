@@ -1,10 +1,12 @@
 package com.swp391.edrive.service;
 
-import com.swp391.edrive.dto.request.TestDriveStatusRequest;
+import com.swp391.edrive.dto.request.TestDriveStatusManagerRequest;
+import com.swp391.edrive.dto.request.TestDriveStatusStaffRequest;
 import com.swp391.edrive.dto.response.NotificationResponse;
 import com.swp391.edrive.entity.Contract;
 import com.swp391.edrive.entity.Order;
 import com.swp391.edrive.entity.TestDrive;
+import com.swp391.edrive.enums.TestDriveStatusManager;
 
 import java.util.List;
 
@@ -19,6 +21,7 @@ public interface NotificationService {
     void createNotificationForUploadedContract(Contract contract);
     void createNotificationForDeliveryConfirmed(Order order);
     List<NotificationResponse> getNotificationsForDealerManager(Long dealerId);
-    List<NotificationResponse> getNotificationsForDealerStaff(Long dealerId);
-    void createNotificationForTestDriveStatusForStaff(TestDrive testDrive, TestDriveStatusRequest request);
+    List<NotificationResponse> getNotificationsForDealerStaff(Long userId);
+    void createNotificationForTestDriveStatusForStaff(TestDrive testDrive, TestDriveStatusStaffRequest request, Long userId);
+    void createNotificationForTestDriveStatusForManager(TestDrive testDrive, TestDriveStatusManagerRequest request, Long staffUserId);
 }
