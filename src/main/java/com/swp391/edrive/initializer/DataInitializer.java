@@ -163,10 +163,10 @@ public class DataInitializer implements CommandLineRunner {
         Color green = upsertColor("Xanh lá", "#008000");
         Color yellow = upsertColor("Vàng", "#FDFD49");
 
-// ====== Khởi tạo Vehicles cho VinFast ======
+// ====== Khởi tạo Vehicles cho EDrive ======
         Vehicle vf8_silver = new Vehicle();
         vf8_silver.setManufacturer(edrive);
-        vf8_silver.setModelName("VF 8");
+        vf8_silver.setModelName("EDrive E8");
         vf8_silver.setVersion("Standard");
         vf8_silver.setColor(silver);
         vf8_silver.setBatteryCapacityKwh(40);
@@ -186,7 +186,7 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf8_black = new Vehicle();
         vf8_black.setManufacturer(edrive);
-        vf8_black.setModelName("VF 8");
+        vf8_black.setModelName("EDrive E8");
         vf8_black.setVersion("Standard");
         vf8_black.setColor(black);
         vf8_black.setBatteryCapacityKwh(40);
@@ -206,7 +206,7 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf8_red = new Vehicle();
         vf8_red.setManufacturer(edrive);
-        vf8_red.setModelName("VF 8");
+        vf8_red.setModelName("EDrive E8");
         vf8_red.setVersion("Standard");
         vf8_red.setColor(red);
         vf8_red.setBatteryCapacityKwh(40);
@@ -226,7 +226,7 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf8_white = new Vehicle();
         vf8_white.setManufacturer(edrive);
-        vf8_white.setModelName("VF 8");
+        vf8_white.setModelName("EDrive E8");
         vf8_white.setVersion("Standard");
         vf8_white.setColor(white);
         vf8_white.setBatteryCapacityKwh(40);
@@ -246,7 +246,7 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf9_blue = new Vehicle();
         vf9_blue.setManufacturer(edrive);
-        vf9_blue.setModelName("VF 9");
+        vf9_blue.setModelName("EDrive E9");
         vf9_blue.setVersion("Plus");
         vf9_blue.setColor(blue);
         vf9_blue.setBatteryCapacityKwh(123);
@@ -266,7 +266,7 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf9_red = new Vehicle();
         vf9_red.setManufacturer(edrive);
-        vf9_red.setModelName("VF 9");
+        vf9_red.setModelName("EDrive E9");
         vf9_red.setVersion("Standard");
         vf9_red.setColor(red);
         vf9_red.setBatteryCapacityKwh(42);
@@ -286,7 +286,7 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf9_white = new Vehicle();
         vf9_white.setManufacturer(edrive);
-        vf9_white.setModelName("VF 9");
+        vf9_white.setModelName("EDrive E9");
         vf9_white.setVersion("Standard");
         vf9_white.setColor(white);
         vf9_white.setBatteryCapacityKwh(42);
@@ -306,7 +306,7 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf9_green = new Vehicle();
         vf9_green.setManufacturer(edrive);
-        vf9_green.setModelName("VF 9");
+        vf9_green.setModelName("EDrive E9");
         vf9_green.setVersion("Standard");
         vf9_green.setColor(green);
         vf9_green.setBatteryCapacityKwh(42);
@@ -326,7 +326,7 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf9_black = new Vehicle();
         vf9_black.setManufacturer(edrive);
-        vf9_black.setModelName("VF 9");
+        vf9_black.setModelName("EDrive E9");
         vf9_black.setVersion("Standard");
         vf9_black.setColor(black);
         vf9_black.setBatteryCapacityKwh(42);
@@ -344,12 +344,12 @@ public class DataInitializer implements CommandLineRunner {
         vf9_black.setImageUrl("https://hanoivinfast.com/wp-content/uploads/2024/09/mau-xe-vf9-2.png");
         vf9_black.setStatus(VehicleStatus.AVAILABLE);
 
-// ====== Khởi tạo Vehicles cho Tesla ======
+// ====== Khởi tạo Vehicles dòng nhỏ/trung (Trước là Tesla/VinFast nhỏ) ======
         Vehicle vf3_yellow = new Vehicle();
         vf3_yellow.setManufacturer(edrive);
-        vf3_yellow.setModelName("VF 3");
+        vf3_yellow.setModelName("EDrive E3");
         vf3_yellow.setVersion("Long Range");
-        vf3_yellow.setColor(yellow); // giữ “Xanh” nhưng có mã hex riêng
+        vf3_yellow.setColor(yellow);
         vf3_yellow.setBatteryCapacityKwh(82);
         vf3_yellow.setRangeKm(602);
         vf3_yellow.setMaxSpeedKmh(233);
@@ -367,9 +367,9 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf3_red = new Vehicle();
         vf3_red.setManufacturer(edrive);
-        vf3_red.setModelName("VF 3");
+        vf3_red.setModelName("EDrive E3");
         vf3_red.setVersion("Long Range");
-        vf3_red.setColor(red); // giữ “Xanh” nhưng có mã hex riêng
+        vf3_red.setColor(red);
         vf3_red.setBatteryCapacityKwh(82);
         vf3_red.setRangeKm(602);
         vf3_red.setMaxSpeedKmh(233);
@@ -387,9 +387,9 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf3_white = new Vehicle();
         vf3_white.setManufacturer(edrive);
-        vf3_white.setModelName("VF 3");
+        vf3_white.setModelName("EDrive E3");
         vf3_white.setVersion("Long Range");
-        vf3_white.setColor(white); // giữ “Xanh” nhưng có mã hex riêng
+        vf3_white.setColor(white);
         vf3_white.setBatteryCapacityKwh(82);
         vf3_white.setRangeKm(602);
         vf3_white.setMaxSpeedKmh(233);
@@ -407,9 +407,9 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf5_red = new Vehicle();
         vf5_red.setManufacturer(edrive);
-        vf5_red.setModelName("VF 5");
+        vf5_red.setModelName("EDrive E5");
         vf5_red.setVersion("Long Range");
-        vf5_red.setColor(red); // giữ “Xanh” nhưng có mã hex riêng
+        vf5_red.setColor(red);
         vf5_red.setBatteryCapacityKwh(82);
         vf5_red.setRangeKm(602);
         vf5_red.setMaxSpeedKmh(233);
@@ -427,9 +427,9 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf5_grey = new Vehicle();
         vf5_grey.setManufacturer(edrive);
-        vf5_grey.setModelName("VF 5");
+        vf5_grey.setModelName("EDrive E5");
         vf5_grey.setVersion("Long Range");
-        vf5_grey.setColor(gray); // giữ “Xanh” nhưng có mã hex riêng
+        vf5_grey.setColor(gray);
         vf5_grey.setBatteryCapacityKwh(82);
         vf5_grey.setRangeKm(602);
         vf5_grey.setMaxSpeedKmh(233);
@@ -447,9 +447,9 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf5_blue = new Vehicle();
         vf5_blue.setManufacturer(edrive);
-        vf5_blue.setModelName("VF 5");
+        vf5_blue.setModelName("EDrive E5");
         vf5_blue.setVersion("Long Range");
-        vf5_blue.setColor(gray); // giữ “Xanh” nhưng có mã hex riêng
+        vf5_blue.setColor(gray); // giữ logic cũ
         vf5_blue.setBatteryCapacityKwh(82);
         vf5_blue.setRangeKm(602);
         vf5_blue.setMaxSpeedKmh(233);
@@ -467,9 +467,9 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf5_white = new Vehicle();
         vf5_white.setManufacturer(edrive);
-        vf5_white.setModelName("VF 5");
+        vf5_white.setModelName("EDrive E5");
         vf5_white.setVersion("Long Range");
-        vf5_white.setColor(white); // giữ “Xanh” nhưng có mã hex riêng
+        vf5_white.setColor(white);
         vf5_white.setBatteryCapacityKwh(82);
         vf5_white.setRangeKm(602);
         vf5_white.setMaxSpeedKmh(233);
@@ -488,9 +488,9 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf6_green = new Vehicle();
         vf6_green.setManufacturer(edrive);
-        vf6_green.setModelName("VF 6");
+        vf6_green.setModelName("EDrive E6");
         vf6_green.setVersion("Long Range");
-        vf6_green.setColor(green); // giữ “Xanh” nhưng có mã hex riêng
+        vf6_green.setColor(green);
         vf6_green.setBatteryCapacityKwh(82);
         vf6_green.setRangeKm(602);
         vf6_green.setMaxSpeedKmh(233);
@@ -508,9 +508,9 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf6_red = new Vehicle();
         vf6_red.setManufacturer(edrive);
-        vf6_red.setModelName("VF 6");
+        vf6_red.setModelName("EDrive E6");
         vf6_red.setVersion("Long Range");
-        vf6_red.setColor(red); // giữ “Xanh” nhưng có mã hex riêng
+        vf6_red.setColor(red);
         vf6_red.setBatteryCapacityKwh(82);
         vf6_red.setRangeKm(602);
         vf6_red.setMaxSpeedKmh(233);
@@ -528,9 +528,9 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf6_white = new Vehicle();
         vf6_white.setManufacturer(edrive);
-        vf6_white.setModelName("VF 6");
+        vf6_white.setModelName("EDrive E6");
         vf6_white.setVersion("Long Range");
-        vf6_white.setColor(red); // giữ “Xanh” nhưng có mã hex riêng
+        vf6_white.setColor(red);
         vf6_white.setBatteryCapacityKwh(82);
         vf6_white.setRangeKm(602);
         vf6_white.setMaxSpeedKmh(233);
@@ -549,9 +549,9 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf7_white = new Vehicle();
         vf7_white.setManufacturer(edrive);
-        vf7_white.setModelName("VF 7");
+        vf7_white.setModelName("EDrive E7");
         vf7_white.setVersion("Long Range");
-        vf7_white.setColor(white); // giữ “Xanh” nhưng có mã hex riêng
+        vf7_white.setColor(white);
         vf7_white.setBatteryCapacityKwh(82);
         vf7_white.setRangeKm(602);
         vf7_white.setMaxSpeedKmh(233);
@@ -569,9 +569,9 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf7_red = new Vehicle();
         vf7_red.setManufacturer(edrive);
-        vf7_red.setModelName("VF 7");
+        vf7_red.setModelName("EDrive E7");
         vf7_red.setVersion("Long Range");
-        vf7_red.setColor(red); // giữ “Xanh” nhưng có mã hex riêng
+        vf7_red.setColor(red);
         vf7_red.setBatteryCapacityKwh(82);
         vf7_red.setRangeKm(602);
         vf7_red.setMaxSpeedKmh(233);
@@ -590,7 +590,7 @@ public class DataInitializer implements CommandLineRunner {
         // ===== Thêm 10 chiếc xe mới =====
         Vehicle vf8_cyan = new Vehicle();
         vf8_cyan.setManufacturer(edrive);
-        vf8_cyan.setModelName("VF 8");
+        vf8_cyan.setModelName("EDrive E8");
         vf8_cyan.setVersion("Premium");
         vf8_cyan.setColor(cyan);
         vf8_cyan.setBatteryCapacityKwh(50);
@@ -610,7 +610,7 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf9_silver = new Vehicle();
         vf9_silver.setManufacturer(edrive);
-        vf9_silver.setModelName("VF 9");
+        vf9_silver.setModelName("EDrive E9");
         vf9_silver.setVersion("Plus");
         vf9_silver.setColor(silver);
         vf9_silver.setBatteryCapacityKwh(123);
@@ -630,7 +630,7 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf3_cyan = new Vehicle();
         vf3_cyan.setManufacturer(edrive);
-        vf3_cyan.setModelName("VF 3");
+        vf3_cyan.setModelName("EDrive E3");
         vf3_cyan.setVersion("Eco");
         vf3_cyan.setColor(cyan);
         vf3_cyan.setBatteryCapacityKwh(37);
@@ -650,7 +650,7 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf5_cyan = new Vehicle();
         vf5_cyan.setManufacturer(edrive);
-        vf5_cyan.setModelName("VF 5");
+        vf5_cyan.setModelName("EDrive E5");
         vf5_cyan.setVersion("Pro");
         vf5_cyan.setColor(cyan);
         vf5_cyan.setBatteryCapacityKwh(71);
@@ -670,7 +670,7 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf6_blue = new Vehicle();
         vf6_blue.setManufacturer(edrive);
-        vf6_blue.setModelName("VF 6");
+        vf6_blue.setModelName("EDrive E6");
         vf6_blue.setVersion("Elite");
         vf6_blue.setColor(blue);
         vf6_blue.setBatteryCapacityKwh(85);
@@ -690,7 +690,7 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf7_blue = new Vehicle();
         vf7_blue.setManufacturer(edrive);
-        vf7_blue.setModelName("VF 7");
+        vf7_blue.setModelName("EDrive E7");
         vf7_blue.setVersion("Premium");
         vf7_blue.setColor(blue);
         vf7_blue.setBatteryCapacityKwh(95);
@@ -710,7 +710,7 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf8_green = new Vehicle();
         vf8_green.setManufacturer(edrive);
-        vf8_green.setModelName("VF 8");
+        vf8_green.setModelName("EDrive E8");
         vf8_green.setVersion("Eco Plus");
         vf8_green.setColor(green);
         vf8_green.setBatteryCapacityKwh(45);
@@ -730,7 +730,7 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf6_silver = new Vehicle();
         vf6_silver.setManufacturer(edrive);
-        vf6_silver.setModelName("VF 6");
+        vf6_silver.setModelName("EDrive E6");
         vf6_silver.setVersion("Standard");
         vf6_silver.setColor(silver);
         vf6_silver.setBatteryCapacityKwh(80);
@@ -750,7 +750,7 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf7_cyan = new Vehicle();
         vf7_cyan.setManufacturer(edrive);
-        vf7_cyan.setModelName("VF 7");
+        vf7_cyan.setModelName("EDrive E7");
         vf7_cyan.setVersion("Deluxe");
         vf7_cyan.setColor(cyan);
         vf7_cyan.setBatteryCapacityKwh(100);
@@ -770,7 +770,7 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf7_green = new Vehicle();
         vf7_green.setManufacturer(edrive);
-        vf7_green.setModelName("VF 7");
+        vf7_green.setModelName("EDrive E7");
         vf7_green.setVersion("Standard");
         vf7_green.setColor(green);
         vf7_green.setBatteryCapacityKwh(92);
@@ -790,7 +790,7 @@ public class DataInitializer implements CommandLineRunner {
 
         Vehicle vf7_black = new Vehicle();
         vf7_black.setManufacturer(edrive);
-        vf7_black.setModelName("VF 7");
+        vf7_black.setModelName("EDrive E7");
         vf7_black.setVersion("Long Range");
         vf7_black.setColor(black);
         vf7_black.setBatteryCapacityKwh(82);
@@ -836,12 +836,13 @@ public class DataInitializer implements CommandLineRunner {
 
         int defaultQty = 30;
         Map<String, Integer> qtyByModel = new HashMap<>();
-        qtyByModel.put("VF 3", 45);
-        qtyByModel.put("VF 5", 60);
-        qtyByModel.put("VF 6", 40);
-        qtyByModel.put("VF 7", 35);
-        qtyByModel.put("VF 8", 50);
-        qtyByModel.put("VF 9", 30);
+        // Update keys to EDrive naming
+        qtyByModel.put("EDrive E3", 45);
+        qtyByModel.put("EDrive E5", 60);
+        qtyByModel.put("EDrive E6", 40);
+        qtyByModel.put("EDrive E7", 35);
+        qtyByModel.put("EDrive E8", 50);
+        qtyByModel.put("EDrive E9", 30);
 
         List<ManufacturerInventory> inventories = new ArrayList<>();
 
@@ -869,12 +870,13 @@ public class DataInitializer implements CommandLineRunner {
             // Mỗi đại lý sẽ có ít nhất 3 mẫu xe với 10 chiếc mỗi mẫu
             int defaultDealerQty = 10; // Mỗi mẫu có ít nhất 10 chiếc
             Map<String, Integer> dealerQtyByModel = new HashMap<>();
-            dealerQtyByModel.put("VF 3", 10); // 10 chiếc VF 3
-            dealerQtyByModel.put("VF 5", 10); // 10 chiếc VF 5
-            dealerQtyByModel.put("VF 6", 10); // 10 chiếc VF 6
-            dealerQtyByModel.put("VF 7", 10); // 10 chiếc VF 7
-            dealerQtyByModel.put("VF 8", 10); // 10 chiếc VF 8
-            dealerQtyByModel.put("VF 9", 10); // 10 chiếc VF 9
+            // Update keys to EDrive naming
+            dealerQtyByModel.put("EDrive E3", 10);
+            dealerQtyByModel.put("EDrive E5", 10);
+            dealerQtyByModel.put("EDrive E6", 10);
+            dealerQtyByModel.put("EDrive E7", 10);
+            dealerQtyByModel.put("EDrive E8", 10);
+            dealerQtyByModel.put("EDrive E9", 10);
 
             // Vòng lặp: mỗi đại lý có ít nhất 3 mẫu xe và mỗi mẫu có 10 chiếc
             for (Dealer dealer : dealersInDb) {
@@ -1089,8 +1091,8 @@ public class DataInitializer implements CommandLineRunner {
 
             // ================= Promo 1 =================
             Promotion promo1 = new Promotion();
-            promo1.setTitle("Khuyến mãi đầu năm - VinFast VF 8");
-            promo1.setDescription("Giảm giá đặc biệt cho mẫu VF 8 trong tháng khai xuân! Nhận ngay 5% giảm giá khi đặt xe trước 30/3.");
+            promo1.setTitle("Khuyến mãi đầu năm - EDrive E8");
+            promo1.setDescription("Giảm giá đặc biệt cho mẫu EDrive E8 trong tháng khai xuân! Nhận ngay 5% giảm giá khi đặt xe trước 30/3.");
             promo1.setDiscountType(DiscountType.PERCENTAGE);
             promo1.setDiscountValue(5.0);
             promo1.setStartDate(LocalDate.now().minusDays(10));
@@ -1110,8 +1112,8 @@ public class DataInitializer implements CommandLineRunner {
 
             // ================= Promo 2 =================
             Promotion promo2 = new Promotion();
-            promo2.setTitle("Siêu ưu đãi Tesla Model 3");
-            promo2.setDescription("Tặng gói sạc nhanh và giảm 100 triệu cho khách hàng mua Tesla Model 3 trong tháng này.");
+            promo2.setTitle("Siêu ưu đãi EDrive E-Sedan");
+            promo2.setDescription("Tặng gói sạc nhanh và giảm 100 triệu cho khách hàng mua EDrive E-Sedan trong tháng này.");
             promo2.setDiscountType(DiscountType.FIXED_AMOUNT);
             promo2.setDiscountValue(100_000_000.0);
             promo2.setStartDate(LocalDate.now().minusDays(5));
@@ -1131,7 +1133,7 @@ public class DataInitializer implements CommandLineRunner {
             // ================= Promo 3 =================
             Promotion promo3 = new Promotion();
             promo3.setTitle("Chương trình tri ân đại lý");
-            promo3.setDescription("Giảm 10% giá nhập xe VinFast cho tất cả đại lý trong hệ thống.");
+            promo3.setDescription("Giảm 10% giá nhập xe EDrive cho tất cả đại lý trong hệ thống.");
             promo3.setDiscountType(DiscountType.PERCENTAGE);
             promo3.setDiscountValue(10.0);
             promo3.setStartDate(LocalDate.now());
@@ -1150,8 +1152,8 @@ public class DataInitializer implements CommandLineRunner {
 
             // ================= Promo 4 =================
             Promotion promo4 = new Promotion();
-            promo4.setTitle("Toàn quốc - Mua xe BYD nhận quà");
-            promo4.setDescription("Áp dụng toàn quốc: Khách hàng mua xe BYD bất kỳ sẽ nhận phiếu quà tặng trị giá 20 triệu đồng.");
+            promo4.setTitle("Toàn quốc - Mua xe EDrive nhận quà");
+            promo4.setDescription("Áp dụng toàn quốc: Khách hàng mua xe EDrive bất kỳ sẽ nhận phiếu quà tặng trị giá 20 triệu đồng.");
             promo4.setDiscountType(DiscountType.FIXED_AMOUNT);
             promo4.setDiscountValue(20_000_000.0);
             promo4.setStartDate(LocalDate.now().minusDays(15));
