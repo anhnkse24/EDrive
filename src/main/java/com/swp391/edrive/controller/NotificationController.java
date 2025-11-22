@@ -26,11 +26,11 @@ public class NotificationController {
     public List<NotificationResponse> getNotificationsByDealerManager(@PathVariable Long dealerId) {
         return notificationService.getNotificationsForDealerManager(dealerId);
     }
-    @Operation(summary = "Lấy danh sách thông báo Dealer Manager")
-    @GetMapping("/dealer/staff/{dealerId}")
+    @Operation(summary = "Lấy danh sách thông báo Dealer Staff")
+    @GetMapping("/dealer/staff/{userId}")
     @PreAuthorize("hasAnyRole('DEALER_STAFF')")
-    public List<NotificationResponse> getNotificationsByDealerStaff(@PathVariable Long dealerId) {
-        return notificationService.getNotificationsForDealerStaff(dealerId);
+    public List<NotificationResponse> getNotificationsByDealerStaff(@PathVariable Long userId) {
+        return notificationService.getNotificationsForDealerStaff(userId);
     }
 
     @Operation(summary = "Lấy danh sách thông báo dành cho Admin")

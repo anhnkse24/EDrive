@@ -1,10 +1,7 @@
 package com.swp391.edrive.initializer;
 
 import com.swp391.edrive.entity.*;
-import com.swp391.edrive.enums.DiscountType;
-import com.swp391.edrive.enums.PromoTarget;
-import com.swp391.edrive.enums.TestDriveStatusForStaff;
-import com.swp391.edrive.enums.VehicleStatus;
+import com.swp391.edrive.enums.*;
 import com.swp391.edrive.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
@@ -1195,8 +1192,8 @@ public class DataInitializer implements CommandLineRunner {
                 td1.setDealer(dealer1);
                 td1.setVehicle(vehicle1);
                 td1.setScheduleDatetime(LocalDateTime.now().plusDays(2));
-                td1.setStatus(com.swp391.edrive.enums.TestDriveStatus.PENDING);
-                td1.setStatusForStaff(com.swp391.edrive.enums.TestDriveStatusForStaff.PENDING);
+                td1.setStatusForManager(TestDriveStatusManager.PENDING);
+                td1.setStatusForStaff(TestDriveStatusStaff.PENDING);
 
                 // TestDrive 2 — Completed
                 TestDrive td2 = new TestDrive();
@@ -1205,8 +1202,8 @@ public class DataInitializer implements CommandLineRunner {
                 td2.setVehicle(vehicle2);
                 td2.setScheduleDatetime(LocalDateTime.now().minusDays(1));
                 td2.setCompletedAt(LocalDateTime.now().minusHours(3));
-                td2.setStatus(com.swp391.edrive.enums.TestDriveStatus.COMPLETED);
-                td2.setStatusForStaff(TestDriveStatusForStaff.COMPLETED);
+                td2.setStatusForManager(TestDriveStatusManager.COMPLETED);
+                td2.setStatusForStaff(TestDriveStatusStaff.COMPLETED);
 
 
                 // TestDrive 3 — Cancelled
@@ -1215,8 +1212,8 @@ public class DataInitializer implements CommandLineRunner {
                 td3.setDealer(dealer2);
                 td3.setVehicle(vehicle2);
                 td3.setScheduleDatetime(LocalDateTime.now().plusDays(5));
-                td3.setStatus(com.swp391.edrive.enums.TestDriveStatus.CANCELLED);
-                td3.setStatusForStaff(TestDriveStatusForStaff.CANCELLED);
+                td3.setStatusForManager(TestDriveStatusManager.CANCELLED);
+                td3.setStatusForStaff(TestDriveStatusStaff.CANCELLED);
                 td3.setCancelReason("Khách bận công tác, hủy lịch.");
 
                 testDriveRepository.saveAll(List.of(td1, td2, td3));

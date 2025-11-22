@@ -10,5 +10,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     void deleteAllByDealer_DealerId(Long dealerId);
     List<Notification> findByDealerDealerIdAndReceiverTypeOrderByCreatedAtDesc(Long dealerId, String receiverType);
     List<Notification> findByReceiverTypeOrderByCreatedAtDesc(String receiverType);
+    List<Notification> findByUserUserIdOrderByCreatedAtDesc(Long userId);
 
 }
