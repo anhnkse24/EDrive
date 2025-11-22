@@ -1,11 +1,7 @@
 package com.swp391.edrive.service;
 
-import com.swp391.edrive.entity.DealerInventory;
-import com.swp391.edrive.entity.Order;
-import com.swp391.edrive.entity.Vehicle;
-import com.swp391.edrive.repository.DealerInventoryRepository;
-import com.swp391.edrive.repository.OrderRepository;
-import com.swp391.edrive.repository.VehicleRepository;
+import com.swp391.edrive.entity.*;
+import com.swp391.edrive.repository.*;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.*;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -25,7 +21,8 @@ public class GeminiService {
     private final VehicleRepository vehicleRepository;
     private final OrderRepository orderRepository;
     private final DealerInventoryRepository dealerInventoryRepository;
-
+    private final DealerRepository dealerRepository;
+    private final AdditionalServicesRepository additionalServicesRepository;
     // Bộ nhớ chat: Key = userId (hoặc session), Value = Lịch sử chat
     private final Map<String, List<Message>> chatHistory = new ConcurrentHashMap<>();
 
@@ -39,10 +36,13 @@ public class GeminiService {
                - Nếu kho hết hàng, hãy kiểm tra mục "Đơn nhập hàng" xem có đơn nào đang về không.
             
             2. QUY TRÌNH NHẬP HÀNG (ORDER):
-               - Bước 1: Admin tạo đơn nhập -> Trạng thái PENDING (Chờ hãng duyệt).
-               - Bước 2: Hãng duyệt -> Trạng thái CONFIRMED (Đại lý không được hủy lúc này).
-               - Bước 3: Xe về -> Đại lý bấm "Xác nhận giao hàng" (Confirm Delivery) -> Xe tự động cộng vào kho.
-               - Lưu ý: Chỉ được Hủy đơn (Cancel) khi trạng thái là PENDING.
+               - Bước 1: Bạn tạo đơn hàng và chờ hãng duyệt).
+               - Bước 2: Hãng duyệt và tạo hợp đồng (Đại lý không được hủy lúc này).
+               - Bước 3: Hãng và bạn sẽ kí hợp đồng.
+               - Bước 4: Sau khi kí hợp đồng xong bạn vui lòng upload hoá đơn thanh toán.
+               - Bước 5: Sau khi hãng biết bạn đã thanh toán hãng sẽ xác nhận và thông báo cho bạn.
+               - Bước 6: Khi nào giao xe hãng sẽ không báo cho bạn biết.
+               - Lưu ý: Chỉ được huỷ đơn khi hãng chưa duyệt.
             
             3. TRA CỨU SẢN PHẨM (CATALOG):
                - Giá hiển thị là "Giá bán lẻ đề xuất" (Retail Price).
@@ -51,10 +51,12 @@ public class GeminiService {
 
     // --- 2. PROMPT TƯ DUY (BRAIN) ---
     private static final String OPERATIONAL_PROMPT = """
-            VAI TRÒ: Bạn là Trợ lý Vận hành AI cao cấp của Đại lý EDrive.
+            VAI TRÒ: Bạn là Trợ lý Vận hành AI nội bộ (Internal Operations Assistant).
+            NGƯỜI DÙNG (USER) ĐANG CHAT VỚI BẠN LÀ: QUẢN LÝ ĐẠI LÝ (DEALER MANAGER).
+            MỐI QUAN HỆ: Bạn là nhân viên ảo, User là sếp của bạn.
             
             NHIỆM VỤ:
-            1. Trả lời các câu hỏi về tồn kho, đơn hàng và danh mục sản phẩm.
+            1. Trả lời các câu hỏi về thông tin đại lý, tồn kho, đơn hàng và danh mục sản phẩm.
             2. KHI KHÁCH HỎI "DANH SÁCH TẤT CẢ CÁC XE":
                - Hãy liệt kê đầy đủ các mẫu xe có trong mục [C. DANH MỤC XE].
                - Trình bày thông tin rõ ràng, ngắn gọn (Tên xe, Phiên bản, Màu, Giá).
@@ -62,6 +64,9 @@ public class GeminiService {
             
             DỮ LIỆU THỰC TẾ CỦA ĐẠI LÝ (ID: {{DEALER_ID}}):
             ----------------------------------------------------
+            [0. HỒ SƠ ĐẠI LÝ CỦA SẾP] (Thông tin User đang quản lý):
+            {{DEALER_PROFILE}}   <--- QUAN TRỌNG: Đừng xóa dòng này, đây là chỗ điền tên Đại lý
+            
             [A. KHO XE HIỆN TẠI] (Hàng có sẵn tại đại lý):
             {{MY_INVENTORY}}
             
@@ -70,21 +75,36 @@ public class GeminiService {
             
             [C. DANH MỤC XE TOÀN HỆ THỐNG] (Catalog đầy đủ để tra cứu/đặt hàng):
             {{MANUFACTURER_CATALOG}}
+            
+            [D. DỊCH VỤ & PHỤ KIỆN BỔ SUNG] (Các gói dịch vụ, bảo hiểm, phụ kiện đang kinh doanh):
+                        {{ADDITIONAL_SERVICES}}
             ----------------------------------------------------
             
-            HƯỚNG DẪN TƯ DUY:
-            - Dữ liệu ở mục [C] là toàn bộ xe mà hãng sản xuất. Dù kho [A] hết hàng, bạn vẫn phải trả lời được thông tin xe dựa trên mục [C].
-            - Sử dụng Emoji phù hợp.
+            HƯỚNG DẪN TƯ DUY VÀ TRẢ LỜI:
+            1. ĐỊNH DANH NGƯỜI DÙNG:
+               - Nếu User hỏi "Tôi là ai?", "Đây là đại lý nào?", "Thông tin của tôi?":
+               - TUYỆT ĐỐI KHÔNG trả lời "Bạn là khách hàng".
+               - HÃY ĐỌC mục [0. HỒ SƠ ĐẠI LÝ] và trả lời: "Dạ, anh/chị là Quản lý của đại lý [Tên Đại Lý] ạ." kèm theo địa chỉ và hotline.
+            
+            2. TƯ DUY BÁN HÀNG & KHO:
+               - Dữ liệu ở mục [C] là toàn bộ xe hãng có. Dù kho [A] hết hàng, bạn vẫn phải trả lời được thông tin xe (giá, màu, pin) dựa trên mục [C].
+               - Khi liệt kê xe, hãy dùng Emoji (🚗, 💰, 🔋) cho sinh động.
+            
+            3. TƯ VẤN DỊCH VỤ:
+                           - Khi khách hỏi "Có dịch vụ gì?", "Gói bảo dưỡng nào?", hãy tra cứu mục [D].
+                           - Cung cấp Tên, Giá và Mô tả ngắn gọn.
             """;
 
     public GeminiService(ChatClient.Builder chatClientBuilder,
                          VehicleRepository vehicleRepository,
                          OrderRepository orderRepository,
-                         DealerInventoryRepository dealerInventoryRepository) {
+                         DealerInventoryRepository dealerInventoryRepository, DealerRepository dealerRepository, AdditionalServicesRepository additionalServicesRepository) {
         this.vehicleRepository = vehicleRepository;
         this.orderRepository = orderRepository;
         this.dealerInventoryRepository = dealerInventoryRepository;
         this.chatClient = chatClientBuilder.build();
+        this.dealerRepository = dealerRepository;
+        this.additionalServicesRepository = additionalServicesRepository;
     }
 
     /**
@@ -93,6 +113,20 @@ public class GeminiService {
      */
     @Transactional(readOnly = true)
     public String chat(String userMessage, String userId, Long dealerId) {
+
+        Dealer dealer = dealerRepository.findById(dealerId)
+                .orElseThrow(() -> new RuntimeException("Dealer not found"));
+
+        String dealerProfileStr = String.format(
+                "- Tên đại lý: %s\n- Email: %s\n- Hotline: %s\n- Địa chỉ: %s, %s, %s, %s",
+                dealer.getDealerName(),
+                dealer.getDealerEmail(),
+                dealer.getPhone(), // Hoặc contactPhone tùy entity của bạn
+                dealer.getHouseNumberAndStreet(),
+                dealer.getWardOrCommune(),
+                dealer.getDistrict(),
+                dealer.getProvinceOrCity()
+        );
 
         // BƯỚC 1: LẤY DỮ LIỆU KHO (Real-time Inventory)
         List<DealerInventory> inventories = dealerInventoryRepository.findByDealer_DealerId(dealerId);
@@ -106,13 +140,19 @@ public class GeminiService {
         List<Vehicle> vehicles = vehicleRepository.findAll();
         String catalogStr = formatCatalog(vehicles);
 
+        List<AdditionalServices> services = additionalServicesRepository.findByIsActiveTrue();
+        String servicesStr = formatServices(services);
+
         // BƯỚC 4: GHÉP DỮ LIỆU VÀO PROMPT
         String finalPrompt = OPERATIONAL_PROMPT
+                .replace("{{DEALER_PROFILE}}", dealerProfileStr)
                 .replace("{{DEALER_ID}}", String.valueOf(dealerId))
                 .replace("{{MY_INVENTORY}}", inventoryStr)
                 .replace("{{MY_ORDERS}}", orderStr)
                 .replace("{{MANUFACTURER_CATALOG}}", catalogStr)
+                .replace("{{ADDITIONAL_SERVICES}}", servicesStr)
                 + "\n\n" + SYSTEM_MANUAL;
+
 
         // BƯỚC 5: XỬ LÝ BỘ NHỚ (MEMORY)
         List<Message> history = chatHistory.getOrDefault(userId, new ArrayList<>());
@@ -177,19 +217,31 @@ public class GeminiService {
     private String formatCatalog(List<Vehicle> list) {
         if (list.isEmpty()) return "(Danh mục xe trống)";
 
-        // BỎ .limit(20) để lấy tất cả xe
-        // Format dạng text rõ ràng để AI dễ đọc
         return list.stream()
                 .map(v -> String.format(
                         "- 🆔 ID:%d | 🚗 %s %s | 🎨 Màu: %s | 🔋 Pin: %dkWh (%dkm) | 💰 Giá: %s VNĐ | 🏁 Status: %s",
                         v.getVehicleId(),
                         v.getModelName(),
                         v.getVersion(),
-                        (v.getColor() != null ? v.getColor().getColorName() : "N/A"),
+                        (v.getColor() != null ? v.getColor().getColorName() : "Tiêu chuẩn"),
                         v.getBatteryCapacityKwh(),
                         v.getRangeKm(),
                         v.getPriceRetail().toPlainString(), // Hiển thị giá đầy đủ
                         v.getStatus()
+                ))
+                .collect(Collectors.joining("\n"));
+    }
+
+    private String formatServices(List<AdditionalServices> list) {
+        if (list == null || list.isEmpty()) return "(Không có dịch vụ bổ sung nào đang kích hoạt)";
+
+        return list.stream()
+                .map(s -> String.format(
+                        "- 🛠 %s | 💵 Giá: %s VNĐ | ℹ️ %s | 📂 Loại: %s",
+                        s.getServiceName(), // Tên dịch vụ
+                        (s.getPrice() != null ? s.getPrice().toPlainString() : "Liên hệ"), // Giá
+                        s.getDescription(), // Mô tả
+                        s.getCategory()     // Loại (nếu có)
                 ))
                 .collect(Collectors.joining("\n"));
     }

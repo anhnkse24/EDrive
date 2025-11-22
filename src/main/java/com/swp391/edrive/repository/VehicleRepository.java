@@ -12,11 +12,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Repository
 public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
     Page<Vehicle> findByStatus(VehicleStatus status, Pageable pageable);
-
+    List<Vehicle> findByModelNameContainingIgnoreCase(String modelName);
     Page<Vehicle> findByManufactureYear(Integer manufactureYear, Pageable pageable);
 
     Page<Vehicle> findByManufactureYearBetween(Integer fromYear, Integer toYear, Pageable pageable);

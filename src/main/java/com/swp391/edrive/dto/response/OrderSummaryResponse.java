@@ -1,9 +1,15 @@
 package com.swp391.edrive.dto.response;
 
+import lombok.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class OrderSummaryResponse {
     public String orderId;
 

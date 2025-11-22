@@ -48,163 +48,163 @@ public class QuotationServiceImpl implements QuotationService {
     private QuotationPdfService quotationPdfService;
 
 
-    @Override
-    public QuotationResponse createQuotation(QuotationRequest quotationRequest, User createdByUser) {
-        // Kiểm tra user có dealer không
-        if (createdByUser.getDealer() == null) {
-            throw new RuntimeException("Khách hàng không thuộc đại lý nào. Chỉ nhân viên đại lý mới có thể tạo báo giá");
-        }
-
-        Dealer dealer = createdByUser.getDealer();
-
-        // Lấy thông tin xe
-        Vehicle vehicle = vehicleRepository.findById(quotationRequest.getVehicleId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy xe với ID: " + quotationRequest.getVehicleId()));
-
-        // Lấy thông tin khách hàng
-        Customer customer = customerRepository.findById(quotationRequest.getCustomerId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng với ID: " + quotationRequest.getCustomerId()));
-
-        // Tính toán giá trị báo giá
-        BigDecimal unitPrice = vehicle.getPriceRetail(); // Giá xe ban đầu
-
-        PromotionCalculationResult promotionResult = applySelectedPromotions(
-            quotationRequest.getSelectedPromotionIds(),
-            vehicle,
-            customer,
-            dealer,
-            unitPrice
-        );
-        BigDecimal promotionDiscountAmount = promotionResult.getTotalDiscount();
-        List<AppliedPromotionInfo> appliedPromotions = promotionResult.getAppliedPromotions();
-
-        BigDecimal priceAfterDiscount = unitPrice.subtract(promotionDiscountAmount);
-
-        BigDecimal additionalServicesTotal = BigDecimal.ZERO;
-        List<SelectedServiceResponse> selectedServiceResponses = null;
-
-        if (quotationRequest.getSelectedServiceIds() != null && !quotationRequest.getSelectedServiceIds().isEmpty()) {
-            List<AdditionalServices> selectedServices = additionalServicesRepository.findAllById(quotationRequest.getSelectedServiceIds());
-
-            // Kiểm tra tất cả service có tồn tại
-            if (selectedServices.size() != quotationRequest.getSelectedServiceIds().size()) {
-                throw new RuntimeException("Một số dịch vụ không tồn tại trong hệ thống");
+        @Override
+        public QuotationResponse createQuotation(QuotationRequest quotationRequest, User createdByUser) {
+            // Kiểm tra user có dealer không
+            if (createdByUser.getDealer() == null) {
+                throw new RuntimeException("Khách hàng không thuộc đại lý nào. Chỉ nhân viên đại lý mới có thể tạo báo giá");
             }
 
-            List<AdditionalServices> activeServices = selectedServices.stream()
-                    .filter(AdditionalServices::getIsActive)
-                    .collect(Collectors.toList());
+            Dealer dealer = createdByUser.getDealer();
 
-            if (activeServices.size() != selectedServices.size()) {
-                throw new RuntimeException("Một số dịch vụ không còn hoạt động, vui lòng chọn lại");
-            }
+            // Lấy thông tin xe
+            Vehicle vehicle = vehicleRepository.findById(quotationRequest.getVehicleId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy xe với ID: " + quotationRequest.getVehicleId()));
 
-            // Tính tổng giá
-            additionalServicesTotal = activeServices.stream()
-                    .map(AdditionalServices::getPrice)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            // Lấy thông tin khách hàng
+            Customer customer = customerRepository.findById(quotationRequest.getCustomerId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng với ID: " + quotationRequest.getCustomerId()));
 
-            // Build response từ danh sách services
-            selectedServiceResponses = buildSelectedServicesResponse(activeServices);
-        }
+            // Tính toán giá trị báo giá
+            BigDecimal unitPrice = vehicle.getPriceRetail(); // Giá xe ban đầu
 
-        // Tính VAT 10% (áp dụng cho cả giá xe và dịch vụ bổ sung)
-        BigDecimal totalBeforeVat = priceAfterDiscount.add(additionalServicesTotal);
-        BigDecimal vatAmount = totalBeforeVat.multiply(BigDecimal.valueOf(0.10))
-                .setScale(2, RoundingMode.HALF_UP);
+            PromotionCalculationResult promotionResult = applySelectedPromotions(
+                quotationRequest.getSelectedPromotionIds(),
+                vehicle,
+                customer,
+                dealer,
+                unitPrice
+            );
+            BigDecimal promotionDiscountAmount = promotionResult.getTotalDiscount();
+            List<AppliedPromotionInfo> appliedPromotions = promotionResult.getAppliedPromotions();
 
-        // Tổng giá cuối cùng = (Giá gốc - Giảm giá) + Dịch vụ bổ sung + VAT
-        BigDecimal grandTotal = totalBeforeVat.add(vatAmount);
+            BigDecimal priceAfterDiscount = unitPrice.subtract(promotionDiscountAmount);
 
-        // Tạo báo giá
-        Quotation quotation = new Quotation();
-        quotation.setDealer(dealer);  
-        quotation.setVehicle(vehicle);
-        quotation.setCustomer(customer);
-        quotation.setQuotedPrice(unitPrice.doubleValue());
-        quotation.setUnitPrice(unitPrice);
-        quotation.setPromotionDiscountAmount(promotionDiscountAmount);
-        quotation.setPriceAfterPromotion(grandTotal);
-        quotation.setNote(quotationRequest.getNote());
+            BigDecimal additionalServicesTotal = BigDecimal.ZERO;
+            List<SelectedServiceResponse> selectedServiceResponses = null;
 
-        // Lưu các promotion đã áp dụng
-        if (!appliedPromotions.isEmpty()) {
-            Set<Promotion> promotionSet = appliedPromotions.stream()
-                    .map(AppliedPromotionInfo::getPromotion)
-                    .collect(Collectors.toSet());
-            quotation.setPromotions(promotionSet);
-        }
+            if (quotationRequest.getSelectedServiceIds() != null && !quotationRequest.getSelectedServiceIds().isEmpty()) {
+                List<AdditionalServices> selectedServices = additionalServicesRepository.findAllById(quotationRequest.getSelectedServiceIds());
 
-        // Lưu báo giá trước để có ID
-        Quotation savedQuotation = quotationRepository.save(quotation);
-
-        // Tạo và lưu các QuotationService entities nếu có selectedServiceIds
-        if (quotationRequest.getSelectedServiceIds() != null && !quotationRequest.getSelectedServiceIds().isEmpty()) {
-            List<AdditionalServices> selectedServices = additionalServicesRepository.findAllById(quotationRequest.getSelectedServiceIds());
-
-            List<QuotationServices> quotationServices = new java.util.ArrayList<>();
-            for (AdditionalServices service : selectedServices) {
-                if (service.getIsActive()) {
-                    QuotationServices qs = new QuotationServices();
-                    qs.setQuotation(savedQuotation);
-                    qs.setService(service);
-                    qs.setPriceAtSelection(service.getPrice()); // Lưu giá tại thời điểm chọn
-                    qs.setQuantity(1);
-                    quotationServices.add(qs);
+                // Kiểm tra tất cả service có tồn tại
+                if (selectedServices.size() != quotationRequest.getSelectedServiceIds().size()) {
+                    throw new RuntimeException("Một số dịch vụ không tồn tại trong hệ thống");
                 }
-            }
-            savedQuotation.setQuotationServices(quotationServices);
-            // Save lại để persist quotationServices
-            savedQuotation = quotationRepository.save(savedQuotation);
-        }
 
-        // Chuyển đổi sang Response
-        return QuotationResponse.builder()
-                .quotationId(savedQuotation.getQuotationId())
-                // Thông tin đại lý và người tạo
-                .dealerId(dealer.getDealerId())
-                .dealerName(dealer.getDealerName())
-                .createdByUserName(createdByUser.getFullName())
-                .note(savedQuotation.getNote())
-                // Thông tin xe
-                .vehicleId(vehicle.getVehicleId())
-                .modelName(vehicle.getModelName())
-                .version(vehicle.getVersion())
-                .batteryCapacityKwh(vehicle.getBatteryCapacityKwh())
-                .rangeKm(vehicle.getRangeKm())
-                .maxSpeedKmh(vehicle.getMaxSpeedKmh())
-                .chargingTimeHours(vehicle.getChargingTimeHours())
-                .seatingCapacity(vehicle.getSeatingCapacity())
-                .motorPowerKw(vehicle.getMotorPowerKw())
-                .weightKg(vehicle.getWeightKg())
-                .lengthMm(vehicle.getLengthMm())
-                .widthMm(vehicle.getWidthMm())
-                .heightMm(vehicle.getHeightMm())
-                .imageUrl(vehicle.getImageUrl())
-                .manufactureYear(vehicle.getManufactureYear())
-                // Thông tin khách hàng
-                .customerId(customer.getCustomerId())
-                .customerFullName(customer.getFullName())
-                .customerDob(customer.getDob())
-                .customerGender(customer.getGender())
-                .customerEmail(customer.getEmail())
-                .customerPhone(customer.getPhone())
-                .customerAddress(customer.getAddress())
-                .customerIdCardNo(customer.getIdCardNo())
-                // Thông tin thanh toán
-                .quotationStatus(savedQuotation.getQuotationStatus() != null ? savedQuotation.getQuotationStatus().name() : "PENDING")
-                // Dịch vụ bổ sung
-                .selectedServices(selectedServiceResponses)
-                // Khuyến mãi đã áp dụng
-                .appliedPromotions(buildAppliedPromotionsResponse(appliedPromotions))
-                // Chi tiết giá
-                .unitPrice(unitPrice)
-                .promotionDiscountAmount(promotionDiscountAmount)
-                .additionalServicesTotal(additionalServicesTotal)
-                .vatAmount(vatAmount)
-                .grandTotal(grandTotal)
-                .build();
-    }
+                List<AdditionalServices> activeServices = selectedServices.stream()
+                        .filter(AdditionalServices::getIsActive)
+                        .collect(Collectors.toList());
+
+                if (activeServices.size() != selectedServices.size()) {
+                    throw new RuntimeException("Một số dịch vụ không còn hoạt động, vui lòng chọn lại");
+                }
+
+                // Tính tổng giá
+                additionalServicesTotal = activeServices.stream()
+                        .map(AdditionalServices::getPrice)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                // Build response từ danh sách services
+                selectedServiceResponses = buildSelectedServicesResponse(activeServices);
+            }
+
+            // Tính VAT 10% (áp dụng cho cả giá xe và dịch vụ bổ sung)
+            BigDecimal totalBeforeVat = priceAfterDiscount.add(additionalServicesTotal);
+            BigDecimal vatAmount = totalBeforeVat.multiply(BigDecimal.valueOf(0.10))
+                    .setScale(2, RoundingMode.HALF_UP);
+
+            // Tổng giá cuối cùng = (Giá gốc - Giảm giá) + Dịch vụ bổ sung + VAT
+            BigDecimal grandTotal = totalBeforeVat.add(vatAmount);
+
+            // Tạo báo giá
+            Quotation quotation = new Quotation();
+            quotation.setDealer(dealer);
+            quotation.setVehicle(vehicle);
+            quotation.setCustomer(customer);
+            quotation.setQuotedPrice(unitPrice.doubleValue());
+            quotation.setUnitPrice(unitPrice);
+            quotation.setPromotionDiscountAmount(promotionDiscountAmount);
+            quotation.setPriceAfterPromotion(grandTotal);
+            quotation.setNote(quotationRequest.getNote());
+
+            // Lưu các promotion đã áp dụng
+            if (!appliedPromotions.isEmpty()) {
+                Set<Promotion> promotionSet = appliedPromotions.stream()
+                        .map(AppliedPromotionInfo::getPromotion)
+                        .collect(Collectors.toSet());
+                quotation.setPromotions(promotionSet);
+            }
+
+            // Lưu báo giá trước để có ID
+            Quotation savedQuotation = quotationRepository.save(quotation);
+
+            // Tạo và lưu các QuotationService entities nếu có selectedServiceIds
+            if (quotationRequest.getSelectedServiceIds() != null && !quotationRequest.getSelectedServiceIds().isEmpty()) {
+                List<AdditionalServices> selectedServices = additionalServicesRepository.findAllById(quotationRequest.getSelectedServiceIds());
+
+                List<QuotationServices> quotationServices = new java.util.ArrayList<>();
+                for (AdditionalServices service : selectedServices) {
+                    if (service.getIsActive()) {
+                        QuotationServices qs = new QuotationServices();
+                        qs.setQuotation(savedQuotation);
+                        qs.setService(service);
+                        qs.setPriceAtSelection(service.getPrice()); // Lưu giá tại thời điểm chọn
+                        qs.setQuantity(1);
+                        quotationServices.add(qs);
+                    }
+                }
+                savedQuotation.setQuotationServices(quotationServices);
+                // Save lại để persist quotationServices
+                savedQuotation = quotationRepository.save(savedQuotation);
+            }
+
+            // Chuyển đổi sang Response
+            return QuotationResponse.builder()
+                    .quotationId(savedQuotation.getQuotationId())
+                    // Thông tin đại lý và người tạo
+                    .dealerId(dealer.getDealerId())
+                    .dealerName(dealer.getDealerName())
+                    .createdByUserName(createdByUser.getFullName())
+                    .note(savedQuotation.getNote())
+                    // Thông tin xe
+                    .vehicleId(vehicle.getVehicleId())
+                    .modelName(vehicle.getModelName())
+                    .version(vehicle.getVersion())
+                    .batteryCapacityKwh(vehicle.getBatteryCapacityKwh())
+                    .rangeKm(vehicle.getRangeKm())
+                    .maxSpeedKmh(vehicle.getMaxSpeedKmh())
+                    .chargingTimeHours(vehicle.getChargingTimeHours())
+                    .seatingCapacity(vehicle.getSeatingCapacity())
+                    .motorPowerKw(vehicle.getMotorPowerKw())
+                    .weightKg(vehicle.getWeightKg())
+                    .lengthMm(vehicle.getLengthMm())
+                    .widthMm(vehicle.getWidthMm())
+                    .heightMm(vehicle.getHeightMm())
+                    .imageUrl(vehicle.getImageUrl())
+                    .manufactureYear(vehicle.getManufactureYear())
+                    // Thông tin khách hàng
+                    .customerId(customer.getCustomerId())
+                    .customerFullName(customer.getFullName())
+                    .customerDob(customer.getDob())
+                    .customerGender(customer.getGender())
+                    .customerEmail(customer.getEmail())
+                    .customerPhone(customer.getPhone())
+                    .customerAddress(customer.getAddress())
+                    .customerIdCardNo(customer.getIdCardNo())
+                    // Thông tin thanh toán
+                    .quotationStatus(savedQuotation.getQuotationStatus() != null ? savedQuotation.getQuotationStatus().name() : "PENDING")
+                    // Dịch vụ bổ sung
+                    .selectedServices(selectedServiceResponses)
+                    // Khuyến mãi đã áp dụng
+                    .appliedPromotions(buildAppliedPromotionsResponse(appliedPromotions))
+                    // Chi tiết giá
+                    .unitPrice(unitPrice)
+                    .promotionDiscountAmount(promotionDiscountAmount)
+                    .additionalServicesTotal(additionalServicesTotal)
+                    .vatAmount(vatAmount)
+                    .grandTotal(grandTotal)
+                    .build();
+        }
 
     @Override
     public List<QuotationResponse> getAllQuotations() {

@@ -244,8 +244,6 @@ public class OrderServiceImpl implements OrderService {
         return buildOrderSummaryResponse(savedOrder, orderItems);
     }
 
-
-
     private void validate(OrderCreateRequest req) {
         if (req.getOrderItems() == null || req.getOrderItems().isEmpty()) {
             throw new IllegalArgumentException("Đơn hàng phải chứa ít nhất một sản phẩm");
