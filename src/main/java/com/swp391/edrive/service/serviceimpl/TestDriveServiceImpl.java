@@ -29,6 +29,7 @@ public class TestDriveServiceImpl implements TestDriveService {
     private final VehicleRepository vehicleRepository;
     private final NotificationRepository notificationRepository;
     private final NotificationService notificationService;
+    private final UserRepository userRepository;
 
     @Override
     public List<TestDriveResponse> getAllTestDrives() {
@@ -60,6 +61,20 @@ public class TestDriveServiceImpl implements TestDriveService {
         Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy xe"));
 
+        User staff = userRepository.findById(request.getStaffUserId())
+                .orElseThrow(() -> new RuntimeException("Staff not found"));
+
+        if (staff.getDealer() == null || !staff.getDealer().getDealerId().equals(dealerId)) {
+            throw new RuntimeException("Nhân viên không thuộc đại lý này");
+        }
+
+        boolean isDealerStaff = staff.getRoles().stream()
+                .anyMatch(r -> r.getName().equals("DEALER_STAFF"));
+
+        if (!isDealerStaff) {
+            throw new RuntimeException("User không phải là staff");
+        }
+
         TestDrive testDrive = new TestDrive(
                 customer,
                 dealer,
@@ -68,6 +83,8 @@ public class TestDriveServiceImpl implements TestDriveService {
                 TestDriveStatusManager.PENDING,
                 TestDriveStatusStaff.PENDING
         );
+
+        testDrive.setStaff(staff);
 
         testDriveRepository.save(testDrive);
 
@@ -171,6 +188,7 @@ public class TestDriveServiceImpl implements TestDriveService {
                 .testdriveId(testDrive.getTestdriveId())
                 .customerId(testDrive.getCustomer().getCustomerId())
                 .customerName(testDrive.getCustomer().getFullName())
+                .staffId(testDrive.getStaff() != null ? testDrive.getStaff().getUserId() : null)
                 .dealerId(testDrive.getDealer() != null ? testDrive.getDealer().getDealerId() : null)
                 .dealerName(testDrive.getDealer() != null ? testDrive.getDealer().getDealerName() : null)
                 .vehicleId(testDrive.getVehicle().getVehicleId())

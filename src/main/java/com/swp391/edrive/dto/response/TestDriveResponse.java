@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @Builder
 public class TestDriveResponse {
     private Long testdriveId;
+    private Long staffId;
     private Long customerId;
     private String customerName;
     private Long dealerId;

@@ -35,6 +35,10 @@ public class TestDrive {
     private Dealer dealer;
 
     @ManyToOne
+    @JoinColumn(name = "staff_user_id")
+    private User staff;
+
+    @ManyToOne
     @JoinColumn(name = "dealer_inventory_id")
     private DealerInventory dealerInventory;
 
