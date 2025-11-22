@@ -11,18 +11,23 @@ import com.swp391.edrive.repository.ManufacturerRepository;
 import com.swp391.edrive.repository.VehicleRepository;
 import com.swp391.edrive.service.VehicleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -239,5 +244,68 @@ public class VehicleServiceImpl implements VehicleService {
 
         // Không để giá âm
         return discountedPrice.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : discountedPrice;
+    }
+
+    @Value("${upload.vehicle-images-dir:uploads/vehicles}")
+    private String uploadDir;
+
+    @Override
+    @Transactional
+    public VehicleResponse uploadVehicleImage(Long vehicleId, MultipartFile image) {
+        // Tìm xe theo ID
+        Vehicle vehicle = vehicleRepository.findById(vehicleId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy xe với ID: " + vehicleId));
+
+        // Validate file
+        if (image == null || image.isEmpty()) {
+            throw new IllegalArgumentException("File ảnh không được để trống");
+        }
+
+        String originalFileName = image.getOriginalFilename();
+        if (originalFileName == null || (!originalFileName.toLowerCase().endsWith(".jpg")
+                && !originalFileName.toLowerCase().endsWith(".jpeg")
+                && !originalFileName.toLowerCase().endsWith(".png")
+                && !originalFileName.toLowerCase().endsWith(".webp"))) {
+            throw new IllegalArgumentException("Định dạng file không hợp lệ. Chỉ chấp nhận JPG, JPEG, PNG hoặc WEBP");
+        }
+
+        if (image.getSize() > 10 * 1024 * 1024) {
+            throw new IllegalArgumentException("Kích thước file vượt quá giới hạn tối đa 10MB");
+        }
+
+        try {
+            String fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
+            String uniqueFileName = "vehicle_" + vehicleId + "_" + System.currentTimeMillis() + fileExtension;
+
+            String uploadDirPath;
+            if (uploadDir != null && !uploadDir.isEmpty() && !uploadDir.equals("uploads/vehicles")) {
+                uploadDirPath = uploadDir;
+            } else {
+                uploadDirPath = "uploads" + File.separator + "vehicles";
+            }
+
+            File uploadDirFile = new File(uploadDirPath);
+
+            if (!uploadDirFile.exists()) {
+                boolean created = uploadDirFile.mkdirs();
+                if (!created) {
+                    throw new RuntimeException("Không thể tạo thư mục upload: " + uploadDirPath);
+                }
+            }
+
+            File uploadFile = new File(uploadDirFile, uniqueFileName);
+            image.transferTo(uploadFile);
+
+            // Cập nhật imageUrl cho xe
+            String imagePath = uploadDirPath + File.separator + uniqueFileName;
+            vehicle.setImageUrl(imagePath);
+            vehicle = vehicleRepository.save(vehicle);
+
+            // Trả về thông tin xe đã được cập nhật
+            return toResponse(vehicle);
+
+        } catch (IOException e) {
+            throw new RuntimeException("Lỗi khi upload file: " + e.getMessage(), e);
+        }
     }
 }

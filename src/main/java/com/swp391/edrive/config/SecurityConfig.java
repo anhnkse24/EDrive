@@ -69,27 +69,18 @@ public class SecurityConfig {
                                 "/api/auth/forgot-password",
                                 "/api/auth/payments/vnpay-return",
                                 "/api/auth/verify",
-                                "/api/testdrives",
-                                "/api/vehicles/**",
-                                "/api/vehicles/search/**",
                                 "/chat",
-                                "/api/admin/unverified-accounts",
-                                "/api/admin/verify-account/*",
-                                "/api/payments/vnpay-return",
-                                "/api/admin/verify-account/*",
-                                "/api/dealers/**",
-                                "/api/manufacturer-inventory/**",
-                                "/api/feedbacks/**",
-                                "/api/customer-orders/**",
-                                "/api/manufacturer-inventory/**",
-                                "/api/colors/**",
-                                "/api/notifications/**",
-                                "/api/testdrives/**",
-                                "/api/contracts/**"
+                                "/api/payments/vnpay-return"
                         )
                         .permitAll() // Các endpoint không cần xác thực
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**")
-                        .permitAll() // Cho phép truy cập Swagger
+                        // Cho phép GET vehicles public để khách hàng xem danh sách xe
+                        .requestMatchers(
+                                org.springframework.http.HttpMethod.GET,
+                                "/api/vehicles",
+                                "/api/vehicles/*",
+                                "/api/vehicles/search/**"
+                        )
+                        .permitAll()
                         // Tất cả các request khác cần xác thực
                         .anyRequest()
                         .authenticated())

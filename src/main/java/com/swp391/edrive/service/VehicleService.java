@@ -3,6 +3,7 @@ package com.swp391.edrive.service;
 import com.swp391.edrive.dto.request.VehicleUpsertRequest;
 import com.swp391.edrive.dto.response.VehicleResponse;
 import com.swp391.edrive.enums.VehicleStatus;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -29,4 +30,7 @@ public interface VehicleService {
     VehicleResponse updateVehicle(Long id, VehicleUpsertRequest req);
 
     void deleteVehicle(Long id);
+
+    // Upload image API - upload and update vehicle's image
+    VehicleResponse uploadVehicleImage(Long vehicleId, MultipartFile image);
 }

@@ -11,9 +11,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -29,7 +31,6 @@ public class VehicleController {
 
     @Operation(summary = "Lấy danh sách tất cả xe")
     @GetMapping
-    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF', 'ADMIN')")
     public ResponseEntity<ResponseObject<List<VehicleResponse>>> getAllVehicles() {
         List<VehicleResponse> vehicles = vehicleService.getAllVehicles();
         return ResponseEntity.ok(
@@ -39,7 +40,6 @@ public class VehicleController {
 
     @Operation(summary = "Tìm xe theo ID")
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF', 'ADMIN')")
     public ResponseEntity<ResponseObject<VehicleResponse>> findById(@PathVariable Long id) {
         try {
             VehicleResponse vehicle = vehicleService.findVehicleById(id);
@@ -54,7 +54,6 @@ public class VehicleController {
 
     @Operation(summary = "Tìm xe theo trạng thái")
     @GetMapping("/search/status")
-    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF', 'ADMIN')")
     public ResponseEntity<ResponseObject<List<VehicleResponse>>> findByStatus(
             @RequestParam String status,
             @RequestParam(defaultValue = "0") int page,
@@ -76,7 +75,6 @@ public class VehicleController {
 
     @Operation(summary = "Tìm xe theo màu")
     @GetMapping("/search/color")
-    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF', 'ADMIN')")
     public ResponseEntity<ResponseObject<List<VehicleResponse>>> findByColor(
             @RequestParam String color,
             @RequestParam(defaultValue = "0") int page,
@@ -95,7 +93,6 @@ public class VehicleController {
 
     @Operation(summary = "Tìm xe theo năm sản xuất (exact hoặc range)")
     @GetMapping("/search/year")
-    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF', 'ADMIN')")
     public ResponseEntity<ResponseObject<List<VehicleResponse>>> findByYear(
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) Integer fromYear,
@@ -126,7 +123,6 @@ public class VehicleController {
 
     @Operation(summary = "Tìm xe theo giá (min/max hoặc khoảng)")
     @GetMapping("/search/price")
-    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF', 'ADMIN')")
     public ResponseEntity<ResponseObject<List<VehicleResponse>>> findByPrice(
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
@@ -191,6 +187,27 @@ public class VehicleController {
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(new ResponseObject<>(409, ex.getMessage(), null));
+        }
+    }
+
+    @Operation(summary = "Upload hình xe và cập nhật vào xe cụ thể")
+    @PostMapping(value = "/{vehicleId}/upload-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @SecurityRequirement(name = "api")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<ResponseObject<VehicleResponse>> uploadImage(
+            @PathVariable Long vehicleId,
+            @RequestParam("image") MultipartFile image) {
+        try {
+            VehicleResponse updatedVehicle = vehicleService.uploadVehicleImage(vehicleId, image);
+            return ResponseEntity.ok(
+                    new ResponseObject<>(200, "Upload và cập nhật hình xe thành công", updatedVehicle)
+            );
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ResponseObject<>(400, ex.getMessage(), null));
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ResponseObject<>(500, "Lỗi khi upload hình: " + ex.getMessage(), null));
         }
     }
 }
