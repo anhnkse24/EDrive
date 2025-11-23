@@ -68,6 +68,10 @@ public class TestDriveServiceImpl implements TestDriveService {
             throw new RuntimeException("Nhân viên không thuộc đại lý này");
         }
 
+        if (request.getStaffUserId() == null) {
+            throw new IllegalArgumentException("StaffUserId không được để trống khi tạo mới");
+        }
+
         boolean isDealerStaff = staff.getRoles().stream()
                 .anyMatch(r -> r.getName().equals("DEALER_STAFF"));
 
