@@ -68,6 +68,10 @@ public class TestDriveServiceImpl implements TestDriveService {
             throw new RuntimeException("Nhân viên không thuộc đại lý này");
         }
 
+        if (request.getStaffUserId() == null) {
+            throw new IllegalArgumentException("StaffUserId không được để trống khi tạo mới");
+        }
+
         boolean isDealerStaff = staff.getRoles().stream()
                 .anyMatch(r -> r.getName().equals("DEALER_STAFF"));
 
@@ -123,8 +127,16 @@ public class TestDriveServiceImpl implements TestDriveService {
         // ---- Cập nhật trạng thái ----
         testDrive.setStatusForManager(request.getStatusOfManager());
 
-        if (request.getStatusOfManager() == TestDriveStatusManager.COMPLETED)
-            testDrive.setCompletedAt(LocalDateTime.now());
+        if (request.getStatusOfManager() == TestDriveStatusManager.COMPLETED) {
+
+            LocalDateTime now = LocalDateTime.now();
+
+            if (now.isBefore(testDrive.getScheduleDatetime())) {
+                throw new IllegalArgumentException("Thời gian hoàn thành không thể trước thời gian lịch hẹn.");
+            }
+
+            testDrive.setCompletedAt(now);
+        }
 
         if (request.getStatusOfManager() == TestDriveStatusManager.CANCELLED &&
                 request.getCancelReason() != null &&

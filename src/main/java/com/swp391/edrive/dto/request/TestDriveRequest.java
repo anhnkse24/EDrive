@@ -11,7 +11,6 @@ public class TestDriveRequest {
     @NotNull(message = "customerId không được để trống")
     private Long customerId;
 
-    @NotNull(message = "staffUserId không được để trống")
     private Long staffUserId;
 
     @NotNull(message = "dealerId không được để trống")
