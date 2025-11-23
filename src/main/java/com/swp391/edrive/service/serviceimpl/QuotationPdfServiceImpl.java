@@ -240,9 +240,19 @@ public class QuotationPdfServiceImpl implements QuotationPdfService {
             }
         }
 
+        // Tính subtotal trước VAT
+        BigDecimal subtotal = quotation.getUnitPrice().subtract(discount).add(serviceTotal);
+
+        // Tính VAT 10%
+        BigDecimal vatAmount = subtotal.multiply(new BigDecimal("0.10"))
+                .setScale(2, java.math.RoundingMode.HALF_UP);
+
+        addPriceRow(table, "3. VAT (10%):", null, vatAmount, rowCount++, false);
+
         table.addCell(new Cell(1, 2).setBorder(Border.NO_BORDER).setHeight(10));
 
-        BigDecimal finalPrice = quotation.getUnitPrice().subtract(discount).add(serviceTotal);
+        // Tổng cộng = subtotal + VAT
+        BigDecimal finalPrice = subtotal.add(vatAmount);
 
         Cell totalLabel = new Cell().add(new Paragraph("TỔNG CỘNG:").setBold().setFontSize(14))
                 .setBorder(Border.NO_BORDER)
