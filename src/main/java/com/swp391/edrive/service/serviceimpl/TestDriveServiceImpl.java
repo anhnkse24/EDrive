@@ -169,6 +169,10 @@ public class TestDriveServiceImpl implements TestDriveService {
         if (request.getStatusOfStaff() == null)
             throw new IllegalArgumentException("Thiếu trạng thái Staff");
 
+        if (testDrive.getStatusForManager() != TestDriveStatusManager.APPROVED) {
+            throw new RuntimeException("Manager chưa phê duyệt. Staff không thể cập nhật trạng thái.");
+        }
+
         // ---- Cập nhật ----
         testDrive.setStatusForStaff(request.getStatusOfStaff());
 
