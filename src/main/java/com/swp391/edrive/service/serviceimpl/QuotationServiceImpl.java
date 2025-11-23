@@ -565,19 +565,7 @@ public class QuotationServiceImpl implements QuotationService {
         StringBuilder body = new StringBuilder();
         body.append("Kính gửi Quý khách ").append(customer.getFullName()).append(",\n\n");
         body.append("Cảm ơn Quý khách đã quan tâm đến sản phẩm xe điện của chúng tôi.\n\n");
-        body.append("Chúng tôi xin gửi đến Quý khách báo giá chi tiết cho xe ").append(vehicle.getModelName());
-        body.append(" phiên bản ").append(vehicle.getVersion()).append(".\n\n");
-
-        body.append("Thông tin báo giá:\n");
-        body.append("- Mã báo giá: #").append(quotation.getQuotationId()).append("\n");
-        body.append("- Xe: ").append(vehicle.getModelName()).append(" ").append(vehicle.getVersion()).append("\n");
-        body.append("- Giá xe: ").append(formatPrice(quotation.getUnitPrice())).append(" VNĐ\n");
-
-        if (quotation.getPromotionDiscountAmount() != null && quotation.getPromotionDiscountAmount().compareTo(BigDecimal.ZERO) > 0) {
-            body.append("- Giảm giá khuyến mãi: ").append(formatPrice(quotation.getPromotionDiscountAmount())).append(" VNĐ\n");
-        }
-
-        body.append("- Tổng giá trị (đã bao gồm VAT): ").append(formatPrice(quotation.getPriceAfterPromotion())).append(" VNĐ\n\n");
+        body.append("Chúng tôi xin gửi đến Quý khách báo giá chi tiết cho xe ");
 
         body.append("Vui lòng xem chi tiết trong file PDF đính kèm.\n\n");
         body.append("Để biết thêm thông tin hoặc đặt lịch lái thử, vui lòng liên hệ:\n");
