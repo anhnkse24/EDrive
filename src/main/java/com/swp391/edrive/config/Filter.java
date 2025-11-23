@@ -52,7 +52,8 @@ public class Filter extends OncePerRequestFilter {
             "/api/google-login",
             "/api/facebook-login",
             "/api/payments/vnpay-return",
-            "/chat"
+            "/chat",
+            "/api/contracts/**"
     );
 
     // Danh sách các API cho phép GET công khai
@@ -61,7 +62,6 @@ public class Filter extends OncePerRequestFilter {
             "/api/vehicles/search/**",
             "/api/files/**"
     );
-
     // kiểm tra xem request có thuộc danh sách publicAPI
     boolean isPermitted(HttpServletRequest request) {
         AntPathMatcher patchMatch = new AntPathMatcher();

@@ -70,7 +70,8 @@ public class SecurityConfig {
                                 "/api/auth/payments/vnpay-return",
                                 "/api/auth/verify",
                                 "/chat",
-                                "/api/payments/vnpay-return"
+                                "/api/payments/vnpay-return",
+                                "/api/contracts/**"
                         )
                         .permitAll() // Các endpoint không cần xác thực
                         // Cho phép GET vehicles public để khách hàng xem danh sách xe
