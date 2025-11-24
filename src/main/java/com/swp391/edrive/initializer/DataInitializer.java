@@ -942,7 +942,17 @@ public class DataInitializer implements CommandLineRunner {
                 c3.setIdCardNo("234567891234");
                 c3.setDealer(dealer1);
 
-                customers.addAll(List.of(c1, c2, c3));
+                Customer c4 = new Customer();
+                c4.setFullName("Nguyễn Ngọc Ngân");
+                c4.setDob(LocalDate.of(2000, 5, 10));
+                c4.setGender("Nữ");
+                c4.setEmail("tahoangnhat@gmail.com");
+                c4.setPhone("0905123456");
+                c4.setAddress("12 Nguyễn Du, Khánh Hòa");
+                c4.setIdCardNo("067845678456");
+                c4.setDealer(dealer1);
+
+                customers.addAll(List.of(c1, c2, c3, c4));
                 customerRepository.saveAll(customers);
 
                 System.out.println(" Đã khởi tạo " + customers.size() + " customers");

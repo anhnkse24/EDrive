@@ -5,6 +5,7 @@ import com.swp391.edrive.dto.response.AppliedPromotionResponse;
 import com.swp391.edrive.dto.response.QuotationResponse;
 import com.swp391.edrive.dto.response.SelectedServiceResponse;
 import com.swp391.edrive.entity.*;
+import com.swp391.edrive.enums.CustomerQuotationStatus;
 import com.swp391.edrive.enums.DiscountType;
 import com.swp391.edrive.enums.PromoTarget;
 import com.swp391.edrive.enums.QuotationStatus;
@@ -47,6 +48,9 @@ public class QuotationServiceImpl implements QuotationService {
     @Autowired
     private QuotationPdfService quotationPdfService;
 
+    @Autowired
+    private DealerInventoryRepository dealerInventoryRepository;
+
 
         @Override
         public QuotationResponse createQuotation(QuotationRequest quotationRequest, User createdByUser) {
@@ -56,6 +60,10 @@ public class QuotationServiceImpl implements QuotationService {
             }
 
             Dealer dealer = createdByUser.getDealer();
+
+            DealerInventory inventory = dealerInventoryRepository
+                    .findByDealer_DealerIdAndVehicle_VehicleId(dealer.getDealerId(), quotationRequest.getVehicleId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy kho của đại lý cho xe này"));
 
             // Lấy thông tin xe
             Vehicle vehicle = vehicleRepository.findById(quotationRequest.getVehicleId())
@@ -126,6 +134,8 @@ public class QuotationServiceImpl implements QuotationService {
             quotation.setPromotionDiscountAmount(promotionDiscountAmount);
             quotation.setPriceAfterPromotion(grandTotal);
             quotation.setNote(quotationRequest.getNote());
+            quotation.setCustomerStatus(CustomerQuotationStatus.PENDING);
+            quotation.setDealerInventory(inventory);
 
             // Lưu các promotion đã áp dụng
             if (!appliedPromotions.isEmpty()) {
@@ -193,6 +203,7 @@ public class QuotationServiceImpl implements QuotationService {
                     .customerIdCardNo(customer.getIdCardNo())
                     // Thông tin thanh toán
                     .quotationStatus(savedQuotation.getQuotationStatus() != null ? savedQuotation.getQuotationStatus().name() : "PENDING")
+                    .quotationStatusCustomer(quotation.getCustomerStatus() != null ? quotation.getCustomerStatus().name() : "PENDING")
                     // Dịch vụ bổ sung
                     .selectedServices(selectedServiceResponses)
                     // Khuyến mãi đã áp dụng
@@ -219,6 +230,53 @@ public class QuotationServiceImpl implements QuotationService {
         Optional<Quotation> quotation = quotationRepository.findById(quotationId);
         return quotation.map(this::convertToQuotationResponse);
     }
+    @Override
+    public QuotationResponse updateCustomerQuotationStatus(Long quotationId, CustomerQuotationStatus newStatus) {
+
+        Quotation quotation = quotationRepository.findById(quotationId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy báo giá: " + quotationId));
+
+        if (quotation.getQuotationStatus() != QuotationStatus.ACCEPTED) {
+            throw new RuntimeException("Đại lý chưa duyệt báo giá. Chỉ báo giá ở trạng thái ACCEPTED mới cho phép khách hàng cập nhật.");
+        }
+
+        if (quotation.getCustomerStatus() != CustomerQuotationStatus.PENDING) {
+            throw new RuntimeException("Chỉ báo giá đang PENDING mới có thể cập nhật");
+        }
+
+        if (newStatus != CustomerQuotationStatus.APPROVED
+                && newStatus != CustomerQuotationStatus.REJECTED) {
+
+            throw new IllegalArgumentException("Trạng thái chỉ có thể là APPROVED hoặc REJECTED");
+        }
+
+        if (newStatus == CustomerQuotationStatus.APPROVED) {
+
+            // LẤY KHO TRỰC TIẾP TỪ BÁO GIÁ
+            DealerInventory inventory = quotation.getDealerInventory();
+            if (inventory == null) {
+                throw new RuntimeException("Báo giá này không chứa kho, không thể trừ xe");
+            }
+
+            if (inventory.getQuantity() <= 0) {
+                throw new RuntimeException("Kho không đủ xe để phê duyệt báo giá");
+            }
+
+            // TRỪ XE
+            inventory.setQuantity(inventory.getQuantity() - 1);
+            dealerInventoryRepository.save(inventory);
+
+            quotation.setCustomerStatus(CustomerQuotationStatus.APPROVED);
+        }
+        else if (newStatus == CustomerQuotationStatus.REJECTED) {
+            quotation.setCustomerStatus(CustomerQuotationStatus.REJECTED);
+        }
+
+        quotationRepository.save(quotation);
+
+        return convertToQuotationResponse(quotation);
+    }
+
 
     @Override
     public QuotationResponse updateQuotationStatus(Long quotationId, String status, String rejectionReason) {
@@ -497,6 +555,7 @@ public class QuotationServiceImpl implements QuotationService {
                 // Thông tin thanh toán
                 .paymentMethod(quotation.getPaymentMethod() != null ? quotation.getPaymentMethod().name() : null)
                 .quotationStatus(quotation.getQuotationStatus() != null ? quotation.getQuotationStatus().name() : "PENDING")
+                .quotationStatusCustomer(quotation.getCustomerStatus() != null ? quotation.getCustomerStatus().name() : "PENDING")
                 // Dịch vụ bổ sung
                 .selectedServices(selectedServiceResponses)
                 // Khuyến mãi đã áp dụng

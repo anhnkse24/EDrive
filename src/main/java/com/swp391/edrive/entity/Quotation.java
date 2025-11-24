@@ -1,5 +1,6 @@
 package com.swp391.edrive.entity;
 
+import com.swp391.edrive.enums.CustomerQuotationStatus;
 import com.swp391.edrive.enums.PaymentMethod;
 import com.swp391.edrive.enums.QuotationStatus;
 import jakarta.persistence.*;
@@ -27,6 +28,10 @@ public class Quotation {
     private Dealer dealer;
 
     @ManyToOne
+    @JoinColumn(name = "inventory_id")
+    private DealerInventory dealerInventory;
+
+    @ManyToOne
     @JoinColumn(name = "vehicle_id", nullable = false)
     private Vehicle vehicle;
 
@@ -43,6 +48,10 @@ public class Quotation {
 
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private CustomerQuotationStatus customerStatus;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

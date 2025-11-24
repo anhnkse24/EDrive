@@ -49,6 +49,7 @@ public class QuotationResponse {
     // Thông tin thanh toán
     private String paymentMethod;
     private String quotationStatus;
+    private String quotationStatusCustomer;
 
     // Dịch vụ bổ sung (MỚI - danh sách dịch vụ động)
     private List<SelectedServiceResponse> selectedServices;

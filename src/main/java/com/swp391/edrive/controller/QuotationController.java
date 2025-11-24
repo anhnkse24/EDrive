@@ -1,11 +1,13 @@
 package com.swp391.edrive.controller;
 
 
+import com.swp391.edrive.dto.request.QuotationCustomerStatusUpdateRequest;
 import com.swp391.edrive.dto.request.QuotationRequest;
 import com.swp391.edrive.dto.request.QuotationStatusUpdateRequest;
 import com.swp391.edrive.dto.response.QuotationResponse;
 import com.swp391.edrive.dto.response.ResponseObject;
 import com.swp391.edrive.entity.User;
+import com.swp391.edrive.enums.CustomerQuotationStatus;
 import com.swp391.edrive.service.QuotationPdfService;
 import com.swp391.edrive.service.QuotationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -52,9 +54,38 @@ public class QuotationController {
         }
     }
 
+    @Operation(summary = "Cập nhật trạng thái khách hàng của báo giá (APPROVED / REJECTED)")
+    @PutMapping("/update-customer-status")
+    @PreAuthorize("hasRole('DEALER_MANAGER')")
+    public ResponseEntity<ResponseObject<QuotationResponse>> updateCustomerStatus(
+            @RequestBody QuotationCustomerStatusUpdateRequest request) {
+
+        try {
+
+            // Lấy enum từ request
+            CustomerQuotationStatus statusEnum = request.getCustomerStatus();
+
+            QuotationResponse data = quotationService.updateCustomerQuotationStatus(
+                    request.getQuotationId(),
+                    statusEnum
+            );
+
+            // Tạo message tuỳ theo enum
+            String message = (statusEnum == CustomerQuotationStatus.APPROVED)
+                    ? "Khách hàng đã chấp nhận báo giá"
+                    : "Khách hàng đã từ chối báo giá";
+
+            return ResponseEntity.ok(new ResponseObject<>(200, message, data));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(
+                    new ResponseObject<>(400, "Có lỗi xảy ra: " + e.getMessage(), null)
+            );
+        }
+    }
     @Operation(summary = "Cập nhật trạng thái báo giá")
     @PutMapping("/update-status")
-    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER')")
     public ResponseEntity<ResponseObject<QuotationResponse>> updateQuotationStatus(
             @RequestBody QuotationStatusUpdateRequest request) {
 
