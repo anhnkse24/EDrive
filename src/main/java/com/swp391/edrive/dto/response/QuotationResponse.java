@@ -50,6 +50,7 @@ public class QuotationResponse {
     private String paymentMethod;
     private String quotationStatus;
     private String quotationStatusCustomer;
+    private String deliveryStatus;
 
     // Dịch vụ bổ sung (MỚI - danh sách dịch vụ động)
     private List<SelectedServiceResponse> selectedServices;

@@ -5,10 +5,7 @@ import com.swp391.edrive.dto.response.AppliedPromotionResponse;
 import com.swp391.edrive.dto.response.QuotationResponse;
 import com.swp391.edrive.dto.response.SelectedServiceResponse;
 import com.swp391.edrive.entity.*;
-import com.swp391.edrive.enums.CustomerQuotationStatus;
-import com.swp391.edrive.enums.DiscountType;
-import com.swp391.edrive.enums.PromoTarget;
-import com.swp391.edrive.enums.QuotationStatus;
+import com.swp391.edrive.enums.*;
 import com.swp391.edrive.repository.*;
 import com.swp391.edrive.service.EmailService;
 import com.swp391.edrive.service.QuotationPdfService;
@@ -135,6 +132,7 @@ public class QuotationServiceImpl implements QuotationService {
             quotation.setPriceAfterPromotion(grandTotal);
             quotation.setNote(quotationRequest.getNote());
             quotation.setCustomerStatus(CustomerQuotationStatus.PENDING);
+            quotation.setDeliveryStatus(DeliveryStatus.NOT_DELIVERED);
             quotation.setDealerInventory(inventory);
 
             // Lưu các promotion đã áp dụng
@@ -204,6 +202,7 @@ public class QuotationServiceImpl implements QuotationService {
                     // Thông tin thanh toán
                     .quotationStatus(savedQuotation.getQuotationStatus() != null ? savedQuotation.getQuotationStatus().name() : "PENDING")
                     .quotationStatusCustomer(quotation.getCustomerStatus() != null ? quotation.getCustomerStatus().name() : "PENDING")
+                    .deliveryStatus(savedQuotation.getDeliveryStatus() != null ? savedQuotation.getDeliveryStatus().name() : "NOT_DELIVERED")
                     // Dịch vụ bổ sung
                     .selectedServices(selectedServiceResponses)
                     // Khuyến mãi đã áp dụng
@@ -251,24 +250,8 @@ public class QuotationServiceImpl implements QuotationService {
         }
 
         if (newStatus == CustomerQuotationStatus.APPROVED) {
-
-            // LẤY KHO TRỰC TIẾP TỪ BÁO GIÁ
-            DealerInventory inventory = quotation.getDealerInventory();
-            if (inventory == null) {
-                throw new RuntimeException("Báo giá này không chứa kho, không thể trừ xe");
-            }
-
-            if (inventory.getQuantity() <= 0) {
-                throw new RuntimeException("Kho không đủ xe để phê duyệt báo giá");
-            }
-
-            // TRỪ XE
-            inventory.setQuantity(inventory.getQuantity() - 1);
-            dealerInventoryRepository.save(inventory);
-
             quotation.setCustomerStatus(CustomerQuotationStatus.APPROVED);
-        }
-        else if (newStatus == CustomerQuotationStatus.REJECTED) {
+        } else {
             quotation.setCustomerStatus(CustomerQuotationStatus.REJECTED);
         }
 
@@ -304,6 +287,37 @@ public class QuotationServiceImpl implements QuotationService {
         // Lưu và trả về response
         Quotation savedQuotation = quotationRepository.save(quotation);
         return convertToQuotationResponse(savedQuotation);
+    }
+    @Override
+    public QuotationResponse deliverVehicle(Long quotationId) {
+
+        Quotation quotation = quotationRepository.findById(quotationId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy báo giá: " + quotationId));
+
+        if (quotation.getCustomerStatus() != CustomerQuotationStatus.APPROVED) {
+            throw new RuntimeException("Khách hàng chưa APPROVED báo giá — không thể giao hàng.");
+        }
+
+        if (quotation.getDeliveryStatus() == DeliveryStatus.DELIVERED) {
+            throw new RuntimeException("Báo giá này đã giao hàng rồi.");
+        }
+
+        DealerInventory inventory = quotation.getDealerInventory();
+        if (inventory == null) {
+            throw new RuntimeException("Không tìm thấy kho của đại lý cho báo giá này.");
+        }
+
+        if (inventory.getQuantity() <= 0) {
+            throw new RuntimeException("Kho không còn xe để giao.");
+        }
+
+        inventory.setQuantity(inventory.getQuantity() - 1);
+        dealerInventoryRepository.save(inventory);
+
+        quotation.setDeliveryStatus(DeliveryStatus.DELIVERED);
+        quotationRepository.save(quotation);
+
+        return convertToQuotationResponse(quotation);
     }
 
     /**
@@ -391,9 +405,6 @@ public class QuotationServiceImpl implements QuotationService {
         return new PromotionCalculationResult(totalDiscount, appliedPromotions);
     }
 
-    /**
-     * Build response list cho applied promotions
-     */
     private List<AppliedPromotionResponse> buildAppliedPromotionsResponse(List<AppliedPromotionInfo> appliedPromotions) {
         if (appliedPromotions == null || appliedPromotions.isEmpty()) {
             return null;
@@ -411,9 +422,6 @@ public class QuotationServiceImpl implements QuotationService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Helper class để lưu thông tin promotion đã áp dụng
-     */
     private static class AppliedPromotionInfo {
         private final Promotion promotion;
         private final BigDecimal discountAmount;
@@ -432,9 +440,6 @@ public class QuotationServiceImpl implements QuotationService {
         }
     }
 
-    /**
-     * Helper class để trả về kết quả tính promotion
-     */
     private static class PromotionCalculationResult {
         private final BigDecimal totalDiscount;
         private final List<AppliedPromotionInfo> appliedPromotions;
@@ -453,10 +458,6 @@ public class QuotationServiceImpl implements QuotationService {
         }
     }
 
-    /**
-     * MỚI: Xây dựng response từ danh sách services động lấy từ database
-     * Trả về danh sách dịch vụ thực tế thay vì Boolean flags
-     */
     private List<SelectedServiceResponse> buildSelectedServicesResponse(List<AdditionalServices> services) {
         return services.stream()
                 .map(service -> SelectedServiceResponse.builder()
@@ -467,9 +468,6 @@ public class QuotationServiceImpl implements QuotationService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Chuyển đổi Quotation entity sang QuotationResponse
-     */
     private QuotationResponse convertToQuotationResponse(Quotation quotation) {
         Vehicle vehicle = quotation.getVehicle();
         Customer customer = quotation.getCustomer();
@@ -556,6 +554,7 @@ public class QuotationServiceImpl implements QuotationService {
                 .paymentMethod(quotation.getPaymentMethod() != null ? quotation.getPaymentMethod().name() : null)
                 .quotationStatus(quotation.getQuotationStatus() != null ? quotation.getQuotationStatus().name() : "PENDING")
                 .quotationStatusCustomer(quotation.getCustomerStatus() != null ? quotation.getCustomerStatus().name() : "PENDING")
+                .deliveryStatus(quotation.getDeliveryStatus() != null ? quotation.getDeliveryStatus().name() : "NOT_DELIVERED")
                 // Dịch vụ bổ sung
                 .selectedServices(selectedServiceResponses)
                 // Khuyến mãi đã áp dụng

@@ -16,7 +16,7 @@ public interface QuotationService {
     QuotationResponse updateCustomerQuotationStatus(Long quotationId, CustomerQuotationStatus newStatus);
     List<QuotationResponse> getAllQuotations();
     Optional<QuotationResponse> getQuotationById(Long quotationId);
-
+    QuotationResponse deliverVehicle(Long quotationId);
     // Gửi email báo giá cho khách hàng (chỉ áp dụng cho báo giá đã được duyệt)
     void sendQuotationEmailToCustomer(Long quotationId);
 }

@@ -56,7 +56,7 @@ public class QuotationController {
 
     @Operation(summary = "Cập nhật trạng thái khách hàng của báo giá (APPROVED / REJECTED)")
     @PutMapping("/update-customer-status")
-    @PreAuthorize("hasRole('DEALER_MANAGER')")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER','DEALER_STAFF')")
     public ResponseEntity<ResponseObject<QuotationResponse>> updateCustomerStatus(
             @RequestBody QuotationCustomerStatusUpdateRequest request) {
 
@@ -85,7 +85,7 @@ public class QuotationController {
     }
     @Operation(summary = "Cập nhật trạng thái báo giá")
     @PutMapping("/update-status")
-    @PreAuthorize("hasAnyRole('DEALER_MANAGER')")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER','DEALER_STAFF')")
     public ResponseEntity<ResponseObject<QuotationResponse>> updateQuotationStatus(
             @RequestBody QuotationStatusUpdateRequest request) {
 
@@ -219,6 +219,31 @@ public class QuotationController {
             // Các lỗi khác
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     new ResponseObject<>(500, "Lỗi khi gửi email: " + e.getMessage(), null)
+            );
+        }
+    }
+    @Operation(summary = "Giao xe cho khách hàng",
+            description = "Cập nhật báo giá sang trạng thái DELIVERED, trừ số lượng trong inventory")
+    @PutMapping("/{quotationId}/deliver")
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER','DEALER_STAFF')")
+    public ResponseEntity<ResponseObject<QuotationResponse>> deliverQuotation(@PathVariable Long quotationId) {
+        try {
+            QuotationResponse data = quotationService.deliverVehicle(quotationId);
+
+            return ResponseEntity.ok(
+                    new ResponseObject<>(200, "Giao xe thành công", data)
+            );
+
+        } catch (IllegalStateException e) {
+            // Lỗi logic (ví dụ: chưa accepted, chưa customer approved, hết hàng...)
+            return ResponseEntity.badRequest().body(
+                    new ResponseObject<>(400, e.getMessage(), null)
+            );
+
+        } catch (RuntimeException e) {
+            // Lỗi khác
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    new ResponseObject<>(500, "Lỗi khi giao xe: " + e.getMessage(), null)
             );
         }
     }
