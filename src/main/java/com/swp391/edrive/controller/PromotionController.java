@@ -26,23 +26,6 @@ public class PromotionController {
 
     private final PromotionService promotionService;
 
-
-    @Operation(summary = "Lấy danh sách tất cả khuyến mãi")
-    @GetMapping
-    @PreAuthorize("hasAnyRole('DEALER_MANAGER','DEALER_STAFF')")
-    public ResponseEntity<ResponseObject<List<PromotionResponse>>> getAll() {
-
-        List<PromotionResponse> list = promotionService.getAllPromotions();
-
-        return ResponseEntity.ok(
-                ResponseObject.<List<PromotionResponse>>builder()
-                        .statusCode(HttpStatus.OK.value())
-                        .message("Danh sách mã khuyến mãi")
-                        .data(list)
-                        .build()
-        );
-    }
-
     @Operation(summary = "Lấy danh sách khuyến mãi theo Dealer ID")
     @GetMapping("/dealer/{dealerId}")
     @PreAuthorize("hasAnyRole('DEALER_MANAGER','DEALER_STAFF')")
@@ -128,6 +111,22 @@ public class PromotionController {
                         .statusCode(HttpStatus.OK.value())
                         .message("Xoá mã khuyến mãi thành công")
                         .data(null)
+                        .build()
+        );
+    }
+
+    @Operation(summary = "Lấy danh sách tất cả khuyến mãi")
+    @GetMapping
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER','DEALER_STAFF')")
+    public ResponseEntity<ResponseObject<List<PromotionResponse>>> getAll() {
+
+        List<PromotionResponse> list = promotionService.getAllPromotions();
+
+        return ResponseEntity.ok(
+                ResponseObject.<List<PromotionResponse>>builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message("Danh sách mã khuyến mãi")
+                        .data(list)
                         .build()
         );
     }

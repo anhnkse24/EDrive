@@ -26,6 +26,44 @@ public class TestDriveController {
 
     private final TestDriveService testDriveService;
 
+    @Operation(summary = "Manager - Thay đổi trạng thái lịch lái thử")
+    @PatchMapping("/dealer/{dealerId}/{testDriveId}/manager/status")
+    @SecurityRequirement(name = "api")
+    @PreAuthorize("hasRole('DEALER_MANAGER')")
+    public ResponseEntity<ResponseObject<TestDriveResponse>> changeStatusByManager(
+            @PathVariable Long dealerId,
+            @PathVariable Long testDriveId,
+            @Valid @RequestBody TestDriveStatusManagerRequest request
+    ) {
+        TestDriveResponse response =
+                testDriveService.changeTestDriveStatusForManager(dealerId, testDriveId, request);
+
+        return ResponseEntity.ok(
+                new ResponseObject<>(200, "Manager thay đổi trạng thái thành công", response)
+        );
+    }
+
+    @Operation(summary = "Staff - Thay đổi trạng thái lịch lái thử")
+    @PatchMapping("/dealer/{dealerId}/{testDriveId}/staff/status")
+    @SecurityRequirement(name = "api")
+    @PreAuthorize("hasRole('DEALER_STAFF')")
+    public ResponseEntity<ResponseObject<TestDriveResponse>> changeStatusByStaff(
+            @PathVariable Long dealerId,
+            @PathVariable Long testDriveId,
+            @Valid @RequestBody TestDriveStatusStaffRequest request
+    ) {
+        TestDriveResponse response =
+                testDriveService.changeTestDriveStatusForStaff(
+                        request.getStaffUserId(),   // đúng nhất vì service yêu cầu userId
+                        dealerId,
+                        testDriveId,
+                        request
+                );
+
+        return ResponseEntity.ok(
+                new ResponseObject<>(200, "Staff thay đổi trạng thái thành công", response)
+        );
+    }
     @Operation(summary = "Lấy danh sách tất cả lịch lái thử")
     @GetMapping
     @SecurityRequirement(name = "api")
@@ -93,42 +131,4 @@ public class TestDriveController {
         );
     }
 
-    @Operation(summary = "Manager - Thay đổi trạng thái lịch lái thử")
-    @PatchMapping("/dealer/{dealerId}/{testDriveId}/manager/status")
-    @SecurityRequirement(name = "api")
-    @PreAuthorize("hasRole('DEALER_MANAGER')")
-    public ResponseEntity<ResponseObject<TestDriveResponse>> changeStatusByManager(
-            @PathVariable Long dealerId,
-            @PathVariable Long testDriveId,
-            @Valid @RequestBody TestDriveStatusManagerRequest request
-    ) {
-        TestDriveResponse response =
-                testDriveService.changeTestDriveStatusForManager(dealerId, testDriveId, request);
-
-        return ResponseEntity.ok(
-                new ResponseObject<>(200, "Manager thay đổi trạng thái thành công", response)
-        );
-    }
-
-    @Operation(summary = "Staff - Thay đổi trạng thái lịch lái thử")
-    @PatchMapping("/dealer/{dealerId}/{testDriveId}/staff/status")
-    @SecurityRequirement(name = "api")
-    @PreAuthorize("hasRole('DEALER_STAFF')")
-    public ResponseEntity<ResponseObject<TestDriveResponse>> changeStatusByStaff(
-            @PathVariable Long dealerId,
-            @PathVariable Long testDriveId,
-            @Valid @RequestBody TestDriveStatusStaffRequest request
-    ) {
-        TestDriveResponse response =
-                testDriveService.changeTestDriveStatusForStaff(
-                        request.getStaffUserId(),   // đúng nhất vì service yêu cầu userId
-                        dealerId,
-                        testDriveId,
-                        request
-                );
-
-        return ResponseEntity.ok(
-                new ResponseObject<>(200, "Staff thay đổi trạng thái thành công", response)
-        );
-    }
 }

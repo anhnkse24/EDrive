@@ -42,9 +42,6 @@ public class TestDriveServiceImpl implements TestDriveService {
     @Override
     public List<TestDriveResponse> getTestDrivesByDealerId(Long dealerId) {
         List<TestDrive> testDrives = testDriveRepository.findByDealer_DealerId(dealerId);
-        if (testDrives.isEmpty()) {
-            throw new EntityNotFoundException("Không có lịch lái thử nào thuộc Dealer ID: " + dealerId);
-        }
         return testDrives.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());

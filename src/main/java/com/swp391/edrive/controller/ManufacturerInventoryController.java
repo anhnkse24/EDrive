@@ -30,45 +30,6 @@ public class ManufacturerInventoryController {
     private final ManufacturerInventoryService manufacturerInventoryService;
 
     @Operation(
-            summary = "Lấy tồn kho theo ID",
-            description = "Tìm và trả về thông tin tồn kho của một hãng theo ID cụ thể"
-    )
-    @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<ResponseObject<ManufacturerInventoryResponse>> getById(@PathVariable Long id) {
-
-        ManufacturerInventoryResponse data = manufacturerInventoryService.getById(id);
-
-        return ResponseEntity.ok(
-                ResponseObject.<ManufacturerInventoryResponse>builder()
-                        .statusCode(HttpStatus.OK.value())
-                        .message("Lấy danh sách kho theo đại lí thành công")
-                        .data(data)
-                        .build()
-        );
-    }
-
-    @Operation(
-            summary = "Tạo mới bản ghi tồn kho",
-            description = "Tạo mới một bản ghi tồn kho của hãng sản xuất (Manufacturer Inventory)"
-    )
-    @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<ResponseObject<ManufacturerInventoryResponse>> create(
-            @RequestBody ManufacturerInventoryRequest request) {
-
-        ManufacturerInventoryResponse data = manufacturerInventoryService.create(request);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(
-                ResponseObject.<ManufacturerInventoryResponse>builder()
-                        .statusCode(HttpStatus.CREATED.value())
-                        .message("Inventory created successfully")
-                        .data(data)
-                        .build()
-        );
-    }
-
-    @Operation(
             summary = "Cập nhật thông tin tồn kho",
             description = "Cập nhật thông tin bản ghi tồn kho dựa trên ID"
     )
@@ -109,6 +70,26 @@ public class ManufacturerInventoryController {
     }
 
     @Operation(
+            summary = "Tạo mới bản ghi tồn kho",
+            description = "Tạo mới một bản ghi tồn kho của hãng sản xuất (Manufacturer Inventory)"
+    )
+    @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<ResponseObject<ManufacturerInventoryResponse>> create(
+            @RequestBody ManufacturerInventoryRequest request) {
+
+        ManufacturerInventoryResponse data = manufacturerInventoryService.create(request);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                ResponseObject.<ManufacturerInventoryResponse>builder()
+                        .statusCode(HttpStatus.CREATED.value())
+                        .message("Inventory created successfully")
+                        .data(data)
+                        .build()
+        );
+    }
+
+    @Operation(
             summary = "Thống kê tổng hợp tồn kho theo hãng sản xuất",
             description = "Nhóm dữ liệu tồn kho theo tên hãng và trả về số lượng xe tồn kho theo từng hãng"
     )
@@ -122,6 +103,24 @@ public class ManufacturerInventoryController {
                 ResponseObject.<List<ManufacturerInventorySummaryResponse>>builder()
                         .statusCode(HttpStatus.OK.value())
                         .message("Tổng danh sách kho")
+                        .data(data)
+                        .build()
+        );
+    }
+    @Operation(
+            summary = "Lấy tồn kho theo ID",
+            description = "Tìm và trả về thông tin tồn kho của một hãng theo ID cụ thể"
+    )
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<ResponseObject<ManufacturerInventoryResponse>> getById(@PathVariable Long id) {
+
+        ManufacturerInventoryResponse data = manufacturerInventoryService.getById(id);
+
+        return ResponseEntity.ok(
+                ResponseObject.<ManufacturerInventoryResponse>builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message("Lấy danh sách kho theo đại lí thành công")
                         .data(data)
                         .build()
         );

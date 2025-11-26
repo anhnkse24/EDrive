@@ -26,23 +26,6 @@ public class DealerController {
 
     private final DealerService dealerService;
 
-    @Operation(summary = "Tạo mới đại lý")
-    @PreAuthorize("hasAnyRole('ADMIN')")
-    @PostMapping
-    public ResponseEntity<ResponseObject<DealerResponse>> createDealer(
-            @Valid @RequestBody DealerRequest request) {
-
-        DealerResponse created = dealerService.createDealer(request);
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ResponseObject.<DealerResponse>builder()
-                        .statusCode(HttpStatus.CREATED.value())
-                        .message("Tạo đại lý thành công")
-                        .data(created)
-                        .build()
-                );
-    }
-
     @Operation(summary = "Cập nhật thông tin đại lý")
     @PutMapping("/{dealerId}")
     @PreAuthorize("hasAnyRole('ADMIN')")
@@ -105,6 +88,23 @@ public class DealerController {
                         .data(list)
                         .build()
         );
+    }
+
+    @Operation(summary = "Tạo mới đại lý")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PostMapping
+    public ResponseEntity<ResponseObject<DealerResponse>> createDealer(
+            @Valid @RequestBody DealerRequest request) {
+
+        DealerResponse created = dealerService.createDealer(request);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ResponseObject.<DealerResponse>builder()
+                        .statusCode(HttpStatus.CREATED.value())
+                        .message("Tạo đại lý thành công")
+                        .data(created)
+                        .build()
+                );
     }
 
 }

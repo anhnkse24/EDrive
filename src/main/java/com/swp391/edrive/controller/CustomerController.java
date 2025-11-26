@@ -28,24 +28,6 @@ public class CustomerController {
 
     private final CustomerService customerService;
 
-    @Operation(summary = "Thêm khách hàng mới cho Dealer")
-    @PostMapping
-    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
-    public ResponseEntity<ResponseObject<CustomerResponse>> createCustomer(
-            @PathVariable Long dealerId,
-            @Valid @RequestBody CustomerRequest request) {
-
-        CustomerResponse res = customerService.createCustomer(dealerId, request);
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ResponseObject.<CustomerResponse>builder()
-                        .statusCode(HttpStatus.CREATED.value())
-                        .message("Customer created successfully")
-                        .data(res)
-                        .build()
-                );
-    }
-
     @Operation(summary = "Cập nhật khách hàng theo Dealer & ID")
     @PutMapping("/{customerId}")
     @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
@@ -116,6 +98,24 @@ public class CustomerController {
                         .data(res)
                         .build()
         );
+    }
+
+    @Operation(summary = "Thêm khách hàng mới cho Dealer")
+    @PostMapping
+    @PreAuthorize("hasAnyRole('DEALER_MANAGER', 'DEALER_STAFF')")
+    public ResponseEntity<ResponseObject<CustomerResponse>> createCustomer(
+            @PathVariable Long dealerId,
+            @Valid @RequestBody CustomerRequest request) {
+
+        CustomerResponse res = customerService.createCustomer(dealerId, request);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ResponseObject.<CustomerResponse>builder()
+                        .statusCode(HttpStatus.CREATED.value())
+                        .message("Customer created successfully")
+                        .data(res)
+                        .build()
+                );
     }
 }
 
